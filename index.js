@@ -12,6 +12,8 @@ http.createServer(function(req, res){
     cookie.parseCookie(req);
     //cookie.parseRememberMe(req, res, function(req, res){
     // 
+
+// test
     //});
     cookie.setCookie();
     console.log(req.headers);
