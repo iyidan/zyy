@@ -5,6 +5,7 @@
 var util = require('util');
 
 test
+test2
 var http = require('http');
 var cookie = require('cookie');
 
