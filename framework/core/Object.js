@@ -1,7 +1,7 @@
 Object.prototype.clone = function(){
   var newObj = {};
     for ( var i in this ) {
-      var typei = type this[i];
+      var typei = typeof this[i];
       if ( typei == 'object' || typei == 'function' ) {
         newObj[i] = this[i].clone();
       } else {
