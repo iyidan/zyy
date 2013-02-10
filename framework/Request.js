@@ -81,6 +81,7 @@ function parse_POST( req )
  */
 function parse_REQUEST( req )
 {
+  console.log('GET:', req.GET);
   return req.GET.merge(req.POST);
 }
 
