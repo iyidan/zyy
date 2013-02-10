@@ -3,10 +3,11 @@
  * @return {Object} 
  */
 Object.prototype.clone = function(){
-  var json = JSON.stringify(this);
-  console.log(json, this);
-  //return JSON.parse(json);
-  return {};
+  if ( typeof this == 'object' ) {
+    var json = JSON.stringify(this);  
+    return JSON.parse(json);
+  }
+  return undefined;
 };
 
 /**
@@ -28,10 +29,9 @@ Object.prototype.merge = function() {
     }
     for ( var j in arguments[i] ) {
       var typej = typeof arguments[i][j];
-      if ( typej == 'object' || typej == 'function' ) {
-        console.log('merge j: '+ j);
-        this[j] = arguments[i][j].clone();
-      } else {
+      if ( typej == 'object' && arguments[i].hasOwnProperty(j) ) {
+          this[j] = arguments[i][j].clone();  
+      } else if ( typej != 'function' ) {
         this[j] = arguments[i][j];  
       }
     }
