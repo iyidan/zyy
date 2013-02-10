@@ -1,61 +1,18 @@
-var http = require( 'http' );
-var util = require( 'util' );
+var http     = require( 'http' );
+var init = require( './init.js' ).init;
+
 /**
  * 创建一个http服务器
+ * @param {Number} port 监听端口
+ * @param {String} ip 监听ip地址
+ * @param {Function} callback  请求被初始化后调用的函数
+ * @return {Object} 返回有http.createServer 生成的server实例
  */
 exports.createServer = function ( port, ip, callback ) {
-    if ( !port || !ip ) {
-      throw new Error( __filename + 'createServer params is empty.' );
-    }
-    http.createServer(function( req, res ){
-      req = inherits_req( req );
-      res = inherits_res( res );
-      console.log(req, res);
-      callback(req, res);
+    var port = port || 3000;
+    var ip   = ip || '127.0.0.1';
+    return http.createServer(function(oriRequest, oriResponse){
+      var thisRequest = init(oriRequest, oriResponse);
+      callback( thisRequest[0], thisRequest[1] );
     }).listen(port, ip);
 };
-
-/**
- * 包装最初的request
- * @param  {Object} oriReq 
- * @return {Object}        
- */
-function inherits_req( oriReq ) {
-
-  /*return Object.create( oriReq, {
-    'ori': {
-      value:oriReq
-    }
-  });*/
-  /*return util.inherits({
-    'ori':oriReq
-  }, oriReq);*/
-  var F = function( req ){
-    this.ori = req;
-  };
-  F.prototype = oriReq;
-
-  return new F(oriReq);
-}
-
-/**
- * 包装最初的response
- * @param  {Object} oriRes 
- * @return {Object}        
- */
-function inherits_res ( oriRes ) {
-  /*return Object.create( oriRes, {
-    'ori': {
-      value:oriRes
-    }
-  });*/
-  /*return util.inherits({
-    'ori':oriRes
-  }, oriRes);*/
-  var F = function( res ){
-    this.ori = res;
-  };
-  F.prototype = oriRes;
-
-  return new F(oriRes);
-}
