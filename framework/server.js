@@ -14,6 +14,7 @@ exports.createServer = function ( port, ip, callback ) {
       res = Object.create( res, {
         'ori':res
       });
+      console.log(req, res);
       callback(req, res);
     }).listen(port, ip);
 };
