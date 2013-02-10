@@ -1,3 +1,3 @@
-exports = function () {
+exports = function a () {
   console.log('test');
 };
