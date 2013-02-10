@@ -1,5 +1,5 @@
 var http = require( 'http' );
-
+var util = require( 'util' );
 /**
  * 创建一个http服务器
  */
@@ -21,11 +21,15 @@ exports.createServer = function ( port, ip, callback ) {
  * @return {Object}        
  */
 function inherits_req( oriReq ) {
-  return Object.create( oriReq, {
+
+  /*return Object.create( oriReq, {
     'ori': {
       value:oriReq
     }
-  });
+  });*/
+  return util.inherits({
+    'ori':oriReq
+  }, oriReq);
 }
 
 /**
@@ -34,9 +38,12 @@ function inherits_req( oriReq ) {
  * @return {Object}        
  */
 function inherits_res ( oriRes ) {
-  return Object.create( oriRes, {
+  /*return Object.create( oriRes, {
     'ori': {
       value:oriRes
     }
-  });
+  });*/
+  return util.inherits({
+    'ori':oriRes
+  }, oriRes);
 }
