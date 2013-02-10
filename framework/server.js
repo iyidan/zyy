@@ -55,7 +55,7 @@ function inherits_res ( oriRes ) {
   var F = function( res ){
     this.ori = res;
   };
-  F.prototype = res;
+  F.prototype = oriRes;
 
-  return new F(res);
+  return new F(oriRes);
 }
