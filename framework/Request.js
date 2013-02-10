@@ -1,7 +1,6 @@
 var cookie  = require( './cookie.js' );
 var session = require( './session.js' );
 var url     = require( 'url' );
-var qs      = require( 'querystring' );
 
 
 /**
