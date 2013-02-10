@@ -8,6 +8,7 @@ server.createServer(3000, '127.0.0.1', function ( req, res ) {
   console.log(req);
   console.log('####################');
   console.log(res);
+
   res.ori.writeHead( 200, { 'Content-Type': 'text/plain' } );
-  res.ori.end( 'Hello World.\n' );
+  res.ori.end( util.inspect( req, true, 3 ) );
 });
