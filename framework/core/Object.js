@@ -4,6 +4,7 @@
  */
 Object.prototype.clone = function(){
   var json = JSON.stringify(this);
+  console.log(json);
   return JSON.parse(json);
 };
 
