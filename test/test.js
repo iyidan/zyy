@@ -2,7 +2,7 @@ var http = require( 'http' );
 var util = require( 'util' );
 
 http.createServer(function ( req, res ) {
-  var startT = (new Date(req.socket._idleStart)).getTime();
+  var startT = req.socket._idleStart.getTime();
   res.writeHead( 200, { 'Content-Type': 'text/plain' } );
   var endT   = (new Date()).getTime();
   res.write( util.inspect( typeof req.socket._idleStart ) );
