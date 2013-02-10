@@ -13,5 +13,8 @@ var Response = require( './Response.js' ).Response;
 exports.init = function( oriReq, oriRes ){
   var req = new Request( oriReq );
   var res = new Response( oriRes );
-  return [req, res];
+  return {
+    'req' : req,
+    'res' : res
+  };
 };
