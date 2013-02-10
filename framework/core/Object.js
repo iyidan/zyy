@@ -1,3 +1,7 @@
+/**
+ * 利用JSON来克隆一个数据对象
+ * @return {Object} 
+ */
 Object.prototype.clone = function(){
   var json = JSON.stringify(this);
   return JSON.parse(json);
