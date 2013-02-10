@@ -29,6 +29,7 @@ Object.prototype.merge = function() {
     for ( var j in arguments[i] ) {
       var typej = typeof arguments[i][j];
       if ( typej == 'object' || typej == 'function' ) {
+        console.log('merge j: '+ j);
         this[j] = arguments[i][j].clone();
       } else {
         this[j] = arguments[i][j];  
