@@ -1,14 +1,6 @@
 Object.prototype.clone = function(){
-  var newObj = {};
-    for ( var i in this ) {
-      var typei = typeof this[i];
-      if ( typei == 'object' || typei == 'function' ) {
-        newObj[i] = this[i].clone();
-      } else {
-        newObj[i] = this[i];
-      }
-    }
-    return newObj;
+  var json = JSON.stringify(this);
+  return JSON.parse(json);
 };
 
 /**
