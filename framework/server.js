@@ -27,9 +27,15 @@ function inherits_req( oriReq ) {
       value:oriReq
     }
   });*/
-  return util.inherits({
+  /*return util.inherits({
     'ori':oriReq
-  }, oriReq);
+  }, oriReq);*/
+  var F = function( req ){
+    this.ori = req;
+  };
+  F.prototype = oriReq;
+
+  return new F(oriReq);
 }
 
 /**
@@ -43,7 +49,13 @@ function inherits_res ( oriRes ) {
       value:oriRes
     }
   });*/
-  return util.inherits({
+  /*return util.inherits({
     'ori':oriRes
-  }, oriRes);
+  }, oriRes);*/
+  var F = function( res ){
+    this.ori = res;
+  };
+  F.prototype = res;
+
+  return new F(res);
 }
