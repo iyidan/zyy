@@ -41,8 +41,8 @@ function Framework ( req, res )
   this._COOKIE    = parse_COOKIE( req );
   this._SESSION   = parse_SESSION( req );
   this._FILES     = parse_FILES( req );
-  this.db         = set_DB( this );
-  this.cache      = set_Cache( this );
+  this.db         = init_DB( this );
+  this.cache      = init_Cache( this );
 
   //请求开始毫秒数
   try {
