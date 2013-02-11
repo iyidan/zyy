@@ -26,7 +26,7 @@ function Framework ( req, res )
 
   this._SERVER    = parse_SERVER( req );
   
-  this._GET       = SERVER.url.query;
+  this._GET       = this._SERVER.url.query;
   this._POST      = parse_POST( req );
 
   this._FILES     = parse_FILES( req );
@@ -191,15 +191,6 @@ function parse_SERVER( req )
   };
 
   return server;
-}
-
-/**
- * 解析Get，需要在parse_SERVER 后调用
- * @param {Object} req 由 Request构造产生的
- */
-function parse_GET( app )
-{
-  return app._SERVER.url.query;
 }
 
 /**
