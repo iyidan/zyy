@@ -1,6 +1,5 @@
 var http  = require( 'http' );
-var init  = require( './init.js' ).init;
-var core  = require('./core/index.js');
+var init  = require( './init' ).init;
 
 /**
  * 创建一个http服务器
