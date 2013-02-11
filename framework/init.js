@@ -168,7 +168,7 @@ Framework.prototype.FILES = function( name ) {
  */
 function parse_URL( req )
 {
-  var urlStr = req.ori.url;
+  var urlStr = req.url;
   // 解析 query 为 obj
   urlObj =  url.parse( urlStr, true );
   return urlObj;
@@ -184,10 +184,10 @@ function parse_SERVER( req )
 {
   var server = {
     'url'         : parse_URL( req ),
-    'httpVersion' : req.ori.httpVersion,
-    'headers'     : req.ori.headers,
-    'trailers'    : req.ori.trailers,
-    'method'      : req.ori.method
+    'httpVersion' : req.httpVersion,
+    'headers'     : req.headers,
+    'trailers'    : req.trailers,
+    'method'      : req.method
   };
 
   return server;
@@ -197,9 +197,9 @@ function parse_SERVER( req )
  * 解析Get，需要在parse_SERVER 后调用
  * @param {Object} req 由 Request构造产生的
  */
-function parse_GET( req )
+function parse_GET( app )
 {
-  return req.SERVER.url.query;
+  return app._SERVER.url.query;
 }
 
 /**
@@ -211,15 +211,6 @@ function parse_POST( req )
   var post = {};
   // @todo
   return post;
-}
-
-/**
- * 设置REQUEST 需要在解析GET和POST之后
- * @param {Object} req 由 Request构造产生的
- */
-function parse_REQUEST( req )
-{
-  return req.GET.merge(req.POST);
 }
 
 /**
