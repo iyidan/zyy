@@ -42,7 +42,7 @@ function Framework ( req, res )
   this._SESSION   = parse_SESSION( req );
   this._FILES     = parse_FILES( req );
   this.db         = init_DB( this );
-  this.cache      = init_Cache( this );
+  this.cache      = init_CACHE( this );
 
   //请求开始毫秒数
   try {
