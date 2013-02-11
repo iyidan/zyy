@@ -13,7 +13,7 @@ exports.createServer = function ( port, ip, callback ) {
     var port = port || 3000;
     var ip   = ip || '127.0.0.1';
     return http.createServer(function(req, res){
-      var app = init(oriRequest, oriResponse);
+      var app = init(req, res);
       callback( app );
     }).listen(port, ip);
 };
