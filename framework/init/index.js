@@ -4,7 +4,7 @@
 var url     = require( 'url' );
 var EventEmitter = require( 'events' ).EventEmitter;
 
-var core  = require('./core');
+var core  = require('../core');
 var db      = require( './db' );
 var cache   = require( './cache' );
 var cookie  = require( './cookie' );
@@ -265,5 +265,5 @@ function init_DB( )
  */
 function init_CACHE(  )
 {
-  
+
 }
