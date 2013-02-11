@@ -2,6 +2,7 @@
  * http连接建立后初始化请求响应对象
  */
 var url     = require( 'url' );
+var EventEmitter = require( 'events' ).EventEmitter;
 var cookie  = require( './cookie.js' );
 var session = require( './session.js' );
 
@@ -24,15 +25,16 @@ function Framework ( req, res )
   this.req = req;
   this.res = res;
 
+  // 设置单个事件最多50个监听器，默认为10个
+  this.emitter    = new EventEmitter();
+  this.emitter.setMaxListeners(50);
+
   this._SERVER    = parse_SERVER( req );
-  
   this._GET       = this._SERVER.url.query;
   this._POST      = parse_POST( req );
-
-  this._FILES     = parse_FILES( req );
-
   this._COOKIE    = parse_COOKIE( req );
   this._SESSION   = parse_SESSION( req );
+  this._FILES     = parse_FILES( req );
 
   //请求开始毫秒数
   try {
