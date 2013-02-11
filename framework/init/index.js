@@ -5,10 +5,10 @@ var url     = require( 'url' );
 var EventEmitter = require( 'events' ).EventEmitter;
 
 var core  = require('../core');
-var db      = require( './db' );
-var cache   = require( './cache' );
-var cookie  = require( './cookie' );
-var session = require( './session' );
+var db      = require( '../db' );
+var cache   = require( '../cache' );
+var cookie  = require( '../cookie' );
+var session = require( '../session' );
 
 
 
