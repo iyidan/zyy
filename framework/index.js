@@ -12,9 +12,8 @@ var core  = require('./core/index.js');
 exports.createServer = function ( port, ip, callback ) {
     var port = port || 3000;
     var ip   = ip || '127.0.0.1';
-    return http.createServer(function(oriRequest, oriResponse){
-      var startT = (new Date()).getTime();
-      var thisRequest = init(oriRequest, oriResponse);
-      callback( thisRequest[0], thisRequest[1] );
+    return http.createServer(function(req, res){
+      var app = init(oriRequest, oriResponse);
+      callback( app );
     }).listen(port, ip);
 };

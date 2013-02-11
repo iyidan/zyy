@@ -1,9 +1,6 @@
 var server = require( '../framework/index.js' );
 
-server.createServer(3000, '127.0.0.1', function(req, res){
-  console.log( 'request in ' + req.SERVER.url.href );
-  res.ori.writeHead( 200, { 'Content-Type': 'text/plain' } );
-  var startT = req.ori.socket._idleStart.getTime();
-  var endT   = (new Date()).getTime();
-  res.ori.end( '\nHello World.\n' + (endT - startT ) );
+server.createServer(3000, '127.0.0.1', function( app ){
+  console.log( 'request in ' + app.SERVER('url').href );
+  app.req.end( 'Hello World.\n' );
 });
