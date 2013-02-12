@@ -244,7 +244,7 @@ function parse_SERVER( req )
  */
 function parse_FORM( app )
 {
-  console.log ( 'app.method:' app.method );
+  console.log ( 'app:' app );
   if ( app.method != 'POST' ) {
     app.pub( 'parse_post_ready', {
       'err'    : null,
