@@ -19,8 +19,8 @@ var formidable = require( '../3rd/formidable' );
  * @param  {Object} oriReq 原始的request
  * @return {Object} 包装后的request
  */
-exports.init = function( req, res, callback ){
-  var app = new Framework( req, res );
+exports.init = function( req, res, config, callback ){
+  var app = new Framework( req, res, config );
   // 注册ready
   init_READY( app );
   if (typeof callback == 'function') app.sub('app.ready', callback);
@@ -48,11 +48,15 @@ exports.init.config = {};
 /**
  * 构造Request
  */
-function Framework ( req, res )
+function Framework ( req, res,config )
 {
+  // 项目配置
+  this.config = config;
+
   // 引用原始响应请求
   this.req = req;
   this.res = res;
+
   //请求开始毫秒数
   try {
     this.startTime = req.socket.server._idleStart.getTime();  
@@ -77,12 +81,6 @@ function Framework ( req, res )
 ////////////////////////////////////////
 // Framework.prototype start
 ////////////////////////////////////////
-
-/**
- * 项目配置
- * @config {Object}
- */
-Framework.prototype.config = exports.init.config;
 
 /**
  *  接收一个消息

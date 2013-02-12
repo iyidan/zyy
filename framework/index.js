@@ -11,9 +11,7 @@ var init  = require( './init' ).init;
 exports.createServer = function ( config, callback ) {
     var port = config.PORT || 3000;
     var ip   = config.IP || '127.0.0.1';
-    // 一次调用
-    init.config = config;
     return http.createServer(function(req, res){
-      init(req, res, callback);
+      init(req, res, config, callback);
     }).listen(port, ip);
 };
