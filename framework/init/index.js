@@ -21,6 +21,21 @@ var formidable = require( '../3rd/formidable' );
  */
 exports.init = function( req, res ){
   var app = new Framework( req, res );
+  parse_SERVER( app );
+  // GET
+  app._GET = app._SERVER.url.query;
+
+  // parse_POST/FILES sub to  parse_form
+  parse_POST( app );
+  parse_FILES( app );
+  parse_FORM( app );
+
+  parse_COOKIE( app );
+
+  init_DB( app );
+  init_CACHE( app );
+
+  parse_SESSION( app );
   return app;
 };
 
@@ -32,8 +47,7 @@ function Framework ( req, res )
   // 引用原始响应请求
   this.req = req;
   this.res = res;
-  // http method GET POST ... 
-  this.method = this.req.method;
+
   //请求开始毫秒数
   try {
     this.startTime = req.socket.server._idleStart.getTime();  
@@ -44,21 +58,6 @@ function Framework ( req, res )
   // 设置单个事件最多50个监听器，默认为10个
   this._emitter    = new EventEmitter();
   this._emitter.setMaxListeners(50);
-
-  this._SERVER    = parse_SERVER( req );
-  this._GET       = this._SERVER.url.query;
-
-  // parse_POST/FILES sub to  parse_form
-  parse_POST( this );
-  parse_FILES( this );
-  parse_FORM( this );
-
-  this._COOKIE    = parse_COOKIE( req );
-
-  init_DB( this );
-  init_CACHE( this );
-
-  parse_SESSION( this );
 }
 
 ////////////////////////////////////////
@@ -222,17 +221,15 @@ function parse_URL( req )
  * request.headers
 request.trailers
  */
-function parse_SERVER( req )
+function parse_SERVER( app )
 {
-  var server = {
-    'url'         : parse_URL( req ),
-    'httpVersion' : req.httpVersion,
-    'headers'     : req.headers,
-    'trailers'    : req.trailers,
-    'method'      : req.method
+  app._SERVER = {
+    'url'         : parse_URL( app.req ),
+    'httpVersion' : app.req.httpVersion,
+    'headers'     : app.req.headers,
+    'trailers'    : app.req.trailers,
+    'method'      : app.req.method
   };
-
-  return server;
 }
 
 /**
@@ -241,7 +238,7 @@ function parse_SERVER( req )
  */
 function parse_FORM( app )
 {
-  if ( app.method != 'POST' ) {
+  if ( app.SERVER('method') != 'POST' ) {
     app.pub( 'parse_post_ready', {
       'err'    : null,
       'fields' : {},
@@ -290,7 +287,7 @@ function parse_FILES( app )
  * 解析cookie
  * @param {Object} req 由 Request构造产生的
  */
-function parse_COOKIE( req )
+function parse_COOKIE( app )
 {
   var cookie = {};
   // @todo
@@ -301,7 +298,7 @@ function parse_COOKIE( req )
  * 解析session
  * @param {Object} req 由 Request构造产生的
  */
-function parse_SESSION( req )
+function parse_SESSION( app )
 {
   var session = {};
   // @todo
