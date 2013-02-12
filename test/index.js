@@ -8,7 +8,7 @@ server.createServer(3000, '127.0.0.1', function( app ){
   app.sub( 'testEvent', function( data ){
     app.res.write( util.inspect( data ) );
   });
-
+  app.res.write( 'hello\n' );
   setInterval(function(){
     app.pub( 'testEvent', { 'data':'data' } );
   }, 1000);
