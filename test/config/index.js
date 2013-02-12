@@ -10,7 +10,7 @@ exports.config = {
   // 项目名称
   'PROJECT_NAME': 'test',
   // 监听ip
-  'IP': '127.0.0.1',
+  'IP': '0.0.0.0',
   // 监听端口
   'PORT': 3000,
   // 静态文件路径
