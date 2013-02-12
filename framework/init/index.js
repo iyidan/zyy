@@ -262,6 +262,14 @@ function init_SERVER( app )
 }
 
 /**
+ * 设置GET
+ */
+function init_GET( app )
+{
+  app._GET = app.SERVER( 'url' ).query;
+}
+
+/**
  * 解析FORM数据
  * @param {Object} req 由 Request构造产生的
  */
