@@ -35,6 +35,14 @@ function Framework ( req, res )
   // 引用原始响应请求
   this.req = req;
   this.res = res;
+  // http method GET POST ... 
+  this.method = this.req.method;
+  //请求开始毫秒数
+  try {
+    this.startTime = req.socket.server._idleStart.getTime();  
+  } catch( e ) {
+    this.startTime = (new Date()).getTime();
+  }
 
   // 设置单个事件最多50个监听器，默认为10个
   this._emitter    = new EventEmitter();
@@ -48,20 +56,12 @@ function Framework ( req, res )
   parse_FILES( this );
   parse_FORM( this );
 
-  this._COOKIE    = parse_COOKIE( this );
-  this._SESSION   = parse_SESSION( this );
+  this._COOKIE    = parse_COOKIE( req );
 
   init_DB( this );
   init_CACHE( this );
 
-  // http method GET POST ... 
-  this.method = this.req.method;
-  //请求开始毫秒数
-  try {
-    this.startTime = req.socket.server._idleStart.getTime();  
-  } catch( e ) {
-    this.startTime = (new Date()).getTime();
-  }
+  parse_SESSION( this );
 }
 
 ////////////////////////////////////////
@@ -244,7 +244,6 @@ function parse_SERVER( req )
  */
 function parse_FORM( app )
 {
-  console.log ( 'app:' app );
   if ( app.method != 'POST' ) {
     app.pub( 'parse_post_ready', {
       'err'    : null,
