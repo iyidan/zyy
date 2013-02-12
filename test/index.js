@@ -6,7 +6,7 @@ server.createServer(3000, '127.0.0.1', function( app ){
 
   app.res.writeHead(200, { 'Contet-type': 'text/plain' });
   app.sub( 'testEvent', function( data ){
-    app.res.write( data.toString() );
+    app.res.end( data.toString() );
   });
   app.res.write( 'hello\n' );
   app.pub('testEvent', 'world.');
