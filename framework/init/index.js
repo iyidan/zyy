@@ -228,7 +228,7 @@ function init_READY( app )
       if ( app._readyEvents.length == 0 ) return;
       var index = app._readyEvents.indexOf( messageId );
       app._readyEvents.splice( index, 1 );
-      console.log( 'ready:', messageId );
+      console.log( 'ready:', messageId, '_readyEvents:', app._readyEvents );
       if ( app._readyEvents.length == 0 ) {
         app.pub( 'app.ready' );
       }
