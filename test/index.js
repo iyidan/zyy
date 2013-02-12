@@ -1,7 +1,14 @@
 var server = require( '../framework/index.js' );
+var util   = require( 'util' );
 
 server.createServer(3000, '127.0.0.1', function( app ){
   console.log( 'request in ' + app.SERVER('url').href );
-  console.log( module );
-  app.res.end( 'Hello World.\n' );
+
+  app.sub( 'testEvent', function( data ){
+    app.res.writeHead(200, { 'Contet-type': 'text/plain' });
+    app.res.write( util.inspect( data ) );
+    app.res.end( 'Hello World.\n' );
+  });
+
+  setTimeout(app.pub( 'testEvent', { 'data':'data' } ), 2000);
 });

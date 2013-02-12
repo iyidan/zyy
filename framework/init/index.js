@@ -60,6 +60,24 @@ function Framework ( req, res )
 ////////////////////////////////////////
 
 /**
+ *  接收一个消息
+ *  @param {String} messageId 消息标识
+ *  @param {Function} handler 消息处理函数
+ */
+Framework.prototype.sub = function( messageId, handler ) {
+  this._emitter.on( messageId, handler);
+};
+
+/**
+ * 发布一个消息
+ * @param {String} messageId 消息标识
+ * @param {Mixed} data 传递给订阅者的数据
+ */
+Framework.prototype.pub = function( messageId, data ){
+  this._emitter.emit( messageId, data );
+};
+
+/**
  * SERVER 方法
  */
 Framework.prototype.SERVER = function ( key ) {
@@ -170,11 +188,6 @@ Framework.prototype.FILES = function( name ) {
   }
   return this._FILES[name];
 };
-
-/**
- * 包装emitter 
- */
-Framework.prototype.on
 
 ////////////////////////////////////////
 // Framework.prototype end
