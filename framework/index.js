@@ -12,6 +12,8 @@ exports.createServer = function ( config, callback ) {
     console.log( config );
     var port = config.PORT || 3000;
     var ip   = config.IP || '127.0.0.1';
+    console.log( port, ip );
+    return;
     return http.createServer(function(req, res){
       init(req, res, callback);
     }).listen(port, ip);
