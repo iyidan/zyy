@@ -6,7 +6,7 @@ server.createServer(3000, '127.0.0.1', function( app ){
 
   app.res.writeHead(200, { 'Contet-type': 'text/plain' });
   app.sub( 'testEvent', function( data ){
-    app.res.end( util.inspect( data ) );
+    app.res.end( util.inspect( app ) );
   });
   app.res.write( 'hello\n' );
   setTimeout( function(){
