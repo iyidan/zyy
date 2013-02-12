@@ -9,7 +9,7 @@ var server = server.createServer( config , function( app ){
   app.sub( 'testEvent', function( data ){
     console.log( 'testEvent\n' );
     app.res.write( data );
-    app.res.end( util.inspect( app, true, null ) );
+    app.res.end( util.inspect( app._config, true, null ) );
   });
 
   app.res.write( 'hello\n' );
