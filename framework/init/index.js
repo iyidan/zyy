@@ -240,7 +240,7 @@ function parse_FORM( app )
 {
   if ( app.SERVER('method') != 'POST' ) {
     console.log( '322222222222222222222');
-    app.pub( 'parse_post_ready', {
+    app.pub( 'parse_form_ready', {
       'err'    : null,
       'fields' : {},
       'files'  : {}
