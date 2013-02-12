@@ -21,9 +21,11 @@ var formidable = require( '../3rd/formidable' );
  */
 exports.init = function( req, res, callback ){
   var app = new Framework( req, res );
-  // 注册ready事件
+  // 注册ready
   init_READY( app );
+  if (typeof callback == 'function') app.sub('app.ready', callback);
 
+  // 开始初始化
   init_SERVER( app );
   init_GET( app );
   init_POST( app );
@@ -35,13 +37,6 @@ exports.init = function( req, res, callback ){
   init_CACHE( app );
 
   init_SESSION( app );
-  
-  if ( typeof callback == 'function' ) {
-    app.sub( 'app.ready', function(){
-      console.log( 'app.ready!' );
-      callback( app );
-    });
-  }
 };
 
 /**
@@ -228,9 +223,8 @@ function init_READY( app )
       if ( app._readyEvents.length == 0 ) return;
       var index = app._readyEvents.indexOf( messageId );
       app._readyEvents.splice( index, 1 );
-      console.log( 'ready:', messageId, '_readyEvents:', app._readyEvents );
       if ( app._readyEvents.length == 0 ) {
-        app.pub( 'app.ready' );
+        app.pub( 'app.ready', app );
       }
     });
   });
