@@ -63,9 +63,14 @@ function Framework ( req, res )
  *  接收一个消息
  *  @param {String} messageId 消息标识
  *  @param {Function} handler 消息处理函数
+ *  @param {Boolean} isOnce 只监听一次，默认true
  */
-Framework.prototype.sub = function( messageId, handler ) {
-  this._emitter.once( messageId, handler);
+Framework.prototype.sub = function( messageId, handler, isOnce ) {
+  if ( isOnce === false ) {
+    this._emitter.on( messageId, handler);
+  } else {
+    this._emitter.once( messageId, handler);  
+  }
 };
 
 /**
