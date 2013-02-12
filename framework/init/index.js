@@ -19,24 +19,26 @@ var formidable = require( '../3rd/formidable' );
  * @param  {Object} oriReq 原始的request
  * @return {Object} 包装后的request
  */
-exports.init = function( req, res ){
+exports.init = function( req, res, callback ){
   var app = new Framework( req, res );
-  parse_SERVER( app );
-  // GET
-  app._GET = app._SERVER.url.query;
+  // 注册ready事件
+  init_READY( app );
 
-  // parse_POST/FILES sub to  parse_form
-  parse_POST( app );
-  parse_FILES( app );
-  parse_FORM( app );
-
-  parse_COOKIE( app );
+  init_SERVER( app );
+  init_GET( app );
+  init_POST( app );
+  init_FILES( app );
+  init_FORM( app );
+  init_COOKIE( app );
 
   init_DB( app );
   init_CACHE( app );
 
-  parse_SESSION( app );
-  return app;
+  init_SESSION( app );
+  
+  app.sub( 'app.ready', function(){
+    callback( app );
+  });
 };
 
 /**
@@ -58,6 +60,15 @@ function Framework ( req, res )
   // 设置单个事件最多50个监听器，默认为10个
   this._emitter    = new EventEmitter();
   this._emitter.setMaxListeners(50);
+
+  // 设置ready条件满足需要监听的事件
+  this._readyEvents = [
+    'app.post.ready',
+    'app.session.ready',
+    'app.db.ready',
+    'app.cache.ready',
+    'app.files.ready'
+  ];
 }
 
 ////////////////////////////////////////
@@ -204,10 +215,28 @@ Framework.prototype.FILES = function( name ) {
 ////////////////////////////////////////
 
 /**
+ * 注册框架加载完毕后的事件
+ */
+function init_READY( app )
+{
+  app._readyEvents.forEach(function( messageId ){
+    app.sub( messageId, function(){
+      // 防止其他地方触发相同的事件
+      if ( app._readyEvents.length == 0 ) return;
+      var index = app._readyEvents.indexOf( messageId );
+      app._readyEvents.splice( index, 1 );
+      if ( app._readyEvents.length == 0 ) {
+        app.pub( 'app.ready' );
+      }
+    });
+  });
+}
+
+/**
  * 解析url
  * @param {Object} req 由 Request构造产生的
  */
-function parse_URL( req )
+function init_URL( req )
 {
   var urlStr = req.url;
   // 解析 query 为 obj
@@ -221,10 +250,10 @@ function parse_URL( req )
  * request.headers
 request.trailers
  */
-function parse_SERVER( app )
+function init_SERVER( app )
 {
   app._SERVER = {
-    'url'         : parse_URL( app.req ),
+    'url'         : init_URL( app.req ),
     'httpVersion' : app.req.httpVersion,
     'headers'     : app.req.headers,
     'trailers'    : app.req.trailers,
@@ -236,11 +265,10 @@ function parse_SERVER( app )
  * 解析FORM数据
  * @param {Object} req 由 Request构造产生的
  */
-function parse_FORM( app )
+function init_FORM( app )
 {
   if ( app.SERVER('method') != 'POST' ) {
-    console.log( '322222222222222222222');
-    app.pub( 'parse_form_ready', {
+    app.pub( 'init_form_ready', {
       'err'    : null,
       'fields' : {},
       'files'  : {}
@@ -250,11 +278,10 @@ function parse_FORM( app )
   var form = new formidable.IncomingForm();
   // handle error event
   form.on( 'error', function(){
-    app.pub( 'error', 'init.method [Function parse_FORM] error.' );
+    app.pub( 'error', 'init.method [Function init_FORM] error.' );
   });
   form.parse( app.req, function(err, fields, files) {
-    console.log( fields, files );
-    app.pub( 'parse_form_ready', {
+    app.pub( 'init_form_ready', {
       'err'    : err,
       'fields' : fields,
       'files'  : files
@@ -266,10 +293,10 @@ function parse_FORM( app )
 /**
  * 解析post
  */
-function parse_POST( app ) {
-  app.sub( 'parse_form_ready', function( data ){
+function init_POST( app ) {
+  app.sub( 'init_form_ready', function( data ){
     app._POST = data.fields;
-    console.log( 'parse_POST:', app );
+    app.pub( 'app.post.ready' );
   });
 }
 
@@ -277,11 +304,11 @@ function parse_POST( app ) {
  * 解析files
  * @param {Object} req 由 Request构造产生的
  */
-function parse_FILES( app )
+function init_FILES( app )
 {
-  app.sub( 'parse_form_ready', function( data ){
+  app.sub( 'init_form_ready', function( data ){
     app._FILES = data.files;
-    console.log( 'parse_FILES:', app );
+    app.pub( 'app.files.ready' );
   });
 }
 
@@ -289,36 +316,32 @@ function parse_FILES( app )
  * 解析cookie
  * @param {Object} req 由 Request构造产生的
  */
-function parse_COOKIE( app )
+function init_COOKIE( app )
 {
-  var cookie = {};
-  // @todo
-  return cookie;
+  
 }
 
 /**
  * 解析session
  * @param {Object} req 由 Request构造产生的
  */
-function parse_SESSION( app )
+function init_SESSION( app )
 {
-  var session = {};
-  // @todo
-  return session;
+  app.pub( 'app.session.ready' );
 }
 
 /**
  * init DB
  */
-function init_DB( )
+function init_DB( app )
 {
-
+  app.pub( 'app.db.ready' );
 }
 
 /**
  * init Cache
  */
-function init_CACHE(  )
+function init_CACHE( app )
 {
-
+  app.pub( 'app.cache.ready' );
 }
