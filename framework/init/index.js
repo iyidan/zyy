@@ -36,9 +36,12 @@ exports.init = function( req, res, callback ){
 
   init_SESSION( app );
   
-  app.sub( 'app.ready', function(){
-    callback( app );
-  });
+  if ( typeof callback == 'function' ) {
+    app.sub( 'app.ready', function(){
+      console.log( 'app.ready!' );
+      callback( app );
+    });
+  }
 };
 
 /**
