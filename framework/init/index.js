@@ -65,7 +65,7 @@ function Framework ( req, res )
  *  @param {Function} handler 消息处理函数
  */
 Framework.prototype.sub = function( messageId, handler ) {
-  this._emitter.on( messageId, handler);
+  this._emitter.once( messageId, handler);
 };
 
 /**
