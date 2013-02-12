@@ -269,6 +269,7 @@ function parse_FORM( app )
 function parse_POST( app ) {
   app.sub( 'parse_form_ready', function( data ){
     app._POST = data.fields;
+    console.log( 'parse_POST:', app );
   });
 }
 
@@ -280,6 +281,7 @@ function parse_FILES( app )
 {
   app.sub( 'parse_form_ready', function( data ){
     app._FILES = data.files;
+    console.log( 'parse_FILES:', app );
   });
 }
 
