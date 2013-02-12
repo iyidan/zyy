@@ -10,7 +10,6 @@ var init  = require( './init' ).init;
  */
 exports.createServer = function ( config, callback ) {
     console.log( config );
-    return;
     var port = config.PORT || 3000;
     var ip   = config.IP || '127.0.0.1';
     return http.createServer(function(req, res){
