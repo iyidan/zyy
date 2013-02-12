@@ -10,5 +10,7 @@ server.createServer(3000, '127.0.0.1', function( app ){
     app.res.end( 'Hello World.\n' );
   });
 
-  setTimeout(app.pub( 'testEvent', { 'data':'data' } ), 10000);
+  setTimeout(function(){
+    app.pub( 'testEvent', { 'data':'data' } );
+  }, 10000);
 });
