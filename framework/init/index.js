@@ -282,6 +282,7 @@ function parse_FILES( app )
 {
   app.sub( 'parse_form_ready', function( data ){
     app._FILES = data.files;
+    app.pub( 'end' );
   });
 }
 

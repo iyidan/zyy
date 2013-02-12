@@ -6,8 +6,10 @@ server.createServer(3000, '127.0.0.1', function( app ){
 
   app.res.writeHead(200, { 'Contet-type': 'text/plain' });
   app.sub( 'testEvent', function( data ){
-    app.res.end( data.toString() );
+    app.res.end( util.inspect( data ) );
   });
   app.res.write( 'hello\n' );
-  app.pub('testEvent', 'world.');
+  app.sub( 'end', function() {
+    app.pub('testEvent', 'world.');
+  });
 });
