@@ -20,9 +20,6 @@ var formidable = require( '../3rd/formidable' );
  * @return {Object} 包装后的request
  */
 exports.init = function( req, res ){
-  console.log( 'in init module:' );
-  console.log( module );
-  console.log( 'in init module end.' );
   var app = new Framework( req, res );
   return app;
 };
