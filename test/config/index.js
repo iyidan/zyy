@@ -6,7 +6,7 @@ var CONFIG_PATH  = __dirname;
 var ROOT_PATH    = CONFIG_PATH.slice(0, -7);
 var FW_PATH      = '/data/www/zyy/framework';
 
-exports = {
+exports.config = {
   // 项目名称
   'PROJECT_NAME': 'test',
   // 监听ip

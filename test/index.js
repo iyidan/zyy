@@ -1,4 +1,4 @@
-var config = require( './config' );
+var config = require( './config' ).config;
 console.log( config );
 return;
 var server = require( config.FW_PATH );
