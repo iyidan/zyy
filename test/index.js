@@ -1,7 +1,8 @@
-var server = require( '../framework/index.js' );
+var config = require( './config' );
+var server = require( config.FW_PATH );
 var util   = require( 'util' );
 
-server.createServer(3000, '127.0.0.1', function( app ){
+var server = server.createServer( config , function( app ){
   console.log( 'request in ' + app.SERVER('url').href );
   app.res.writeHead(200, { 'Contet-type': 'text/plain' });
 
@@ -10,7 +11,7 @@ server.createServer(3000, '127.0.0.1', function( app ){
     app.res.write( data );
     app.res.end( util.inspect( app ) );
   });
-  
+
   app.res.write( 'hello\n' );
   app.pub('testEvent', 'world.');
 });

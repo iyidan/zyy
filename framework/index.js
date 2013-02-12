@@ -8,10 +8,10 @@ var init  = require( './init' ).init;
  * @param {Function} callback  请求被初始化后调用的函数
  * @return {Object} 返回有http.createServer 生成的server实例
  */
-exports.createServer = function ( port, ip, callback ) {
-    var port = port || 3000;
-    var ip   = ip || '127.0.0.1';
+exports.createServer = function ( config, callback ) {
+    var port = config.PORT || 3000;
+    var ip   = config.IP || '127.0.0.1';
     return http.createServer(function(req, res){
-      var app = init(req, res, callback);
+      init(req, res, callback);
     }).listen(port, ip);
 };
