@@ -9,7 +9,9 @@ server.createServer(3000, '127.0.0.1', function( app ){
     app.res.end( util.inspect( data ) );
   });
   app.res.write( 'hello\n' );
-  app.sub( 'end', function() {
-    app.pub('testEvent', 'world.');
+  app.sub( 'parse_form_ready', function() {
+    setTimeout( function(){
+      app.pub('testEvent', 'world.');
+    } ,0);
   });
 });
