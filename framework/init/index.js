@@ -10,6 +10,8 @@ var cache   = require( '../cache' );
 var cookie  = require( '../cookie' );
 var session = require( '../session' );
 
+var formidable = require( '../3rd/formidable' );
+
 
 
 /**
@@ -40,13 +42,20 @@ function Framework ( req, res )
 
   this._SERVER    = parse_SERVER( req );
   this._GET       = this._SERVER.url.query;
-  this._POST      = parse_POST( req );
-  this._COOKIE    = parse_COOKIE( req );
-  this._SESSION   = parse_SESSION( req );
-  this._FILES     = parse_FILES( req );
-  this.db         = init_DB( this );
-  this.cache      = init_CACHE( this );
 
+  // parse_POST/FILES sub to  parse_form
+  parse_POST( this );
+  parse_FILES( this );
+  parse_FORM( this );
+
+  this._COOKIE    = parse_COOKIE( this );
+  this._SESSION   = parse_SESSION( this );
+
+  init_DB( this );
+  init_CACHE( this );
+
+  // http method GET POST ... 
+  this.method = this.req.method;
   //请求开始毫秒数
   try {
     this.startTime = req.socket.server._idleStart.getTime();  
@@ -230,25 +239,54 @@ function parse_SERVER( req )
 }
 
 /**
- * 解析POST数据
+ * 解析FORM数据
  * @param {Object} req 由 Request构造产生的
  */
-function parse_POST( req )
+function parse_FORM( app )
 {
-  var post = {};
-  // @todo
-  return post;
+  console.log ( 'app.method:' app.method );
+  if ( app.method != 'POST' ) {
+    app.pub( 'parse_post_ready', {
+      'err'    : null,
+      'fields' : {},
+      'files'  : {}
+    });
+    return false;
+  }
+  var form = new formidable.IncomingForm();
+  // handle error event
+  form.on( 'error', function(){
+    app.pub( 'error', 'init.method [Function parse_FORM] error.' );
+  });
+  form.parse( app.req, function(err, fields, files) {
+    console.log( fields, files );
+    app.pub( 'parse_form_ready', {
+      'err'    : err,
+      'fields' : fields,
+      'files'  : files
+    });
+  });
+  return true;
+}
+
+/**
+ * 解析post
+ */
+function parse_POST( app ) {
+  app.sub( 'parse_form_ready', function( data ){
+    app._POST = data.fields;
+  });
 }
 
 /**
  * 解析files
  * @param {Object} req 由 Request构造产生的
  */
-function parse_FILES( req )
+function parse_FILES( app )
 {
-  var files = {};
-  // @todo
-  return files;
+  app.sub( 'parse_form_ready', function( data ){
+    app._FILES = data.files;
+  });
 }
 
 /**
