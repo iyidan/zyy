@@ -38,6 +38,12 @@ exports.init = function( req, res, callback ){
 
   init_SESSION( app );
 };
+/**
+ * 项目配置项，在createServer时候赋值
+ * @config {Object}
+ */
+exports.init.config = {};
+
 
 /**
  * 构造Request
@@ -47,7 +53,6 @@ function Framework ( req, res )
   // 引用原始响应请求
   this.req = req;
   this.res = res;
-
   //请求开始毫秒数
   try {
     this.startTime = req.socket.server._idleStart.getTime();  
@@ -58,20 +63,28 @@ function Framework ( req, res )
   // 设置单个事件最多50个监听器，默认为10个
   this._emitter    = new EventEmitter();
   this._emitter.setMaxListeners(50);
-
-  // 设置ready条件满足需要监听的事件
-  this._readyEvents = [
-    'app.post.ready',
-    'app.session.ready',
-    'app.db.ready',
-    'app.cache.ready',
-    'app.files.ready'
-  ];
 }
 
 ////////////////////////////////////////
 // Framework.prototype start
 ////////////////////////////////////////
+
+/**
+ * 项目配置
+ * @config {Object}
+ */
+Framework.prototype.config = exports.init.config;
+
+/**
+ * app.ready的前置事件
+ */
+Framework.prototype._readyEvents = [
+  'app.post.ready',
+  'app.session.ready',
+  'app.db.ready',
+  'app.cache.ready',
+  'app.files.ready'
+];
 
 /**
  *  接收一个消息

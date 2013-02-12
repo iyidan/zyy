@@ -9,9 +9,10 @@ var init  = require( './init' ).init;
  * @return {Object} 返回有http.createServer 生成的server实例
  */
 exports.createServer = function ( config, callback ) {
-    console.log( config );
     var port = config.PORT || 3000;
     var ip   = config.IP || '127.0.0.1';
+    // 一次调用
+    init.config = config;
     return http.createServer(function(req, res){
       init(req, res, callback);
     }).listen(port, ip);
