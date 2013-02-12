@@ -63,6 +63,15 @@ function Framework ( req, res )
   // 设置单个事件最多50个监听器，默认为10个
   this._emitter    = new EventEmitter();
   this._emitter.setMaxListeners(50);
+
+  // app.ready的前置事件，不能放在原型上，会被上次的覆盖
+  this._readyEvents = [
+    'app.post.ready',
+    'app.session.ready',
+    'app.db.ready',
+    'app.cache.ready',
+    'app.files.ready'
+  ];
 }
 
 ////////////////////////////////////////
@@ -74,17 +83,6 @@ function Framework ( req, res )
  * @config {Object}
  */
 Framework.prototype.config = exports.init.config;
-
-/**
- * app.ready的前置事件
- */
-Framework.prototype._readyEvents = [
-  'app.post.ready',
-  'app.session.ready',
-  'app.db.ready',
-  'app.cache.ready',
-  'app.files.ready'
-];
 
 /**
  *  接收一个消息
