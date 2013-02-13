@@ -489,7 +489,7 @@ function sub (app, messageIds, messageId, handler, isOnce ) {
   }
   if(needSub) {
     // this指向
-    emitFn.apply(app._emitter, handler);
+    emitFn.call(app._emitter, messageId, handler);
   }
 }
 
