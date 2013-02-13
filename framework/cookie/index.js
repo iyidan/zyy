@@ -122,6 +122,8 @@ module.exports = {
     date.setTime(date.getTime() + opt.expires*1000 );
     opt.expires = date.toUTCString();
     
+    console.log( opt, date );
+
     var cookieStr = this.serialize(this.sign(key, secret), this.sign(val, secret), opt);
     if ( app._setCookies === undefined ) app._setCookies = [];
     app._setCookies.push(cookieStr);
