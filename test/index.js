@@ -11,5 +11,5 @@ var server = server.createServer( config , function( app ){
   app.pub('testEvent', 'world.');
   app.pub('testEvent1', 'data1');
   app.pub('testEvent2', 'data2');
-  app.pub('testEvent3', 'data3');
+  app.pub('testEvent2', 'data3');
 });
