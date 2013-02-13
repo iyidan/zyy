@@ -479,7 +479,7 @@ function sub (app, messageIds, messageId, handler, isOnce ) {
     };
   }
 
-  console.log( app, emitFn );
+  console.log( app, messageIds );
 
   // 自动触发已经发布过的消息
   var needSub = true;
