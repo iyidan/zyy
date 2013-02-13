@@ -164,8 +164,9 @@ Framework.prototype.sub = function( messageId, handler, isOnce ) {
     handler = null;
   }
 
+  var app = this;
   messageIds.forEach(function(v, k){
-    sub(this, messageIdsKey, v, handler, isOnce);
+    sub(app, messageIdsKey, v, handler, isOnce);
   });
 };
 
