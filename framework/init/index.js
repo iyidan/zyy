@@ -109,11 +109,6 @@ function Framework ( req, res, config )
  */
 Framework.prototype.sub = function( messageId, handler, isOnce ) {
   // 检查事件有没有被触发过
-  if ( messageId == 'init.post.ready' ) {
-    console.log( '#############################' );
-    console.log( this._publishedEvent );
-    console.log( '#############################' );
-  }
   var published = false;
   if ( this._publishedEvent[messageId]  !== undefined) {
     published = true;
@@ -127,7 +122,6 @@ Framework.prototype.sub = function( messageId, handler, isOnce ) {
   else if ( !published ) {
     this._emitter.once( messageId, handler);  
   }
-  console.log( 'sub: ', messageId );
 };
 
 /**
@@ -137,8 +131,8 @@ Framework.prototype.sub = function( messageId, handler, isOnce ) {
  */
 Framework.prototype.pub = function( messageId, data ){
   // 记入到_publishedEvent
+  data = data || null;
   this._publishedEvent[messageId] = data;
-  console.log( 'pub: ', messageId );
   this._emitter.emit( messageId, data );
 };
 
