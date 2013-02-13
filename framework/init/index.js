@@ -109,6 +109,11 @@ function Framework ( req, res, config )
  */
 Framework.prototype.sub = function( messageId, handler, isOnce ) {
   // 检查事件有没有被触发过
+  if ( messageId == 'init.post.ready' ) {
+    console.log( '#############################' );
+    console.log( this._publishedEvent );
+    console.log( '#############################' );
+  }
   var published = false;
   if ( this._publishedEvent[messageId]  !== undefined) {
     published = true;
