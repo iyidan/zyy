@@ -118,7 +118,7 @@ function Framework ( req, res, config )
  *    app.sub([messageId1, [messageId2, [messageId3, [...]]]], handler, isOnce);
  *      handler = function( dataList ){ dataList[0] ... }
  */
-Framework.prototype.sub = function( messageId, handler, isOnce ) {
+Framework.prototype.sub = function() {
   if ( arguments.length < 2 ) {
     this.pub( 'error', { 'file': __filename, 'err': 'prototype.sub arguments.length < 2.' });
     return;
