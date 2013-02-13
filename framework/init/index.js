@@ -3,6 +3,7 @@
  */
 var url     = require( 'url' );
 var EventEmitter = require( 'events' ).EventEmitter;
+var crypto = require('crypto');
 var util = require( 'util' );
 
 var core  = require('../core');
@@ -199,17 +200,16 @@ Framework.prototype.REQUEST = function( key, def ) {
 /**
  * COOKIE
  * 如果有val，则设置cookie
- * @param {String} key cookie的键
- * @param {String} val 要设置的值
- * @param {Object} 配置信息：
- *  if (opt.maxAge) pairs.push('Max-Age=' + opt.maxAge);
- *  if (opt.domain) pairs.push('Domain=' + opt.domain);
- *  if (opt.path) pairs.push('Path=' + opt.path);
- *  if (opt.expires) pairs.push('Expires=' + opt.expires);
- *  if (opt.httpOnly) pairs.push('HttpOnly');
- *  if (opt.secure) pairs.push('Secure');
+ * @param {String}  key cookie的键
+ * @param {String}  val 要设置的值
+ * @param {Number}  expires 过期时间，单位秒(s)，不设置则为配置中的过期时间
+ * @param {Boolean} needSign 是否需要加密验证，默认不加密
+ * @param {String} path cookie有效域，默认配置中的域
+ * @param {String} domain cookie有效文档域
+ * @param {Boolean} secure 是否是安全（https）下的cookie，默认false
+ * @param {Boolean} httpOnly 是否仅在http下有效 默认false
  */
-Framework.prototype.COOKIE = function( key, val, expires, path, domain, secure, httpOnly) {
+Framework.prototype.COOKIE = function( key, val, expires, needSign, path, domain, secure, httpOnly) {
   if ( !key ) return undefined;
   if ( val === undefined ) {
     return this._COOKIE[key];
@@ -222,8 +222,37 @@ Framework.prototype.COOKIE = function( key, val, expires, path, domain, secure, 
   opt.secure   = secure || false;
   opt.httpOnly = httpOnly || false;
 
+  if ( needSign ) {
+    val = this.COOKIE.sign( val, this.config.COOKIE.secret );
+  }
+
   // 设置cookie
   cookie.setCookie( this, key, val, opt );
+};
+
+/**
+ * 生成cookie加密值字符串，防止被篡改
+ * @param {String} val 需要加密的字符串
+ * @param {String} secret 密钥
+ * @return {String} 
+ */
+Framework.prototype.COOKIE.sign = function( val, secretKey ) {
+  return val + '.' + crypto
+    .createHmac('sha256', secretKey)
+    .update(val)
+    .digest('base64')
+    .replace(/\=+$/, '');
+};
+
+/**
+ * 反解cookie加密后的值
+ * @param {String} val 需要加密的字符串
+ * @param {String} secret 密钥
+ * @return {Boolean|String} 如果没被篡改，返回值否则返回false
+ */
+Framework.prototype.COOKIE.unsign = function( val, secretKey ) {
+  var str = val.slice(0, val.lastIndexOf('.'));
+  return this.sign(str, secretKey) === val ? str : false;
 };
 
 /**
