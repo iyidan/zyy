@@ -25,7 +25,7 @@ exports.init = function( req, res, config, callback ){
   var app = new Framework( req, res, config );
   // 注册ready
   init_READY( app );
-  if (typeof callback == 'function') app.sub('app.ready', callback);
+  if (typeof callback == 'function') app.sub('init.app.ready', callback);
 
   // 注册error
   app.sub( 'error', function( err ){
@@ -86,13 +86,15 @@ function Framework ( req, res, config )
 
   // app.ready的前置事件，不能放在原型上，会被上次的覆盖
   this._readyEvents = [
-    'app.post.ready',
-    'app.session.ready',
-    'app.db.ready',
-    'app.cache.ready',
-    'app.files.ready',
-    'app.cookie.ready'
+    'init.post.ready',
+    'init.session.ready',
+    'init.db.ready',
+    'init.cache.ready',
+    'init.files.ready',
+    'init.cookie.ready'
   ];
+  // 已经发布的event
+  this._publishedEvent = {};
 }
 
 ////////////////////////////////////////
@@ -100,15 +102,24 @@ function Framework ( req, res, config )
 ////////////////////////////////////////
 
 /**
- *  接收一个消息
+ *  接收并处理一个消息，注意，handler不能是耗时很多的阻塞操作，若此种情况，可拆分多个
  *  @param {String} messageId 消息标识
  *  @param {Function} handler 消息处理函数
  *  @param {Boolean} isOnce 只监听一次，默认true
  */
 Framework.prototype.sub = function( messageId, handler, isOnce ) {
+  // 检查事件有没有被触发过
+  var published = false;
+  if ( this._publishedEvent[messageId]  !== undefined) {
+    published = true;
+    handler( this._publishedEvent[messageId] );
+  }
+  // 如果不止监听一次，则继续监听
   if ( isOnce === false ) {
     this._emitter.on( messageId, handler);
-  } else {
+  }
+  // 如果没有发布，则继续监听
+  else if ( !published ) {
     this._emitter.once( messageId, handler);  
   }
 };
@@ -119,6 +130,8 @@ Framework.prototype.sub = function( messageId, handler, isOnce ) {
  * @param {Mixed} data 传递给订阅者的数据
  */
 Framework.prototype.pub = function( messageId, data ){
+  // 记入到_publishedEvent
+  this._publishedEvent[messageId] = data;
   this._emitter.emit( messageId, data );
 };
 
@@ -380,7 +393,7 @@ function init_READY( app )
       var index = app._readyEvents.indexOf( messageId );
       app._readyEvents.splice( index, 1 );
       if ( app._readyEvents.length == 0 ) {
-        app.pub( 'app.ready', app );
+        app.pub( 'init.app.ready', app );
       }
     });
   });
@@ -461,7 +474,7 @@ function init_FORM( app )
 function init_POST( app ) {
   app.sub( 'app.form.parse.ready', function( data ){
     app._POST = data.fields;
-    app.pub( 'app.post.ready' );
+    app.pub( 'init.post.ready' );
   });
 }
 
@@ -473,7 +486,7 @@ function init_FILES( app )
 {
   app.sub( 'app.form.parse.ready', function( data ){
     app._FILES = data.files;
-    app.pub( 'app.files.ready' );
+    app.pub( 'init.files.ready' );
   });
 }
 
@@ -487,17 +500,17 @@ function init_COOKIE( app )
   cookie.parse(app);
   // 是否解析post中的数据
   if ( !app.config.COOKIE.post_prefix ) {
-    app.pub( 'app.cookie.ready' );
+    app.pub( 'init.cookie.ready' );
   } else {
     var prefix = app.config.COOKIE.post_prefix;
-    app.sub( 'app.post.ready', function(){
+    app.sub( 'init.post.ready', function(){
       console.log(app._POST);
       for ( var i in app._POST ) {
         if ( i.indexOf( prefix ) != -1 ) {
           app._COOKIE[i] = app._POST[i].trim();
         }
       }
-      app.pub( 'app.cookie.ready' );
+      app.pub( 'init.cookie.ready' );
     });
   }
 }
@@ -508,7 +521,7 @@ function init_COOKIE( app )
  */
 function init_SESSION( app )
 {
-  app.pub( 'app.session.ready' );
+  app.pub( 'init.session.ready' );
 }
 
 /**
@@ -516,7 +529,7 @@ function init_SESSION( app )
  */
 function init_DB( app )
 {
-  app.pub( 'app.db.ready' );
+  app.pub( 'init.db.ready' );
 }
 
 /**
@@ -524,5 +537,5 @@ function init_DB( app )
  */
 function init_CACHE( app )
 {
-  app.pub( 'app.cache.ready' );
+  app.pub( 'init.cache.ready' );
 }
