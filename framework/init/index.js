@@ -123,7 +123,7 @@ Framework.prototype.sub = function( messageId, handler, isOnce ) {
     this.pub( 'error', { 'file': __filename, 'err': 'prototype.sub arguments.length < 2.' });
     return;
   }
-  
+
   var isMultiSub    = false;
   var messageIds    = [];
   var messageIdsKey = '';
@@ -143,13 +143,13 @@ Framework.prototype.sub = function( messageId, handler, isOnce ) {
     isMultiSub = arguments.length > 3 ? true : false;
   }
 
+  for ( var i = 0; i < arguments.length; i ++ ) {
+    if ( typeof arguments[i] == 'string' ) {
+      messageIds.push( arguments[i] );
+    }
+  }
   // 如果是多个消息订阅
   if ( isMultiSub ) {
-    for ( var i = 0; i < arguments.length; i ++ ) {
-      if ( typeof arguments[i] == 'string' ) {
-        messageIds.push( arguments[i] );
-      }
-    }
     messageIdsKey = messageIds.join(',');
     if ( this._multiSubHandler[messageIdsKey] === undefined ) {
       this._multiSubList[messageIdsKey] = {
@@ -163,6 +163,7 @@ Framework.prototype.sub = function( messageId, handler, isOnce ) {
     }
     handler = null;
   }
+
   messageIds.forEach(function(v, k){
     sub(this, messageIdsKey, v, handler, isOnce);
   });
