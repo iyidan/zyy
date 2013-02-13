@@ -479,6 +479,8 @@ function sub (app, messageIds, messageId, handler, isOnce ) {
     };
   }
 
+  console.log( app, emitFn );
+
   // 自动触发已经发布过的消息
   var needSub = true;
   if ( app._publishedMessages[messageId]  !== undefined) {
