@@ -93,7 +93,8 @@ function Framework ( req, res,config )
     'app.session.ready',
     'app.db.ready',
     'app.cache.ready',
-    'app.files.ready'
+    'app.files.ready',
+    'app.cookie.ready'
   ];
 }
 
@@ -432,7 +433,7 @@ function init_GET( app )
 function init_FORM( app )
 {
   if ( app.SERVER('method') != 'POST' ) {
-    app.pub( 'init_form_ready', {
+    app.pub( 'app.form.parse.ready', {
       'err'    : null,
       'fields' : {},
       'files'  : {}
@@ -448,7 +449,7 @@ function init_FORM( app )
     });
   });
   form.parse( app.req, function(err, fields, files) {
-    app.pub( 'init_form_ready', {
+    app.pub( 'app.form.parse.ready', {
       'err'    : err,
       'fields' : fields,
       'files'  : files
@@ -461,7 +462,7 @@ function init_FORM( app )
  * 解析post
  */
 function init_POST( app ) {
-  app.sub( 'init_form_ready', function( data ){
+  app.sub( 'app.form.parse.ready', function( data ){
     app._POST = data.fields;
     app.pub( 'app.post.ready' );
   });
@@ -473,7 +474,7 @@ function init_POST( app ) {
  */
 function init_FILES( app )
 {
-  app.sub( 'init_form_ready', function( data ){
+  app.sub( 'app.form.parse.ready', function( data ){
     app._FILES = data.files;
     app.pub( 'app.files.ready' );
   });
@@ -487,6 +488,21 @@ function init_COOKIE( app )
 {
   // 解析cookie
   cookie.parse(app);
+  // 是否解析post中的数据
+  if ( !app.config.COOKIE.post_prefix ) {
+    app.pub( 'app.cookie.ready' );
+  } else {
+    var prefix = app.config.COOKIE.post_prefix;
+    app.sub( 'app.post.ready', function(){
+      console.log(app._POST);
+      for ( var i in app._POST ) {
+        if ( i.indexOf( prefix ) != -1 ) {
+          app._COOKIE[i] = app._POST[i].trim();
+        }
+      }
+      app.pub( 'app.cookie.ready' );
+    });
+  }
 }
 
 /**
