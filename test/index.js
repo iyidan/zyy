@@ -6,16 +6,16 @@ var server = server.createServer( config , function( app ){
   app.writeHead(200, { 'Content-Type':'text/html' });
   app.sub( 'testEvent1', 'testEvent2', 'testEvent3', function( dataList ){
     console.log( dataList );
-    app.write( util.inspect( app._multiSubList, true, null ) );
-    app.write( util.inspect( app._publishedMessages, true, null ) );
+    app.write( util.inspect( app._multiSubList) );
+    app.write( util.inspect( app._publishedMessages) );
     app.write('<hr/><hr/>');
     app.pub('testevents.ready');
   });
 
   app.sub( 'Event1', 'Event2', 'Event3', function( dataList ){
     console.log( dataList );
-    app.write( util.inspect( app._multiSubList, true, null ) );
-    app.write( util.inspect( app._publishedMessages, true, null ) );
+    app.write( util.inspect( app._multiSubList) );
+    app.write( util.inspect( app._publishedMessages) );
     app.write('<hr/><hr/>');
     app.pub('events.ready');
   });
