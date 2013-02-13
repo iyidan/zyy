@@ -3,7 +3,7 @@ var server = require( config.FW_PATH );
 var util   = require( 'util' );
 
 var server = server.createServer( config , function( app ){
-  app.sub( 'testEvent1', 'testEvent2', 'testEvent3' function( dataList ){
+  app.sub( 'testEvent1', 'testEvent2', 'testEvent3', function( dataList ){
     app.end( util.inspect( dataList ) );
   });
 
