@@ -117,6 +117,8 @@ module.exports = {
       return;
     }
 
+    console.log( opt);
+
     var secret = app.config.COOKIE.secret;
     var date = new Date();
     date.setTime(date.getTime() + opt.expires*1000 );
