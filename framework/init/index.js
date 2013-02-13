@@ -293,7 +293,8 @@ function init_FORM( app )
   var form = new formidable.IncomingForm();
   // handle error event
   form.on( 'error', function(){
-    app.pub( 'error', 'init.method [Function init_FORM] error.' );
+    console.log( arguments );
+    //app.pub( 'error', 'init.method [Function init_FORM] error.' );
   });
   form.parse( app.req, function(err, fields, files) {
     app.pub( 'init_form_ready', {
