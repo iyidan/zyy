@@ -328,7 +328,9 @@ Framework.prototype.addTrailers = function(){
  */
 Framework.prototype.end = function(){
   // 设置cookie
-  this.res.setHeader('Set-Cookie', this._setCookies);
+  if ( this._setCookies && this._setCookies.length ) {
+    this.res.setHeader('Set-Cookie', this._setCookies);
+  }
   this.res.end.apply(this.res, arguments);
 };
 
