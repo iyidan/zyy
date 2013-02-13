@@ -24,7 +24,7 @@ exports.config = {
   // COOKIE配置
   'COOKIE': {
     // 加密cookie所用的key
-    'cookieSecret': 'adfawesagwaenafiwengaljfdikngalefjaiDSAFNFKFFngweFfngewadFgDE',
+    'secret': 'adfawesagwaenafiwengaljfdikngalefjaiDSAFNFKFFngweFfngewadFgDE',
     // cookie有效域名
     'domain': '',
     // 有效路径
