@@ -331,6 +331,9 @@ Framework.prototype.end = function(){
   if ( this._setCookies && this._setCookies.length ) {
     this.res.setHeader('Set-Cookie', this._setCookies);
   }
+  if ( !this.res.statusCode ) {
+    this.setStatusCode(200);
+  }
   this.res.end.apply(this.res, arguments);
 };
 
