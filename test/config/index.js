@@ -21,6 +21,17 @@ exports.config = {
   'ROOT_PATH': ROOT_PATH,
   // 框架路径
   'FW_PATH': FW_PATH,
+  // COOKIE配置
+  'COOKIE': {
+    // 加密cookie所用的key
+    'cookieSecret': 'adfawesagwaenafiwengaljfdikngalefjaiDSAFNFKFFngweFfngewadFgDE',
+    // cookie有效域名
+    'domain': '',
+    // 有效路径
+    'path': '/',
+    // 过期时间：秒(s)
+    'expires': 3600*24*30
+  },
   // db连接信息
   'DB': {
 

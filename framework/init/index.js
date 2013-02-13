@@ -35,8 +35,8 @@ exports.init = function( req, res, config, callback ){
       app.setStatusCode(500);
       app.end('');
     }
-  });
-  
+  }, false);
+
   // 注册close事件
   app.res.on( 'close', function(){
     app.setStatusCode(500);
@@ -127,9 +127,6 @@ Framework.prototype.pub = function( messageId, data ){
  * SERVER 方法
  */
 Framework.prototype.SERVER = function ( key ) {
-  if ( !key || typeof key != 'string' ) {
-    throw new TypeError( __filename + ' in [Method GET], param key is not a string.' );
-  }
   return this._SERVER[key];
 };
 
@@ -139,9 +136,7 @@ Framework.prototype.SERVER = function ( key ) {
  * @param {Mixed} def 默认值
  */
 Framework.prototype.GET = function ( key, def ) {
-  if ( !key || typeof key != 'string' ) {
-    throw new TypeError( __filename + ' in [Method GET], param key is not a string.' );
-  }
+  if ( !key ) return undefined;
   // 默认
   if ( def === undefined ) {
     return this._GET[key];
@@ -168,9 +163,7 @@ Framework.prototype.GET = function ( key, def ) {
  * @param {Mixed} def 默认值
  */
 Framework.prototype.POST = function ( key, def ) {
-  if ( !key || typeof key != 'string' ) {
-    throw new TypeError( __filename + ' in [Method POST], param key is not a string.' );
-  }
+  if ( !key ) return undefined;
   // 默认
   if ( def === undefined ) {
     return this._POST[key];
@@ -195,9 +188,7 @@ Framework.prototype.POST = function ( key, def ) {
  * REQUEST
  */
 Framework.prototype.REQUEST = function( key, def ) {
-  if ( !key || typeof key != 'string' ) {
-    throw new TypeError( __filename + ' in [Method REQUEST], param key is not a string.' );
-  }
+  if ( !key ) return undefined;
   var getVal = this._GET[key];
   if ( getVal !== undefined ) {
     return this.GET( key, def );
@@ -207,21 +198,39 @@ Framework.prototype.REQUEST = function( key, def ) {
 
 /**
  * COOKIE
+ * 如果有val，则设置cookie
+ * @param {String} key cookie的键
+ * @param {String} val 要设置的值
+ * @param {Object} 配置信息：
+ *  if (opt.maxAge) pairs.push('Max-Age=' + opt.maxAge);
+ *  if (opt.domain) pairs.push('Domain=' + opt.domain);
+ *  if (opt.path) pairs.push('Path=' + opt.path);
+ *  if (opt.expires) pairs.push('Expires=' + opt.expires);
+ *  if (opt.httpOnly) pairs.push('HttpOnly');
+ *  if (opt.secure) pairs.push('Secure');
  */
-Framework.prototype.COOKIE = function( key ) {
-  if ( !key || typeof key != 'string' ) {
-    throw new TypeError( __filename + ' in [Method COOKIE], param key is not a string.' );
+Framework.prototype.COOKIE = function( key, val, expires, path, domain, secure, httpOnly) {
+  if ( !key ) return undefined;
+  if ( val === undefined ) {
+    return this._COOKIE[key];
   }
-  return this._COOKIE[key];
+
+  var opt = {};
+  opt.expires  = expires !== undefined ? expires : this.config.COOKIE.expires;
+  opt.path     = path || this.config.COOKIE.path;
+  opt.domain   = domain || '';
+  opt.secure   = secure || false;
+  opt.httpOnly = httpOnly || false;
+
+  // 设置cookie
+  cookie.setCookie( this, key, val, opt );
 };
 
 /**
  * SESSION
  */
-Framework.prototype.SESSION = function ( key ) {
-  if ( !key || typeof key != 'string' ) {
-    throw new TypeError( __filename + ' in [Method SESSION], param key is not a string.' );
-  }
+Framework.prototype.SESSION = function ( key, val, expires ) {
+  if ( !key ) return undefined;
   return this._SESSION[key];
 };
 
@@ -229,9 +238,7 @@ Framework.prototype.SESSION = function ( key ) {
  * FILES
  */
 Framework.prototype.FILES = function( name ) {
-  if ( !name || typeof name != 'string' ) {
-    throw new TypeError( __filename + ' in [Method FILES], param name is not a string.' );
-  }
+  if ( !key ) return undefined;
   return this._FILES[name];
 };
 
@@ -320,6 +327,8 @@ Framework.prototype.addTrailers = function(){
  * end
  */
 Framework.prototype.end = function(){
+  // 设置cookie
+  this.res.setHeader('Set-Cookie', this._setCookies);
   this.res.end.apply(this.res, arguments);
 };
 
@@ -442,7 +451,8 @@ function init_FILES( app )
  */
 function init_COOKIE( app )
 {
-  
+  // 解析cookie
+  cookie.parse(app);
 }
 
 /**
