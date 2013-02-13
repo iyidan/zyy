@@ -472,7 +472,7 @@ Framework.prototype.end = function(){
  */
 function sub (app, messageIds, messageId, handler, isOnce ) {
   var isMultiSub  = messageIds ? true : false;
-  //var emitFn      = isOnce === false ? app._emitter.on : app._emitter.once;
+  var emitFn      = isOnce === false ? app._emitter.on : app._emitter.once;
   if (isMultiSub) {
     handler = function( data ){
       app._multiSubHandler( messageIds, messageId, data );
@@ -488,11 +488,8 @@ function sub (app, messageIds, messageId, handler, isOnce ) {
     if ( isOnce ) needSub = false;
   }
   if(needSub) {
-    if ( isOnce == false ) {
-      app._emitter.on( messageId, handler );
-    } else {
-      app._emitter.once( messageId, handler );
-    }
+    // this指向
+    emitFn.apply(app._emitter, handler);
   }
 }
 
