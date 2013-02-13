@@ -123,39 +123,48 @@ Framework.prototype.sub = function( messageId, handler, isOnce ) {
     this.pub( 'error', { 'file': __filename, 'err': 'prototype.sub arguments.length < 2.' });
     return;
   }
-
-  var messageIds = '';
-  var isOnce     = true;
-  var lastArg    = arguments.pop();
+  
+  var isMultiSub    = false;
+  var messageIds    = [];
+  var messageIdsKey = '';
+  var isOnce        = true;
+  var lastArg       = arguments[arguments.length - 1];
 
   if ( typeof lastArg == 'function' ) {
     var handler = lastArg;
+    isMultiSub = arguments.length > 2 ? true : false;
   } else {
     isOnce  = lastArg;
-    var handler = arguments.pop();
+    var handler = arguments[arguments.length - 2];
     if ( typeof handler !== 'function' ) {
       this.pub( 'error', { 'file': __filename, 'err': 'prototype.sub handler is not a function.' });
       return;
-    } 
+    }
+    isMultiSub = arguments.length > 3 ? true : false;
   }
 
   // 如果是多个消息订阅
-  if ( arguments.length > 0 ) {
-    messageIds = arguments.join(',');
-    if ( this._multiSubHandler[messageIds] === undefined ) {
-      this._multiSubList[messageIds] = {
-        'messageIds':messageIds.split(','),
+  if ( isMultiSub ) {
+    for ( var i = 0; i < arguments.length; i ++ ) {
+      if ( typeof arguments[i] == 'string' ) {
+        messageIds.push( arguments[i] );
+      }
+    }
+    messageIdsKey = messageIds.join(',');
+    if ( this._multiSubHandler[messageIdsKey] === undefined ) {
+      this._multiSubList[messageIdsKey] = {
+        'messageIds':messageIds,
         'handlers':[ { 'handler':handler, 'isOnce':isOnce } ], 
         'dataList':[]
       };
     }
     else {
-      this._multiSubList[messageIds]['handlers'].push( { 'handler':handler, 'isOnce':isOnce } );
+      this._multiSubList[messageIdsKey]['handlers'].push( { 'handler':handler, 'isOnce':isOnce } );
     }
     handler = null;
   }
-  arguments.forEach(function(v, k){
-    sub(this, messageIds, v, handler, isOnce);
+  messageIds.forEach(function(v, k){
+    sub(this, messageIdsKey, v, handler, isOnce);
   });
 };
 
