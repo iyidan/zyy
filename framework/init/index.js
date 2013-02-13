@@ -93,8 +93,12 @@ function Framework ( req, res, config )
     'init.files.ready',
     'init.cookie.ready'
   ];
-  // 已经发布的event
-  this._publishedEvent = {};
+  // 已经发布的消息
+  this._publishedMessages = {};
+
+  // 需要协同处理的多个消息 
+  // 记录为： 'messageId1,messageId2,...': handler, isOnce
+  this._multiSubList = {};
 }
 
 ////////////////////////////////////////
@@ -106,21 +110,86 @@ function Framework ( req, res, config )
  *  @param {String} messageId 消息标识
  *  @param {Function} handler 消息处理函数
  *  @param {Boolean} isOnce 只监听一次，默认true
+ *  @example
+ *    // 不止订阅一次
+ *    app.sub( messageId, function( data ) { ... }, false );
+ *    // 订阅多个消息，当消息全部完成时候回调handler，
+ *    //此时会把各个消息的data依次作为handler参数传递
+ *    app.sub([messageId1, [messageId2, [messageId3, [...]]]], handler, isOnce);
+ *      handler = function( dataList ){ dataList[0] ... }
  */
 Framework.prototype.sub = function( messageId, handler, isOnce ) {
-  // 检查事件有没有被触发过
-  var published = false;
-  if ( this._publishedEvent[messageId]  !== undefined) {
-    published = true;
-    handler( this._publishedEvent[messageId] );
+  if ( arguments.length < 2 ) {
+    this.pub( 'error', { 'file': __filename, 'err': 'prototype.sub arguments.length < 2.' });
+    return;
   }
-  // 如果不止监听一次，则继续监听
-  if ( isOnce === false ) {
-    this._emitter.on( messageId, handler);
+
+  var messageIds = '';
+  var isOnce     = true;
+  var lastArg    = arguments.pop();
+
+  if ( typeof lastArg == 'function' ) {
+    var handler = lastArg;
+  } else {
+    isOnce  = lastArg;
+    var handler = arguments.pop();
+    if ( typeof handler !== 'function' ) {
+      this.pub( 'error', { 'file': __filename, 'err': 'prototype.sub handler is not a function.' });
+      return;
+    } 
   }
-  // 如果没有发布，则继续监听
-  else if ( !published ) {
-    this._emitter.once( messageId, handler);  
+
+  // 如果是多个消息订阅
+  if ( arguments.length > 0 ) {
+    messageIds = arguments.join(',');
+    if ( this._multiSubHandler[messageIds] === undefined ) {
+      this._multiSubList[messageIds] = {
+        'messageIds':messageIds.split(','),
+        'handlers':[ { 'handler':handler, 'isOnce':isOnce } ], 
+        'dataList':[]
+      };
+    }
+    else {
+      this._multiSubList[messageIds]['handlers'].push( { 'handler':handler, 'isOnce':isOnce } );
+    }
+    handler = null;
+  }
+  arguments.forEach(function(v, k){
+    sub(this, messageIds, v, handler, isOnce);
+  });
+};
+
+/**
+ * [_multiSubHandler 多个协同订阅的处理]
+ * @param  {String} messageIds 协同的消息ids
+ * @param  {String} msgId      发布的消息id
+ * @param  {Mixed} msgData     单个消息发布的数据内容
+ */
+Framework.prototype._multiSubHandler = function( messageIds, msgId, msgData ) {
+  // 获取存储的协同订阅
+  var multi = this._multiSubList[messageIds];
+  if ( !multi ) return;
+
+  var msgIndex = multi['messageIds'].indexOf( msgId );
+  if ( msgIndex != -1 ) {
+    multi['dataList'][msgIndex] = msgData;
+  }
+  // 已经全部订阅到
+  if ( multi['dataList'].length == multi['messageIds'].length ) {
+    var app = this;
+    multi['handlers'].forEach(function( handler, k ){
+      handler['handler']( multi['dataList'] );
+      // 判断重复执行
+      if ( handler['isOnce'] == true ) {
+        multi['handlers'].splice( k, 1 );
+      } else {
+        // 清空订阅的数据
+        multi['dataList'] = [];
+      }
+    });
+    if ( multi['handlers'].length == 0 ) {
+      app._multiSubList[messageIds] = undefined;
+    } 
   }
 };
 
@@ -130,9 +199,9 @@ Framework.prototype.sub = function( messageId, handler, isOnce ) {
  * @param {Mixed} data 传递给订阅者的数据
  */
 Framework.prototype.pub = function( messageId, data ){
-  // 记入到_publishedEvent
+  // 记入到_publishedMessages
   data = data || null;
-  this._publishedEvent[messageId] = data;
+  this._publishedMessages[messageId] = data;
   this._emitter.emit( messageId, data );
 };
 
@@ -381,6 +450,34 @@ Framework.prototype.end = function(){
 ////////////////////////////////////////
 // Framework.prototype end
 ////////////////////////////////////////
+
+/**
+ * 私有方法，仅在init内使用
+ * @param  {Object}    app        
+ * @param  {String}    messageIds 协同的多个消息字符串
+ * @param  {String}    messageId  当前订阅的消息字符串
+ * @param  {Function}  handler    当前处理订阅消息的函数，如果为协同消息，则不定义或定义null
+ * @param  {Boolean}   isOnce     是否只订阅一次，默认否
+ */
+function sub (app, messageIds, messageId, handler, isOnce ) {
+  var isMultiSub  = messageIds ? true : false;
+  var emitFn      = isOnce === false ? app._emitter.on : app._emitter.once;
+  if (isMultiSub) {
+    handler = function( data ){
+      app._multiSubHandler( messageIds, messageId, data );
+    };
+  }
+
+  // 自动触发已经发布过的消息
+  var needSub = true;
+  if ( app._publishedMessages[messageId]  !== undefined) {
+    handler( app._publishedMessages[messageId] );
+    if ( isOnce ) needSub = false;
+  }
+  if(needSub) {
+    emitFn(messageId, handler);
+  }
+}
 
 /**
  * 注册框架加载完毕后的事件
