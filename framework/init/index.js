@@ -3,6 +3,7 @@
  */
 var url     = require( 'url' );
 var EventEmitter = require( 'events' ).EventEmitter;
+var util = require( 'util' );
 
 var core  = require('../core');
 var db      = require( '../db' );
@@ -24,6 +25,23 @@ exports.init = function( req, res, config, callback ){
   // 注册ready
   init_READY( app );
   if (typeof callback == 'function') app.sub('app.ready', callback);
+
+  // 注册error
+  app.sub( 'error', function( err ){
+    if ( app.config.ONDEV ) {
+      app.setStatusCode(200);
+      app.end( 'server_error: ' + util.inspect( err ) );
+    } else {
+      app.setStatusCode(500);
+      app.end('');
+    }
+  });
+  
+  // 注册close事件
+  app.res.on( 'close', function(){
+    app.setStatusCode(500);
+    app.end('request was closed');
+  });
 
   // 开始初始化
   init_SERVER( app );
@@ -217,6 +235,94 @@ Framework.prototype.FILES = function( name ) {
   return this._FILES[name];
 };
 
+/**
+ * response method
+ * writeContinue
+ */
+Framework.prototype.writeContinue = function(){
+  this.res.writeContinue.apply(this.res, arguments);
+};
+
+/**
+ * response method
+ * writeHead
+ */
+Framework.prototype.writeHead = function(){
+  this.res.writeHead.apply(this.res, arguments);
+};
+
+/**
+ * response method
+ * setStatusCode
+ */
+Framework.prototype.setStatusCode = function( code ){
+  if ( isNaN(code) ) {
+    this.pub( 'error', {
+      'file': __filename,
+      'err': 'statusCode is not a number.'
+    });
+  } else {
+    this.res.statusCode = code;  
+  }
+};
+
+/**
+ * 获取响应状态码
+ */
+Framework.prototype.getStatusCode = function() {
+  return this.res.statusCode;
+};
+
+/**
+ * response method
+ * setHeader
+ */
+Framework.prototype.setHeader = function(){
+  this.res.setHeader.apply(this.res, arguments);
+};
+
+
+
+/**
+ * response method
+ * getHeader
+ */
+Framework.prototype.getHeader = function(){
+  this.res.getHeader.apply(this.res, arguments);
+};
+
+/**
+ * response method
+ * removeHeader
+ */
+Framework.prototype.removeHeader = function(){
+  this.res.removeHeader.apply(this.res, arguments);
+};
+
+/**
+ * response method
+ * write
+ */
+Framework.prototype.write = function(){
+  this.res.write.apply(this.res, arguments);
+};
+
+/**
+ * response method
+ * addTrailers
+ */
+Framework.prototype.addTrailers = function(){
+  this.res.addTrailers.apply(this.res, arguments);
+};
+
+/**
+ * response method
+ * end
+ */
+Framework.prototype.end = function(){
+  this.res.end.apply(this.res, arguments);
+};
+
 ////////////////////////////////////////
 // Framework.prototype end
 ////////////////////////////////////////
@@ -292,9 +398,11 @@ function init_FORM( app )
   }
   var form = new formidable.IncomingForm();
   // handle error event
-  form.on( 'error', function(){
-    console.log( arguments );
-    //app.pub( 'error', 'init.method [Function init_FORM] error.' );
+  form.on( 'error', function( err ){
+    app.pub( 'error', {
+      'file': __filename,
+      'err': err
+    });
   });
   form.parse( app.req, function(err, fields, files) {
     app.pub( 'init_form_ready', {

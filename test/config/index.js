@@ -9,6 +9,8 @@ var FW_PATH      = '/data/www/zyy/framework';
 exports.config = {
   // 项目名称
   'PROJECT_NAME': 'test',
+  // 是否是开发环境
+  'ONDEV': true,
   // 监听ip
   'IP': '0.0.0.0',
   // 监听端口
