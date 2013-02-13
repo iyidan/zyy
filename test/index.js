@@ -4,7 +4,8 @@ var util   = require( 'util' );
 
 var server = server.createServer( config , function( app ){
   app.sub( 'testEvent1', 'testEvent2', 'testEvent3', function( dataList ){
-    app.end( util.inspect( dataList ) );
+    console.log( dataList );
+    app.end( util.inspect( app ) );
   });
 
   app.pub('testEvent', 'world.');
