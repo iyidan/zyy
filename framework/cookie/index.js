@@ -72,6 +72,7 @@ module.exports = {
    * @return {String} 
    */
   sign: function(val, secretKey){
+    console.log('sign:', val, secretKey);
     return val + '.' + crypto
     .createHmac('sha256', secretKey)
     .update(val)
