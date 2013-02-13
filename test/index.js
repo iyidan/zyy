@@ -7,7 +7,7 @@ var server = server.createServer( config , function( app ){
 
   app.sub( 'testEvent', function( data ){
     console.log( 'testEvent\n' );
-    app.COOKIE( 'test', 'test', 3600 );
+    app.COOKIE( 'test', 'test', 3600, true );
     app.end( util.inspect( app ) );
   });
 
