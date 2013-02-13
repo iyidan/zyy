@@ -122,7 +122,7 @@ Framework.prototype.sub = function( messageId, handler, isOnce ) {
   else if ( !published ) {
     this._emitter.once( messageId, handler);  
   }
-  console.log( 'sub:', messageId, this._publishedEvent );
+  console.log( 'sub: ', messageId );
 };
 
 /**
@@ -133,7 +133,7 @@ Framework.prototype.sub = function( messageId, handler, isOnce ) {
 Framework.prototype.pub = function( messageId, data ){
   // 记入到_publishedEvent
   this._publishedEvent[messageId] = data;
-  console.log( 'pub:', messageId, this._publishedEvent );
+  console.log( 'pub: ', messageId );
   this._emitter.emit( messageId, data );
 };
 
