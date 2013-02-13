@@ -57,17 +57,14 @@ exports.init = function( req, res, config, callback ){
 
   init_SESSION( app );
 };
-/**
- * 项目配置项，在createServer时候赋值
- * @config {Object}
- */
-exports.init.config = {};
-
 
 /**
  * 构造Request
+ * @param {Object} req http请求对象由http.createServer 产生
+ * @param {Object} res http响应对象由http.createServer 产生
+ * @param {Object} config 项目配置项
  */
-function Framework ( req, res,config )
+function Framework ( req, res, config )
 {
   // 项目配置
   this.config = config;
