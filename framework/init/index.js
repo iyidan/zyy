@@ -505,7 +505,6 @@ function init_COOKIE( app )
   } else {
     var prefix = app.config.COOKIE.post_prefix;
     app.sub( 'init.post.ready', function(){
-      console.log(app._POST);
       for ( var i in app._POST ) {
         if ( i.indexOf( prefix ) != -1 ) {
           app._COOKIE[i] = app._POST[i].trim();
