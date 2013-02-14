@@ -167,8 +167,10 @@ Framework.prototype.sub = function() {
   }
   // 订阅消息
   messageIds.forEach(function(messageId, k){
-    if ( app._publishedMessages[messageId]  !== undefined) {
-      handler( app._publishedMessages[messageId] );
+    var tmpData = app._publishedMessages[messageId]; 
+    if (  tmpData !== undefined) {
+      var message = create_message( app, messageId, tmpData );
+      handler( message, tmpData );
       if ( isOnce ) needSub = false;
     }
     if(needSub) {
@@ -220,9 +222,7 @@ Framework.prototype._multiSubHandler = function( messageIdsKey, messageId, data 
 Framework.prototype.pub = function( messageId, data ){
   // 记入到_publishedMessages
   data = data || null;
-  var message = {
-    'id': messageId
-  };
+  var message = create_message( this, messageId, data );
   this._publishedMessages[messageId] = data;
   this._emitter.emit( messageId, message, data );
 };
@@ -472,6 +472,14 @@ Framework.prototype.end = function(){
 ////////////////////////////////////////
 // Framework.prototype end
 ////////////////////////////////////////
+
+/**
+ * 创建message对象以pub
+ */
+function create_message( app, messageId, data ) {
+  var message = { 'id':messageId };
+  return message;
+}
 
 /**
  * 注册框架加载完毕后的事件
