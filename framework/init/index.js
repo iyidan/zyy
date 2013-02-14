@@ -223,8 +223,24 @@ Framework.prototype._multiSubHandler = function( messageIdsKey, messageId, data 
 Framework.prototype.pub = function( messageId, data ){
   // 记入到_publishedMessages
   data = data || null;
+  
+  // 如果此事件曾经被触发过 检查协同订阅，覆盖新值
+  if ( this._publishedMessages[messageId] !== undefined ) {
+    for( var i in this._multiSubList ) {
+      if ( i.indexOf( messageId ) != -1 && this._multiSubList[i] !== undefined ) {
+        for( var j = 0; j < this._multiSubList[i]['handlers'].length; j++ ) {
+          if (this._multiSubList[i]['handlers'][j].isOnce){
+            var dataIndex = this._multiSubList[i]['messageIds'].indexOf(messageId);
+            if ( dataIndex != -1 ) this._multiSubList[i]['dataList'][dataIndex] = data;
+            break;
+          }
+        }
+      }
+    }
+  }
+
   var message = create_message( this, messageId, data );
-  this._publishedMessages[messageId] = data;
+  this._publishedMessages[messageId] = data;  
   this._emitter.emit( messageId, message, data );
 };
 
