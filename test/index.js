@@ -3,7 +3,7 @@ var server = require( config.FW_PATH );
 var util   = require( 'util' );
 var utils  = require(config.FW_PATH + '/core/utils.js' );
 
-var server = server.createServer( config , function( message, app ){
+server.createServer( config , function( message, app ){
   app.writeHead(200, { 'Content-Type':'text/html' });
 
   app.write( 'rc4:\n' );
@@ -68,6 +68,8 @@ var server = server.createServer( config , function( message, app ){
   });
 
   app.sub('testevents.ready', 'events.ready', function(){
+    app.write( util.inspect(app._message) );
+    app.write( '\n\n\n\n\n' );
     app.end( util.inspect(app) );
   }); 
 });
