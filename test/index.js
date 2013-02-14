@@ -8,15 +8,15 @@ var server = server.createServer( config , function( message, app ){
     console.log( dataList );
     app.write( util.inspect( app._multiSubList) );
     app.write( util.inspect( app._publishedMessages) );
-    app.write('<hr/><hr/>');
+    app.write('\n\n\n');
     app.pub('testevents.ready');
-  });
+  }, false);
 
   app.sub( 'Event1', 'Event2', 'Event3', function( message, dataList ){
     console.log( dataList );
     app.write( util.inspect( app._multiSubList) );
     app.write( util.inspect( app._publishedMessages) );
-    app.write('<hr/><hr/>');
+    app.write('\n\n\n');
     app.pub('events.ready');
   });
 
@@ -32,6 +32,6 @@ var server = server.createServer( config , function( message, app ){
   app.pub('Event2', 'ata2.5');
   app.pub('Event3', 'ata3'); 
   app.sub('testevents.ready', 'events.ready', function(){
-    app.end('###################################');
+    app.end( util.inspect(app) );
   }); 
 });
