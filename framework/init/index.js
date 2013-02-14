@@ -157,8 +157,18 @@ Framework.prototype.sub = function() {
         'handlers':[ { 'handler':handler, 'isOnce':isOnce } ], 
         'dataList':[]
       };
-    } else {
+    }
+    // 若有多个协同订阅的回调，则除第一个外，不执行app._multiSubHandler，否则会重复绑定
+    else {
       app._multiSubList[messageIdsKey]['handlers'].push( { 'handler':handler, 'isOnce':isOnce } );
+      var tmpDataList = [];
+      messageIds.forEach(function(v, k){
+        if ( app._publishedMessages[v] !== undefined ) {
+          tmpDataList.push(app._publishedMessages[v]);
+        }
+      });
+      if ( tmpDataList.length == messageIds.length ) handler(messageIdsKey, tmpDataList);
+      return;
     }
     handler = function( message, data ){
       app._multiSubHandler( messageIdsKey, message.id, data );
