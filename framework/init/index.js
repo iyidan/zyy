@@ -28,7 +28,7 @@ exports.init = function( req, res, config, callback ){
   if (typeof callback == 'function') app.sub('init.app.ready', callback);
 
   // 注册error
-  app.sub( 'error', function( err ){
+  app.sub( 'error', function( message, err ){
     if ( app.config.ONDEV ) {
       app.setStatusCode(200);
       app.end( 'server_error: ' + util.inspect( err ) );
@@ -112,35 +112,35 @@ function Framework ( req, res, config )
  *  @param {Boolean} isOnce 只监听一次，默认true
  *  @example
  *    // 不止订阅一次
- *    app.sub( messageId, function( data ) { ... }, false );
+ *    app.sub( messageId, function( message, data ) { ... }, false );
  *    // 订阅多个消息，当消息全部完成时候回调handler，
  *    //此时会把各个消息的data依次作为handler参数传递
  *    app.sub([messageId1, [messageId2, [messageId3, [...]]]], handler, isOnce);
- *      handler = function( dataList ){ dataList[0] ... }
+ *      handler = function( message, dataList ){ dataList[0] ... }
  */
 Framework.prototype.sub = function() {
-  if ( arguments.length < 2 ) {
-    this.pub( 'error', { 'file': __filename, 'err': 'prototype.sub arguments.length < 2.' });
-    return;
-  }
-
+  var app           = this;
   var isMultiSub    = false;
   var messageIds    = [];
   var messageIdsKey = '';
   var isOnce        = true;
   var lastArg       = arguments[arguments.length - 1];
+  var handler       = null;
+  var emitFn        = app._emitter.once;
+  var needSub       = true;
 
   if ( typeof lastArg == 'function' ) {
-    var handler = lastArg;
+    handler = lastArg;
     isMultiSub = arguments.length > 2 ? true : false;
   } else {
     isOnce  = lastArg;
-    var handler = arguments[arguments.length - 2];
+    handler = arguments[arguments.length - 2];
     if ( typeof handler !== 'function' ) {
-      this.pub( 'error', { 'file': __filename, 'err': 'prototype.sub handler is not a function.' });
+      app.pub( 'error', { 'file': __filename, 'err': 'prototype.sub handler is not a function.' });
       return;
     }
     isMultiSub = arguments.length > 3 ? true : false;
+    if(isOnce === false) emitFn = app._emitter.on; 
   }
 
   for ( var i = 0; i < arguments.length; i ++ ) {
@@ -151,55 +151,74 @@ Framework.prototype.sub = function() {
   // 如果是多个消息订阅
   if ( isMultiSub ) {
     messageIdsKey = messageIds.join(',');
-    if ( this._multiSubHandler[messageIdsKey] === undefined ) {
-      this._multiSubList[messageIdsKey] = {
+    if ( app._multiSubList[messageIdsKey] === undefined ) {
+      app._multiSubList[messageIdsKey] = {
         'messageIds':messageIds,
         'handlers':[ { 'handler':handler, 'isOnce':isOnce } ], 
         'dataList':[]
       };
     }
+    // 若有多个协同订阅的回调，则除第一个外，不执行app._multiSubHandler，否则会重复绑定
     else {
-      this._multiSubList[messageIdsKey]['handlers'].push( { 'handler':handler, 'isOnce':isOnce } );
+      app._multiSubList[messageIdsKey]['handlers'].push( { 'handler':handler, 'isOnce':isOnce } );
+      var tmpDataList = [];
+      messageIds.forEach(function(v, k){
+        if ( app._publishedMessages[v] !== undefined ) {
+          tmpDataList.push(app._publishedMessages[v]);
+        }
+      });
+      if ( tmpDataList.length == messageIds.length ) handler(messageIdsKey, tmpDataList);
+      return;
     }
-    handler = null;
+    handler = function( message, data ){
+      app._multiSubHandler( messageIdsKey, message.id, data );
+    };
   }
-
-  var app = this;
-  messageIds.forEach(function(v, k){
-    sub(app, messageIdsKey, v, handler, isOnce);
+  // 订阅消息
+  messageIds.forEach(function(messageId, k){
+    var tmpData = app._publishedMessages[messageId]; 
+    if (  tmpData !== undefined) {
+      var message = create_message( app, messageId, tmpData );
+      handler( message, tmpData );
+      if ( isOnce ) needSub = false;
+    }
+    if(needSub) {
+      // this指向
+      emitFn.call(app._emitter, messageId, handler);
+    }
   });
 };
 
 /**
  * [_multiSubHandler 多个协同订阅的处理]
- * @param  {String} messageIds 协同的消息ids
- * @param  {String} msgId      发布的消息id
- * @param  {Mixed} msgData     单个消息发布的数据内容
+ * @param  {String} messageIdsKey 协同的消息ids
+ * @param  {String} messageId      发布的消息id
+ * @param  {Mixed} data     单个消息发布的数据内容
  */
-Framework.prototype._multiSubHandler = function( messageIds, msgId, msgData ) {
+Framework.prototype._multiSubHandler = function( messageIdsKey, messageId, data ) {
   // 获取存储的协同订阅
-  var multi = this._multiSubList[messageIds];
+  var multi = this._multiSubList[messageIdsKey];
   if ( !multi ) return;
 
-  var msgIndex = multi['messageIds'].indexOf( msgId );
+  var msgIndex = multi['messageIds'].indexOf( messageId );
   if ( msgIndex != -1 ) {
-    multi['dataList'][msgIndex] = msgData;
+    multi['dataList'][msgIndex] = data;
   }
   // 已经全部订阅到
   if ( multi['dataList'].length == multi['messageIds'].length ) {
-    var app = this;
+    var app     = this;
+    var message = create_message(app, messageIdsKey, multi['dataList']); 
     multi['handlers'].forEach(function( handler, k ){
-      handler['handler']( multi['dataList'] );
+      handler['handler']( message, multi['dataList'] );
       // 判断重复执行
       if ( handler['isOnce'] == true ) {
         multi['handlers'].splice( k, 1 );
-      } else {
-        // 清空订阅的数据
-        multi['dataList'] = [];
       }
     });
+    // 清空订阅的数据
+    multi['dataList'] = [];
     if ( multi['handlers'].length == 0 ) {
-      app._multiSubList[messageIds] = undefined;
+      app._multiSubList[messageIdsKey] = undefined;
     } 
   }
 };
@@ -212,8 +231,25 @@ Framework.prototype._multiSubHandler = function( messageIds, msgId, msgData ) {
 Framework.prototype.pub = function( messageId, data ){
   // 记入到_publishedMessages
   data = data || null;
-  this._publishedMessages[messageId] = data;
-  this._emitter.emit( messageId, data );
+  
+  // 如果此事件曾经被触发过 检查协同订阅，覆盖新值
+  if ( this._publishedMessages[messageId] !== undefined ) {
+    for( var i in this._multiSubList ) {
+      if ( i.indexOf( messageId ) != -1 && this._multiSubList[i] !== undefined ) {
+        for( var j = 0; j < this._multiSubList[i]['handlers'].length; j++ ) {
+          if (this._multiSubList[i]['handlers'][j].isOnce){
+            var dataIndex = this._multiSubList[i]['messageIds'].indexOf(messageId);
+            if ( dataIndex != -1 ) this._multiSubList[i]['dataList'][dataIndex] = data;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  var message = create_message( this, messageId, data );
+  this._publishedMessages[messageId] = data;  
+  this._emitter.emit( messageId, message, data );
 };
 
 /**
@@ -463,32 +499,11 @@ Framework.prototype.end = function(){
 ////////////////////////////////////////
 
 /**
- * 私有方法，仅在init内使用
- * @param  {Object}    app        
- * @param  {String}    messageIds 协同的多个消息字符串
- * @param  {String}    messageId  当前订阅的消息字符串
- * @param  {Function}  handler    当前处理订阅消息的函数，如果为协同消息，则不定义或定义null
- * @param  {Boolean}   isOnce     是否只订阅一次，默认否
+ * 创建message对象以pub
  */
-function sub (app, messageIds, messageId, handler, isOnce ) {
-  var isMultiSub  = messageIds ? true : false;
-  var emitFn      = isOnce === false ? app._emitter.on : app._emitter.once;
-  if (isMultiSub) {
-    handler = function( data ){
-      app._multiSubHandler( messageIds, messageId, data );
-    };
-  }
-
-  // 自动触发已经发布过的消息
-  var needSub = true;
-  if ( app._publishedMessages[messageId]  !== undefined) {
-    handler( app._publishedMessages[messageId] );
-    if ( isOnce ) needSub = false;
-  }
-  if(needSub) {
-    // this指向
-    emitFn.call(app._emitter, messageId, handler);
-  }
+function create_message( app, messageId, data ) {
+  var message = { 'id':messageId };
+  return message;
 }
 
 /**
@@ -582,7 +597,7 @@ function init_FORM( app )
  * 解析post
  */
 function init_POST( app ) {
-  app.sub( 'app.form.parse.ready', function( data ){
+  app.sub( 'app.form.parse.ready', function( message, data ){
     app._POST = data.fields;
     app.pub( 'init.post.ready' );
   });
@@ -594,7 +609,7 @@ function init_POST( app ) {
  */
 function init_FILES( app )
 {
-  app.sub( 'app.form.parse.ready', function( data ){
+  app.sub( 'app.form.parse.ready', function( message, data ){
     app._FILES = data.files;
     app.pub( 'init.files.ready' );
   });

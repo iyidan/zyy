@@ -2,21 +2,26 @@ var config = require( './config' ).config;
 var server = require( config.FW_PATH );
 var util   = require( 'util' );
 
-var server = server.createServer( config , function( app ){
+var server = server.createServer( config , function( message, app ){
   app.writeHead(200, { 'Content-Type':'text/html' });
-  app.sub( 'testEvent1', 'testEvent2', 'testEvent3', function( dataList ){
-    console.log( dataList );
-    app.write( util.inspect( app._multiSubList) );
-    app.write( util.inspect( app._publishedMessages) );
-    app.write('<hr/><hr/>');
+  app.sub( 'testEvent1', 'testEvent2', 'testEvent3', function( message, dataList ){
+    app.write('sub1:\n');
+    app.write( util.inspect( dataList ) );
+    app.write('\n\n\n');
+    //app.pub('testevents.ready');
+  }, false);
+
+  app.sub( 'testEvent1', 'testEvent2', 'testEvent3', function( message, dataList ){
+    app.write('sub2:\n');
+    app.write( util.inspect( dataList ) );
+    app.write('\n\n\n');
     app.pub('testevents.ready');
   });
 
-  app.sub( 'Event1', 'Event2', 'Event3', function( dataList ){
-    console.log( dataList );
-    app.write( util.inspect( app._multiSubList) );
-    app.write( util.inspect( app._publishedMessages) );
-    app.write('<hr/><hr/>');
+  app.sub( 'Event1', 'Event2', 'Event3', function( message, dataList ){
+    app.write('sub3:\n');
+    app.write( util.inspect( dataList ) );
+    app.write('\n\n\n');
     app.pub('events.ready');
   });
 
@@ -31,7 +36,15 @@ var server = server.createServer( config , function( app ){
   app.pub('Event2', 'ata2');
   app.pub('Event2', 'ata2.5');
   app.pub('Event3', 'ata3'); 
+
+  app.sub( 'testEvent1', 'testEvent2', 'testEvent3', function( message, dataList ){
+    app.write('sub2:\n');
+    app.write( util.inspect( dataList ) );
+    app.write('\n\n\n');
+    app.pub('testevents.ready');
+  });
+
   app.sub('testevents.ready', 'events.ready', function(){
-    app.end('###################################');
+    app.end( util.inspect(app) );
   }); 
 });
