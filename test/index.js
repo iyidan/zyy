@@ -5,18 +5,21 @@ var util   = require( 'util' );
 var server = server.createServer( config , function( message, app ){
   app.writeHead(200, { 'Content-Type':'text/html' });
   app.sub( 'testEvent1', 'testEvent2', 'testEvent3', function( message, dataList ){
+    app.write('sub1:\n');
     app.write( util.inspect( dataList ) );
     app.write('\n\n\n');
     //app.pub('testevents.ready');
   }, false);
 
   app.sub( 'testEvent1', 'testEvent2', 'testEvent3', function( message, dataList ){
+    app.write('sub2:\n');
     app.write( util.inspect( dataList ) );
     app.write('\n\n\n');
     app.pub('testevents.ready');
   });
 
   app.sub( 'Event1', 'Event2', 'Event3', function( message, dataList ){
+    app.write('sub3:\n');
     app.write( util.inspect( dataList ) );
     app.write('\n\n\n');
     app.pub('events.ready');
