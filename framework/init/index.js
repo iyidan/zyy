@@ -161,6 +161,7 @@ Framework.prototype.sub = function() {
       app._multiSubList[messageIdsKey]['handlers'].push( { 'handler':handler, 'isOnce':isOnce } );
     }
     handler = function( message, data ){
+      console.log('sub handler', messageIdsKey, message, data);
       app._multiSubHandler( messageIdsKey, message.id, data );
     };
   }
@@ -180,17 +181,17 @@ Framework.prototype.sub = function() {
 /**
  * [_multiSubHandler 多个协同订阅的处理]
  * @param  {String} messageIdsKey 协同的消息ids
- * @param  {String} msgId      发布的消息id
- * @param  {Mixed} msgData     单个消息发布的数据内容
+ * @param  {String} messageId      发布的消息id
+ * @param  {Mixed} data     单个消息发布的数据内容
  */
-Framework.prototype._multiSubHandler = function( messageIdsKey, msgId, msgData ) {
+Framework.prototype._multiSubHandler = function( messageIdsKey, messageId, data ) {
   // 获取存储的协同订阅
   var multi = this._multiSubList[messageIdsKey];
   if ( !multi ) return;
 
-  var msgIndex = multi['messageIds'].indexOf( msgId );
+  var msgIndex = multi['messageIds'].indexOf( messageId );
   if ( msgIndex != -1 ) {
-    multi['dataList'][msgIndex] = msgData;
+    multi['dataList'][msgIndex] = data;
   }
   // 已经全部订阅到
   if ( multi['dataList'].length == multi['messageIds'].length ) {
