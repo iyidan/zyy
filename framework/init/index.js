@@ -197,9 +197,10 @@ Framework.prototype._multiSubHandler = function( messageIdsKey, messageId, data 
   }
   // 已经全部订阅到
   if ( multi['dataList'].length == multi['messageIds'].length ) {
-    var app = this;
+    var app     = this;
+    var message = create_message(app, messageIdsKey, multi['dataList']); 
     multi['handlers'].forEach(function( handler, k ){
-      handler['handler']( multi['dataList'] );
+      handler['handler']( message, multi['dataList'] );
       // 判断重复执行
       if ( handler['isOnce'] == true ) {
         multi['handlers'].splice( k, 1 );
