@@ -213,11 +213,10 @@ Framework.prototype._multiSubHandler = function( messageIdsKey, messageId, data 
       // 判断重复执行
       if ( handler['isOnce'] == true ) {
         multi['handlers'].splice( k, 1 );
-      } else {
-        // 清空订阅的数据
-        multi['dataList'] = [];
       }
     });
+    // 清空订阅的数据
+    multi['dataList'] = [];
     if ( multi['handlers'].length == 0 ) {
       app._multiSubList[messageIdsKey] = undefined;
     } 
