@@ -46,7 +46,7 @@ var Message = exports.Message = function( storePub, listenersNum, proxy ) {
  * @param {Mixed} data 传递给订阅者的数据
  * @return {Boolean} 是否成功执行
  */
-Message.prototype.pub = function() {
+Message.prototype.pub = function( messageId, data ) {
   // 记入到_publishedMessages
   data = data || null;
   
