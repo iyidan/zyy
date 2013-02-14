@@ -36,6 +36,14 @@ var server = server.createServer( config , function( message, app ){
   app.pub('Event2', 'ata2');
   app.pub('Event2', 'ata2.5');
   app.pub('Event3', 'ata3'); 
+
+  app.sub( 'testEvent1', 'testEvent2', 'testEvent3', function( message, dataList ){
+    app.write('sub2:\n');
+    app.write( util.inspect( dataList ) );
+    app.write('\n\n\n');
+    app.pub('testevents.ready');
+  });
+
   app.sub('testevents.ready', 'events.ready', function(){
     app.end( util.inspect(app) );
   }); 
