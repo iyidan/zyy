@@ -6,13 +6,14 @@ var EventEmitter = require( 'events' ).EventEmitter;
 var crypto = require('crypto');
 var util = require( 'util' );
 
-var core  = require('../core');
-var db      = require( '../db' );
-var cache   = require( '../cache' );
-var cookie  = require( '../cookie' );
-var session = require( '../session' );
+var core    = require('../core');
+var Message = require('../message').Message;
+var db      = require('../db');
+var cache   = require('../cache');
+var cookie  = require('../cookie');
+var session = require('../session');
 
-var formidable = require( '../3rd/formidable' );
+var formidable = require('../3rd/formidable');
 
 
 
@@ -80,10 +81,6 @@ function Framework ( req, res, config )
     this.startTime = (new Date()).getTime();
   }
 
-  // 设置单个事件最多50个监听器，默认为10个
-  this._emitter    = new EventEmitter();
-  this._emitter.setMaxListeners(50);
-
   // app.ready的前置事件，不能放在原型上，会被上次的覆盖
   this._readyEvents = [
     'init.post.ready',
@@ -93,164 +90,13 @@ function Framework ( req, res, config )
     'init.files.ready',
     'init.cookie.ready'
   ];
-  // 已经发布的消息
-  this._publishedMessages = {};
-
-  // 需要协同处理的多个消息 
-  // 记录为： 'messageId1,messageId2,...': handler, isOnce
-  this._multiSubList = {};
+  // pub/sub
+  new Message(true, 50, this);
 }
 
 ////////////////////////////////////////
 // Framework.prototype start
 ////////////////////////////////////////
-
-/**
- *  接收并处理一个消息，注意，handler不能是耗时很多的阻塞操作，若此种情况，可拆分多个
- *  @param {String} messageId 消息标识
- *  @param {Function} handler 消息处理函数
- *  @param {Boolean} isOnce 只监听一次，默认true
- *  @example
- *    // 不止订阅一次
- *    app.sub( messageId, function( message, data ) { ... }, false );
- *    // 订阅多个消息，当消息全部完成时候回调handler，
- *    //此时会把各个消息的data依次作为handler参数传递
- *    app.sub([messageId1, [messageId2, [messageId3, [...]]]], handler, isOnce);
- *      handler = function( message, dataList ){ dataList[0] ... }
- */
-Framework.prototype.sub = function() {
-  var app           = this;
-  var isMultiSub    = false;
-  var messageIds    = [];
-  var messageIdsKey = '';
-  var isOnce        = true;
-  var lastArg       = arguments[arguments.length - 1];
-  var handler       = null;
-  var emitFn        = app._emitter.once;
-  var needSub       = true;
-
-  if ( typeof lastArg == 'function' ) {
-    handler = lastArg;
-    isMultiSub = arguments.length > 2 ? true : false;
-  } else {
-    isOnce  = lastArg;
-    handler = arguments[arguments.length - 2];
-    if ( typeof handler !== 'function' ) {
-      app.pub( 'error', { 'file': __filename, 'err': 'prototype.sub handler is not a function.' });
-      return;
-    }
-    isMultiSub = arguments.length > 3 ? true : false;
-    if(isOnce === false) emitFn = app._emitter.on; 
-  }
-
-  for ( var i = 0; i < arguments.length; i ++ ) {
-    if ( typeof arguments[i] == 'string' ) {
-      messageIds.push( arguments[i] );
-    }
-  }
-  // 如果是多个消息订阅
-  if ( isMultiSub ) {
-    messageIdsKey = messageIds.join(',');
-    if ( app._multiSubList[messageIdsKey] === undefined ) {
-      app._multiSubList[messageIdsKey] = {
-        'messageIds':messageIds,
-        'handlers':[ { 'handler':handler, 'isOnce':isOnce } ], 
-        'dataList':[]
-      };
-    }
-    // 若有多个协同订阅的回调，则除第一个外，不执行app._multiSubHandler，否则会重复绑定
-    else {
-      app._multiSubList[messageIdsKey]['handlers'].push( { 'handler':handler, 'isOnce':isOnce } );
-      var tmpDataList = [];
-      messageIds.forEach(function(v, k){
-        if ( app._publishedMessages[v] !== undefined ) {
-          tmpDataList.push(app._publishedMessages[v]);
-        }
-      });
-      if ( tmpDataList.length == messageIds.length ) handler(messageIdsKey, tmpDataList);
-      return;
-    }
-    handler = function( message, data ){
-      app._multiSubHandler( messageIdsKey, message.id, data );
-    };
-  }
-  // 订阅消息
-  messageIds.forEach(function(messageId, k){
-    var tmpData = app._publishedMessages[messageId]; 
-    if (  tmpData !== undefined) {
-      var message = create_message( app, messageId, tmpData );
-      handler( message, tmpData );
-      if ( isOnce ) needSub = false;
-    }
-    if(needSub) {
-      // this指向
-      emitFn.call(app._emitter, messageId, handler);
-    }
-  });
-};
-
-/**
- * [_multiSubHandler 多个协同订阅的处理]
- * @param  {String} messageIdsKey 协同的消息ids
- * @param  {String} messageId      发布的消息id
- * @param  {Mixed} data     单个消息发布的数据内容
- */
-Framework.prototype._multiSubHandler = function( messageIdsKey, messageId, data ) {
-  // 获取存储的协同订阅
-  var multi = this._multiSubList[messageIdsKey];
-  if ( !multi ) return;
-
-  var msgIndex = multi['messageIds'].indexOf( messageId );
-  if ( msgIndex != -1 ) {
-    multi['dataList'][msgIndex] = data;
-  }
-  // 已经全部订阅到
-  if ( multi['dataList'].length == multi['messageIds'].length ) {
-    var app     = this;
-    var message = create_message(app, messageIdsKey, multi['dataList']); 
-    multi['handlers'].forEach(function( handler, k ){
-      handler['handler']( message, multi['dataList'] );
-      // 判断重复执行
-      if ( handler['isOnce'] == true ) {
-        multi['handlers'].splice( k, 1 );
-      }
-    });
-    // 清空订阅的数据
-    multi['dataList'] = [];
-    if ( multi['handlers'].length == 0 ) {
-      app._multiSubList[messageIdsKey] = undefined;
-    } 
-  }
-};
-
-/**
- * 发布一个消息
- * @param {String} messageId 消息标识
- * @param {Mixed} data 传递给订阅者的数据
- */
-Framework.prototype.pub = function( messageId, data ){
-  // 记入到_publishedMessages
-  data = data || null;
-  
-  // 如果此事件曾经被触发过 检查协同订阅，覆盖新值
-  if ( this._publishedMessages[messageId] !== undefined ) {
-    for( var i in this._multiSubList ) {
-      if ( i.indexOf( messageId ) != -1 && this._multiSubList[i] !== undefined ) {
-        for( var j = 0; j < this._multiSubList[i]['handlers'].length; j++ ) {
-          if (this._multiSubList[i]['handlers'][j].isOnce){
-            var dataIndex = this._multiSubList[i]['messageIds'].indexOf(messageId);
-            if ( dataIndex != -1 ) this._multiSubList[i]['dataList'][dataIndex] = data;
-            break;
-          }
-        }
-      }
-    }
-  }
-
-  var message = create_message( this, messageId, data );
-  this._publishedMessages[messageId] = data;  
-  this._emitter.emit( messageId, message, data );
-};
 
 /**
  * SERVER 方法
@@ -497,14 +343,6 @@ Framework.prototype.end = function(){
 ////////////////////////////////////////
 // Framework.prototype end
 ////////////////////////////////////////
-
-/**
- * 创建message对象以pub
- */
-function create_message( app, messageId, data ) {
-  var message = { 'id':messageId };
-  return message;
-}
 
 /**
  * 注册框架加载完毕后的事件

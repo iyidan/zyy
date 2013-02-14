@@ -107,3 +107,31 @@ utils.uid = function(len) {
     .toString('base64')
     .slice(0, len);
 };
+
+ /**
+ * trim 一个字符串
+ * @parma {String} str
+ * @param {String} char 可选， 默认为空格
+ * @return {String}
+ */
+utils.trim = function(str, char) {
+  if (!char) {
+    char = '\\s';
+  }
+  var reg = new RegExp('(^'+char+'*)|('+char+'*$)', 'g');
+  return str.replace(reg, '');
+};
+utils.ltrim = function(str, char) {
+  if (!char) {
+    char = '\\s';
+  }
+  var reg = new RegExp('(^'+char+'*)', 'g');
+  return str.replace(reg, '');
+};
+utils.rtrim = function(str, char) {
+    if (!char) {
+    char = '\\s';
+  }
+  var reg = new RegExp('('+char+'*$)', 'g');
+  return str.replace(reg, '');
+};
