@@ -66,7 +66,9 @@ Message.prototype.pub = function( messageId, data ) {
   }
 
   var message = this.generate( messageId, data );
-  this._publishedMessages[messageId] = data;  
+  if (this._storePub) {
+    this._publishedMessages[messageId] = data;
+  }  
   this._emitter.emit( messageId, message, data );
 };
 
@@ -127,13 +129,15 @@ Message.prototype.sub = function() {
     // 若有多个协同订阅的回调，则除第一个外，不执行app._multiSubHandler，否则会重复绑定
     else {
       app._multiSubList[messageIdsKey]['handlers'].push( { 'handler':handler, 'isOnce':isOnce } );
-      var tmpDataList = [];
-      messageIds.forEach(function(v, k){
-        if ( app._publishedMessages[v] !== undefined ) {
-          tmpDataList.push(app._publishedMessages[v]);
-        }
-      });
-      if ( tmpDataList.length == messageIds.length ) handler(messageIdsKey, tmpDataList);
+      if ( app._storePub ) {
+        var tmpDataList = [];
+        messageIds.forEach(function(v, k){
+          if ( app._publishedMessages[v] !== undefined ) {
+            tmpDataList.push(app._publishedMessages[v]);
+          }
+        });
+        if ( tmpDataList.length == messageIds.length ) handler(messageIdsKey, tmpDataList);
+      }
       return;
     }
     handler = function( message, data ){
