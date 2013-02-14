@@ -161,7 +161,6 @@ Framework.prototype.sub = function() {
       app._multiSubList[messageIdsKey]['handlers'].push( { 'handler':handler, 'isOnce':isOnce } );
     }
     handler = function( message, data ){
-      console.log('sub handler', messageIdsKey, message, data);
       app._multiSubHandler( messageIdsKey, message.id, data );
     };
   }
