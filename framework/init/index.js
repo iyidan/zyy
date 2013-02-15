@@ -91,7 +91,7 @@ function Framework ( req, res, config )
     'init.cookie.ready'
   ];
   // pub/sub
-  new Message(false, 50, this);
+  new Message(true, 50, this);
 }
 
 ////////////////////////////////////////
