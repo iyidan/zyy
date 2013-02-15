@@ -9,16 +9,16 @@ var EventEmitter = require( 'events' ).EventEmitter;
  * @param {Boolean} storePub 是否保存发布过的消息：
  *   true:  保存在this._publishedMessages 里
  *   false: 不保存，因此当订阅一个发布过的消息是收不到数据的，除非这个消息被重新触发
- *   默认为true
+ *   默认为false
  * @param {Number} listenersNum 同一个消息最多限制多少个订阅者，超出会有警告提示，设置为0不限制
  * @param {Object} proxy 代理具体消息体对象，如果传递此参数，构造器会将_message/pub/sub 方法添加到对象上  
  */
 var Message = exports.Message = function( storePub, listenersNum, proxy ) {
 
-  this._storePub     = storePub === undefined  ?  true  :  !!storePub;
+  this._storePub     = storePub === undefined  ?  false  :  !!storePub;
   this._listenersNum = isNaN(listenersNum)     ?  50    :  parseInt(listenersNum);
 
-  // 设置单个事件最多50个监听器，默认为10个
+  // 设置单个事件监听数
   this._emitter = new EventEmitter();
   this._emitter.setMaxListeners(this._listenersNum);
 
