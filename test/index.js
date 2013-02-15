@@ -80,6 +80,13 @@ server.createServer( config , function( message, app ){
     messager.sub('test-messager2', function(){
       app.write('no ...');
     });
+    messager.sub('test-messager2-1', 'test-messager2-2', function(){
+      app.write('multi-storePub=false:\n');
+      app.write( util.inspect( messager ) );
+    });
+
+    messager.pub('test-messager2-2');
+    messager.pub('test-messager2-1');
     messager.pub('test-messager');
   }); 
 });
