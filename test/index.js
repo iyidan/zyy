@@ -1,7 +1,8 @@
-var config = require( './config' ).config;
-var server = require( config.FW_PATH );
-var util   = require( 'util' );
-var utils  = require(config.FW_PATH + '/core/utils.js' );
+var config  = require( './config' ).config;
+var server  = require( config.FW_PATH );
+var util    = require( 'util' );
+var utils   = require(config.FW_PATH + '/core/utils.js' );
+var Message = require(config.FW_PATH + '/message').Message;
 
 server.createServer( config , function( message, app ){
   app.writeHead(200, { 'Content-Type':'text/html' });
@@ -70,6 +71,15 @@ server.createServer( config , function( message, app ){
   app.sub('testevents.ready', 'events.ready', function(){
     app.write( util.inspect(app._message) );
     app.write( '\n\n\n\n\n' );
-    app.end( util.inspect(app) );
+    // need sub ablove pub
+    var messager = new Message(false, 10);
+    messager.sub('test-messager', function(){
+      app.end( util.inspect(messager) );
+    });
+    messager.pub('test-messager2')
+    messager.sub('test-messager2', function(){
+      app.write('no ...');
+    });
+    messager.pub('test-messager');
   }); 
 });
