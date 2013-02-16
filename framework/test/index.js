@@ -1,4 +1,4 @@
-exports = {
+module.exports = {
 
   suite: function( str ) {
     str = (str + ' =======================================').slice(0, 40);
