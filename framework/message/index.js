@@ -11,7 +11,13 @@ var EventEmitter = require( 'events' ).EventEmitter;
  *   false: 不保存，因此当订阅一个发布过的消息是收不到数据的，除非这个消息被重新触发
  *   默认为true
  * @param {Number} listenersNum 同一个消息最多限制多少个订阅者，超出会有警告提示，设置为0不限制
- * @param {Object} proxy 代理具体消息体对象，如果传递此参数，构造器会将_message/pub/sub 方法添加到对象上  
+ * @param {Object} proxy 代理具体消息体对象，如果传递此参数，构造器会将_message/pub/sub 方法添加到对象上
+ * @example
+ *   // 默认储存发布过的消息、每个消息最多50个订阅者
+ *   var messager = new Message();
+ *   
+ *   // 将sub/pub附加到app上并储存发布过的消息、每个消息最多20个订阅者
+ *   new Messager(true, 20, app);
  */
 var Message = exports.Message = function( storePub, listenersNum, proxy ) {
 
@@ -45,6 +51,8 @@ var Message = exports.Message = function( storePub, listenersNum, proxy ) {
  * @param {String} messageId 消息标识
  * @param {Mixed} data 传递给订阅者的数据
  * @return {Boolean} 是否成功执行
+ * @example
+ *   app.pub( 'message1', { list:... } );
  */
 Message.prototype.pub = function( messageId, data ) {
   // 记入到_publishedMessages
@@ -81,13 +89,28 @@ Message.prototype.pub = function( messageId, data ) {
  *  @example
  *    // 完整参数
  *    // subPublished = true :默认订阅已经发布过的消息（只要message实例storePub不指定为false）
+ *    // isOnce       = true :默认只订阅一次
+ *    // handler      = function( message, dataList ){ console.log(dataList[0]); ... }
+ *    // handler      = function( message, data ){ console.log(data); ... }
  *    app.sub( messageId1, messageId2, messageId3, [...], handler, subPublished = true, isOnce = true);
+ *
+ *    // 订阅一个事件（默认订阅发布过的消息、订阅一次）
+ *    app.sub( messageId, handler );
+ *    
  *    // 不止订阅一次
- *    app.sub( messageId, function( message, data ) { ... }, true, false );
- *    // 订阅多个消息，当消息全部完成时候回调handler，
- *    //此时会把各个消息的data依次作为handler参数传递
- *    app.sub([messageId1, [messageId2, [messageId3, [...]]]], handler, subPublished=true, isOnce=true);
- *      handler = function( message, dataList ){ dataList[0] ... }
+ *    app.sub( messageId, handler, true, false );
+ *    
+ *    // 不订阅已发布过的
+ *    app.sub( messageId, handler, false );
+ *    
+ *    // 订阅多个消息，当消息全部完成时候回调handler（默认订阅发布过的消息、订阅一次）
+ *    app.sub( messageId1, messageId2, messageId3, handler);
+ *
+ *    // 订阅多个消息，不订阅发布过的消息
+ *    app.sub( messageId1, messageId2, messageId3, handler, false);
+ *
+ *    // 订阅多个消息，不止订阅一次（默认订阅发布过的消息）
+ *    app.sub( messageId1, messageId2, messageId3, handler, true, false);
  */
 Message.prototype.sub = function() {
   var app           = this;
