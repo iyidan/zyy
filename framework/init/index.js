@@ -29,6 +29,7 @@ exports.createServer = function ( config, callback ) {
     var ip   = config.IP || '127.0.0.1';
     // session Manager
     //var sm = new SessionManager(config.SESSION);
+    var sm = null;
 
     return http.createServer(function(req, res){
       init(req, res, config, sm, callback);
