@@ -29,27 +29,46 @@ session.SessionManager = function( config ) {
   // pub/sub 不储存触发过的事件
   new Message(false, 50, this);
 
-  // sub message
+  // sub error message
   this.sub( 'error', function(message, err){
     throw new Error( err );
   });
 
+  // 检查环境ok
   this.sub( 'checkOk', function(message, data){
     
-  });
+  }, false, false);
 
-  this.sub( 'read', function(message, sessionid){
+  // 连接存储器ok
+  this.sub( 'opend', function(message, data){
+
+  }, false, false);
+
+  // 关闭存储器ok
+  this.sub('closed', function(message, data){
+
+  }, false, false);
+
+  // 读取sessionOk
+  this.sub( 'readOk', function(message, data){
     
-  });
+  }, false, false);
 
-  // driver
+  // 写sessionOk
+  this.sub( 'writeOk', function(message, data){
+
+  }, false, false);
+
+  // 销毁sessionOk
+  this.sub( 'destoryOk', function( message, data ){
+
+  }, false, false);
+
+  // 储存器驱动实例
   this.driver = require( './driver/' + this.save_handler + '.js' );
 
   // 检查配置
   this.check();
-
-  // 当使用memory来储存session
-  this._sessions = {};
 };
 
 /**
@@ -73,9 +92,7 @@ var pro = session.SessionManager.prototype;
  */
 pro.check = function(callback) {
 
-  this.driver.check( this, function(){
-
-  });
+  this.driver.check( this );
 
   // check save path 由于是在项目启动时候执行，可以不用异步操作
   if ( this.save_handler == 'files' ) {
