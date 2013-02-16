@@ -7,4 +7,6 @@
  *     可不传递
  * @return {Object} 返回有http.createServer 生成的server实例
  */
+
+var init = require('./init');
 exports.createServer = init.createServer;
