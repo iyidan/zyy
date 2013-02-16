@@ -1,8 +1,9 @@
 /**
  * session模块
  */
-var fs = require('fs');
-var utils = require('../core/utils.js');
+var fs      = require('fs');
+var utils   = require('../core/utils.js');
+var Message = require('../message').Message;
 
 var session = module.exports;
 
@@ -12,6 +13,7 @@ var session = module.exports;
  * @return {Object} 返回一个session实例
  */
 session.SessionManager = function( config ) {
+
   this.save_handler    = config.save_handler || 'memory';
   this.save_path       = config.save_path || '/tmp/node_session';
   this.lifetime        = isNaN( config.lifetime ) ? 3600*24*30 : config.lifetime;
@@ -20,8 +22,32 @@ session.SessionManager = function( config ) {
   this.cookie_secure   = config.cookie_secure || false;
   this.cookie_httponly = config.cookie_httponly || false;
   this.gc_probability  = config.gc_probability || (1/100);
+
+  // session manager
+  var sm = this;
+
+  // pub/sub 不储存触发过的事件
+  new Message(false, 50, this);
+
+  // sub message
+  this.sub( 'error', function(message, err){
+    throw new Error( err );
+  });
+
+  this.sub( 'checkOk', function(message, data){
+    
+  });
+
+  this.sub( 'read', function(message, sessionid){
+    
+  });
+
+  // driver
+  this.driver = require( './driver/' + this.save_handler + '.js' );
+
   // 检查配置
   this.check();
+
   // 当使用memory来储存session
   this._sessions = {};
 };
@@ -45,19 +71,25 @@ var pro = session.SessionManager.prototype;
 /**
  * 检查配置
  */
-pro.check = function() {
+pro.check = function(callback) {
+
+  this.driver.check( this, function(){
+
+  });
+
   // check save path 由于是在项目启动时候执行，可以不用异步操作
   if ( this.save_handler == 'files' ) {
     try {
       this.save_path = utils.rtrim(this.save_path, '/');
       if (!fs.existsSync(this.save_path)) {
-        fs.mkdirSync(this.save_path, '0700');
+        fs.mkdirSync(this.save_path, '0777');
       }
       else{
         fs.appendFileSync(this.save_path + '/' + utils.uid(), (new Date).toString());
       }
     } catch(err) {
-      throw new Error( 'session_save_path is not writeable ' + err.toString() );  
+      this.pub( 'error', 'session_save_path is not writeable ' + err.toString() );
+      return;  
     }
   }
   // memcache
@@ -78,7 +110,7 @@ pro.check = function() {
   }
   // other
   else {
-    throw new Error( 'session_save_handler is not supported.' );
+    this.pub( 'error', 'session_save_handler is not supported.' );
   }
 
   return true;
@@ -100,7 +132,7 @@ pro.open = function() {
   else if ( this.save_handler == 'mysql' ) {
 
   } else {
-    throw new Error( 'session: pro.open error: not supported handler' );
+    this.pub( 'error', 'session: pro.open error: not supported handler' );
   }
 };
 
@@ -120,7 +152,7 @@ pro.close = function() {
   else if ( this.save_handler == 'mysql' ) {
 
   } else {
-    throw new Error( 'session: pro.close error: not supported handler' );
+    this.pub( 'error', 'session: pro.close error: not supported handler' );
   }
 };
 
@@ -129,6 +161,7 @@ pro.close = function() {
  */
 pro.read = function( sessionid ) {
   if ( this.save_handler == 'memory' ) {
+
     return true;
   }
   else if ( this.save_handler == 'files' ) {
@@ -143,10 +176,89 @@ pro.read = function( sessionid ) {
   else if ( this.save_handler == 'mysql' ) {
 
   } else {
-    throw new Error( 'session: pro.close error: not supported handler' );
+    this.pub( 'error', 'session: pro.read error: not supported handler' );
+  }
+};
+
+/**
+ * 写一个会话
+ */
+pro.write = function( sessionid, data )
+{
+  if ( this.save_handler == 'memory' ) {
+
+    return true;
+  }
+  else if ( this.save_handler == 'files' ) {
+
+  }
+  else if ( this.save_handler == 'memcache' ) {
+
+  }
+  else if ( this.save_handler == 'redis' ) {
+
+  }
+  else if ( this.save_handler == 'mysql' ) {
+
+  } else {
+    this.pub( 'error', 'session: pro.write error: not supported handler' );
+  }
+};
+
+/**
+ * 销毁一个会话
+ */
+pro.destory = function( sessionid ) {
+  if ( this.save_handler == 'memory' ) {
+
+    return true;
+  }
+  else if ( this.save_handler == 'files' ) {
+
+  }
+  else if ( this.save_handler == 'memcache' ) {
+
+  }
+  else if ( this.save_handler == 'redis' ) {
+
+  }
+  else if ( this.save_handler == 'mysql' ) {
+
+  } else {
+    this.pub( 'error', 'session: pro.destory error: not supported handler' );
+  }
+};
+
+/**
+ * gc
+ */
+pro.gc = function()
+{
+  if ( this.save_handler == 'memory' ) {
+
+    return true;
+  }
+  else if ( this.save_handler == 'files' ) {
+
+  }
+  else if ( this.save_handler == 'memcache' ) {
+
+  }
+  else if ( this.save_handler == 'redis' ) {
+
+  }
+  else if ( this.save_handler == 'mysql' ) {
+
+  } else {
+    this.pub( 'error', 'session: pro.gc error: not supported handler' );
   }
 };
 
 ////////////////////////////////////////////////////
 // 以上封装了各种环境下session储存、读写的操作方法：
 ////////////////////////////////////////////////////
+
+pro.create = function()
+{
+
+};

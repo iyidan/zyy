@@ -1,28 +1,46 @@
 /**
- * http连接建立后初始化请求响应对象
+ * 初始化app
  */
-var url     = require( 'url' );
-var EventEmitter = require( 'events' ).EventEmitter;
-var crypto = require('crypto');
-var util = require( 'util' );
 
-var core    = require('../core');
-var Message = require('../message').Message;
-var db      = require('../db');
-var cache   = require('../cache');
-var cookie  = require('../cookie');
-var session = require('../session');
+///////////////////////////////////////////////////////////////////
 
+/* native module */
+var http         = require( 'http' );
+var url          = require( 'url' );
+var crypto       = require('crypto');
+var util         = require( 'util' );
+
+/* framework module */
+var core           = require('../core');
+var Message        = require('../message').Message;
+var db             = require('../db');
+var cache          = require('../cache');
+var cookie         = require('../cookie');
+var SessionManager = require('../session').SessionManager;
+var utils          = require('../core/utils.js');
+
+/* 3rd module */
 var formidable = require('../3rd/formidable');
 
+///////////////////////////////////////////////////////////////////
 
+exports.createServer = function ( config, callback ) {
+    var port = config.PORT || 3000;
+    var ip   = config.IP || '127.0.0.1';
+    // session Manager
+    var sm = new SessionManager(config.SESSION);
+
+    return http.createServer(function(req, res){
+      init(req, res, config, sm, callback);
+    }).listen(port, ip);
+};
 
 /**
  * 包装原始的req对象
  * @param  {Object} oriReq 原始的request
  * @return {Object} 包装后的request
  */
-exports.init = function( req, res, config, callback ){
+function init ( req, res, config, sm, callback ){
   var app = new Framework( req, res, config );
   // 注册ready
   init_READY( app );
@@ -57,7 +75,7 @@ exports.init = function( req, res, config, callback ){
   init_CACHE( app );
 
   init_SESSION( app );
-};
+}
 
 /**
  * 构造Request
@@ -483,7 +501,11 @@ function init_COOKIE( app )
  */
 function init_SESSION( app )
 {
-  app.pub( 'init.session.ready' );
+  // session 依赖于cookie
+  app.sub( 'init.cookie.ready', function(message, data){
+    app.pub( 'init.session.ready' );  
+  });
+  
 }
 
 /**
