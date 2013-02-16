@@ -46,7 +46,7 @@ test.test('default', function(){
   messager.pub('testMessage', 'pub5');
   messager.pub('testMessage', 'pub6');
 
-  console.log( 'messager: ' messager);
+  console.log( 'messager: ', messager);
 
   var messager2 = new Message();
   for ( var i = 0; i < 50; i ++ ) {
@@ -74,7 +74,7 @@ test.test('default', function(){
 
 test.suite('multi');
 test.test('multiSubMessages', function(){
-  
+
   var messager = new Message();
 
   messager.sub('test1', 'test2', 'test3', function(message, data){
