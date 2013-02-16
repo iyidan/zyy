@@ -60,7 +60,7 @@ test.test('default', function(){
 
   messager2.pub('testMessage', 'testMessager2');
 
-  var app = {}；
+  var app = {};
   new Message( false, 10, app);
   app.pub('testMessage', 'pub1');
   app.sub('testMessage', function(message, data){
