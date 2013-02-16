@@ -86,7 +86,7 @@ Message.prototype.pub = function( messageId, data ) {
  *    app.sub( messageId, function( message, data ) { ... }, true, false );
  *    // 订阅多个消息，当消息全部完成时候回调handler，
  *    //此时会把各个消息的data依次作为handler参数传递
- *    app.sub([messageId1, [messageId2, [messageId3, [...]]]], handler, isOnce);
+ *    app.sub([messageId1, [messageId2, [messageId3, [...]]]], handler, subPublished=true, isOnce=true);
  *      handler = function( message, dataList ){ dataList[0] ... }
  */
 Message.prototype.sub = function() {
