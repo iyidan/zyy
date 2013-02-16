@@ -90,7 +90,7 @@ function Framework ( req, res, config )
     'init.files.ready',
     'init.cookie.ready'
   ];
-  // pub/sub
+  // pub&sub
   new Message(true, 50, this);
 }
 

@@ -9,13 +9,13 @@ var EventEmitter = require( 'events' ).EventEmitter;
  * @param {Boolean} storePub 是否保存发布过的消息：
  *   true:  保存在this._publishedMessages 里
  *   false: 不保存，因此当订阅一个发布过的消息是收不到数据的，除非这个消息被重新触发
- *   默认为false
+ *   默认为true
  * @param {Number} listenersNum 同一个消息最多限制多少个订阅者，超出会有警告提示，设置为0不限制
  * @param {Object} proxy 代理具体消息体对象，如果传递此参数，构造器会将_message/pub/sub 方法添加到对象上  
  */
 var Message = exports.Message = function( storePub, listenersNum, proxy ) {
 
-  this._storePub     = storePub === undefined  ?  false  :  !!storePub;
+  this._storePub     = storePub === undefined  ?  true  :  !!storePub;
   this._listenersNum = isNaN(listenersNum)     ?  50    :  parseInt(listenersNum);
 
   // 设置单个事件监听数
@@ -79,8 +79,11 @@ Message.prototype.pub = function( messageId, data ) {
  *  @param {Boolean} isOnce 只监听一次，默认true
  *  @return {Boolean} 是否成功执行
  *  @example
+ *    // 完整参数
+ *    // subPublished = true :默认订阅已经发布过的消息（只要message实例storePub不指定为false）
+ *    app.sub( messageId1, messageId2, messageId3, [...], handler, subPublished = true, isOnce = true);
  *    // 不止订阅一次
- *    app.sub( messageId, function( message, data ) { ... }, false );
+ *    app.sub( messageId, function( message, data ) { ... }, true, false );
  *    // 订阅多个消息，当消息全部完成时候回调handler，
  *    //此时会把各个消息的data依次作为handler参数传递
  *    app.sub([messageId1, [messageId2, [messageId3, [...]]]], handler, isOnce);
@@ -91,45 +94,53 @@ Message.prototype.sub = function() {
   var isMultiSub    = false;
   var messageIds    = [];
   var messageIdsKey = '';
+  var subPublished  = true;
   var isOnce        = true;
-  var lastArg       = arguments[arguments.length - 1];
   var handler       = null;
   var emitFn        = app._emitter.once;
   var needSub       = true;
 
-  if ( typeof lastArg == 'function' ) {
-    handler = lastArg;
-    isMultiSub = arguments.length > 2 ? true : false;
-  } else {
-    isOnce  = lastArg;
-    handler = arguments[arguments.length - 2];
-    if ( typeof handler !== 'function' ) {
-      app.pub( 'error', { 'file': __filename, 'err': 'prototype.sub handler is not a function.' });
-      return;
-    }
-    isMultiSub = arguments.length > 3 ? true : false;
-    if(isOnce === false) emitFn = app._emitter.on; 
-  }
-
+  // 找出handler及其他参数
   for ( var i = 0; i < arguments.length; i ++ ) {
     if ( typeof arguments[i] == 'string' ) {
       messageIds.push( arguments[i] );
+    } else if ( typeof arguments[i] == 'function' ) {
+      handler = arguments[i];
+      break;
     }
   }
+  if ( typeof handler !== 'function' || messageIds.length < 1 ) {
+    app.pub( 'error', { 'file': __filename, 'err': 'sub: handler is not a function or messageIds.length < 1.' });
+    return;
+  }
+  if ( arguments[ i+1 ] !== undefined ) {
+    subPublished = !!arguments[ i+1 ];
+  }
+  if ( arguments[ i+2 ] !== undefined ) {
+    isOnce = !!arguments[ i+2 ];
+  }
+
+  // 改写emitFn
+  if(isOnce === false) emitFn = app._emitter.on;
+
   // 如果是多个消息订阅
-  if ( isMultiSub ) {
+  if ( messageIds.length > 1 ) {
     messageIdsKey = messageIds.join(',');
     if ( app._multiSubList[messageIdsKey] === undefined ) {
       app._multiSubList[messageIdsKey] = {
-        'messageIds':messageIds,
-        'handlers':[ { 'handler':handler, 'isOnce':isOnce } ], 
-        'dataList':[]
+        'messageIds': messageIds,
+        'handlers'  : [ { 'handler':handler, 'subPublished':subPublished, 'isOnce':isOnce } ], 
+        'dataList'  : []
       };
     }
     // 若有多个协同订阅的回调，则除第一个外，不执行app._multiSubHandler，否则会重复绑定
     else {
-      app._multiSubList[messageIdsKey]['handlers'].push( { 'handler':handler, 'isOnce':isOnce } );
-      if ( app._storePub ) {
+      app._multiSubList[messageIdsKey]['handlers'].push({
+        'handler'      : handler, 
+        'subPublished' : subPublished, 
+        'isOnce'       : isOnce
+      });
+      if ( app._storePub && subPublished ) {
         var tmpDataList = [];
         messageIds.forEach(function(v, k){
           if ( app._publishedMessages[v] !== undefined ) {
@@ -147,7 +158,7 @@ Message.prototype.sub = function() {
   // 订阅消息
   messageIds.forEach(function(messageId, k){
     var tmpData = app._publishedMessages[messageId]; 
-    if (  tmpData !== undefined) {
+    if (  tmpData !== undefined && subPublished ) {
       var message = app.generate( messageId, tmpData );
       handler( message, tmpData );
       if ( isOnce ) needSub = false;
@@ -181,7 +192,7 @@ Message.prototype._multiSubHandler = function( messageIdsKey, messageId, data ) 
     multi['handlers'].forEach(function( handler, k ){
       handler['handler']( message, multi['dataList'] );
       // 判断重复订阅
-      if ( handler['isOnce'] == true ) {
+      if ( handler['isOnce'] === true ) {
         multi['handlers'].splice( k, 1 );
       }
     });
