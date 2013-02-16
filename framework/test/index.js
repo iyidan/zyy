@@ -2,7 +2,7 @@ module.exports = {
 
   suite: function( str ) {
     str = (str + ' =======================================').slice(0, 40);
-    return '\n' + str + '\n';
+    console.log('\n' + str + '\n');
   },
 
   test: function( str, callback ) {
