@@ -28,12 +28,23 @@ server.createServer( config , function( message, app ){
   app.write('\n');
   app.write('\n');
 
+  app.pub('testEvent1', 'datapublished1');
+  app.pub('testEvent2', 'datapublished2');
+  app.pub('testEvent3', 'datapublished3');
+
+  app.sub('testEvent2', function(message, data){
+    app.write('not sub published,sub not once');
+    app.write( util.inspect( data ) );
+  }, false, false);
+
+  app.pub('testEvent2', 'datapublish2');
+
   app.sub( 'testEvent1', 'testEvent2', 'testEvent3', function( message, dataList ){
-    app.write('sub1:\n');
+    app.write('sub1:false, false\n');
     app.write( util.inspect( dataList ) );
     app.write('\n\n\n');
     //app.pub('testevents.ready');
-  }, false);
+  }, false, false);
 
   app.sub( 'testEvent1', 'testEvent2', 'testEvent3', function( message, dataList ){
     app.write('sub2:\n');
