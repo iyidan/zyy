@@ -37,7 +37,7 @@ exports.init = function( req, res, config, callback ){
       app.setStatusCode(500);
       app.end('');
     }
-  }, false);
+  }, true, false);
 
   // 注册close事件
   app.res.on( 'close', function(){
