@@ -28,8 +28,7 @@ exports.createServer = function ( config, callback ) {
     var port = config.PORT || 3000;
     var ip   = config.IP || '127.0.0.1';
     // session Manager
-    //var sm = new SessionManager(config.SESSION);
-    var sm = null;
+    var sm = new SessionManager(config.SESSION);
 
     return http.createServer(function(req, res){
       init(req, res, config, sm, callback);
