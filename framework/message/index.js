@@ -56,7 +56,7 @@ var Message = exports.Message = function( storePub, listenersNum, proxy ) {
  */
 Message.prototype.pub = function( messageId, data ) {
   // 记入到_publishedMessages
-  data = data || null;
+  data = typeof data !== 'undefined'  ?  data  : null;
   
   // 如果此消息订阅曾经被触发过 检查协同订阅，覆盖新值
   if ( this._publishedMessages[messageId] !== undefined ) {

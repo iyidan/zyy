@@ -50,7 +50,8 @@ exports.config = {
     'cookie_secure': false,
     'cookie_httponly': false,
     // session文件清理几率，仅在save_handler设置为files有效
-    'gc_probability': 1 / 100
+    // 请定义一个0~1之间的小数
+    'gc_probability': 0.2
   },
   // db连接信息
   'DB': {

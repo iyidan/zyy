@@ -2,38 +2,38 @@
  * session内存储存器
  */
 
-module.exports.Memory = function() {
+module.exports.memory = function() {
   // 用以储存session
   this._sessions = {};
 };
 
-var pro = module.exports.Memory;
+var pro = module.exports.memory.prototype;
 
 /**
  * 以下方法
- * @param {Object} sm SessionManager 的实例对象
+ * this._sm SessionManager 的实例对象
  */
-pro.check = function( sm ) {
-  sm.pub('checkOk');
+pro.check = function() {
+  return true;
 };
 
-pro.open = function( sm ) {
-  sm.pub( 'opened' );
+pro.open = function() {
+  return true;
 }
 
-pro.close = function( sm ) {
-  sm.pub( 'closed' );
+pro.close = function( callback ) {
+  callback();
 };
 
-
-pro.read = function( sm, sessionid ) {
+pro.read = function( sessionid, callback ) {
   sessionid = this._checkSessionId(sessionid);
   if ( !sessionid ) {
     sm.pub('error', 'memory.read error: sessionid is not a string type.');
     return;
   }
   if ( this._isExpires(sessionid) ) {
-    return false;
+    sm.pub('readOk', false);
+    return;
   }
 
   // readOk
@@ -57,7 +57,7 @@ pro.write = function( sm, sessionid, data ) {
   if ( !this._sessions[sessionid] ) {
     this._sessions[sessionid] = {
       'data':   JSON.stringify(data),
-      'expires' sm.lifetime
+      'expires': sm.lifetime
     };
   } else {
     this._sessions[sessionid].data = JSON.stringify(data);
