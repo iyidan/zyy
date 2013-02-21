@@ -44,6 +44,7 @@ exports.config = {
     'save_path': '/tmp/test_node_session',
     // session有效时间，单位秒(s)
     'lifetime': 3600*24*30,
+    'cookie_param': 'NODESESSIONID',
     // cookie的一些设置
     'cookie_path': '/',
     'cookie_domain': '',

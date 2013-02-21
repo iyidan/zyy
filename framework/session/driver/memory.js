@@ -13,72 +13,100 @@ var pro = module.exports.memory.prototype;
  * 以下方法
  * this._sm SessionManager 的实例对象
  */
-pro.check = function() {
+pro.check = function(callback) {
+  if ( typeof callback == 'function' ) callback(false, true);
   return true;
 };
 
-pro.open = function() {
+pro.open = function( callback ) {
+  if ( typeof callback == 'function' ) callback(false ,true);
   return true;
 }
 
 pro.close = function( callback ) {
-  callback();
+  if ( typeof callback == 'function' ) callback(false, true);
+  return true;
 };
 
 pro.read = function( sessionid, callback ) {
-  sessionid = this._checkSessionId(sessionid);
-  if ( !sessionid ) {
-    sm.pub('error', 'memory.read error: sessionid is not a string type.');
-    return;
-  }
   if ( this._isExpires(sessionid) ) {
-    sm.pub('readOk', false);
-    return;
+    callback('session isExpired.', false);
+    return false;
   }
-
-  // readOk
-  sm.pub('readOk', JSON.parse(this._sessions[sessionid].data));
+  if ( typeof callback != 'function' ) {
+    this._sm.pub('error', 'read session callback is not a function type.');
+    return false;
+  }
+  callback(false, this._read(sessionid));
+  return true;
 };
 
 
-pro.write = function( sm, sessionid, data ) {
+pro.write = function( sessionid, data, callback ) {
 
   sessionid = this._checkSessionId(sessionid);
   if ( !sessionid ) {
-    sm.pub('error', 'memory.write error: sessionid is not a string type.');
+    this._sm.pub('error', 'memory.write error: sessionid is not a string type.');
     return;
   }
 
   if ( typeof data != 'object' ) {
-    sm.pub('error', 'memory.write error: data is not a object type.');
+    this._sm.pub('error', 'memory.write error: data is not a object type.');
     return;
   }
 
   if ( !this._sessions[sessionid] ) {
     this._sessions[sessionid] = {
       'data':   JSON.stringify(data),
-      'expires': sm.lifetime
+      'expires': this._sm.lifetime
     };
   } else {
     this._sessions[sessionid].data = JSON.stringify(data);
   }
   // writeOk
-  sm.pub('writeOk', {
-    'sessionid': sessionid,
-    'data': data
-  });
+  if ( typeof callback == 'function' ) {
+    callback(false, this._read(sessionid));
+  }
 };
 
+pro.create  = function( callback ) {
+  var uid = this._sm.uid();
+  while( this._sessions[uid] ) {
+    uid = this._sm.uid();
+  }
 
-pro.destory = function( sm, sessionid ){
+  this.write(uid, {});
+  if ( typeof callback == 'function' ) {
+    callback(false, this._read(sessionid));
+  }
+};
+
+pro.renew = function(sessionid, callback) {
   sessionid = this._checkSessionId(sessionid);
   if ( !sessionid ) {
-    sm.pub('error', 'memory.destory error: sessionid is not a string type.');
+    this._sm.pub('error', 'memory check sessionid error.');
+    return;
+  }
+  if ( !this._sessions[sessionid] ) {
+    return this.create(callback);
+  }
+  this._sessions[sessionid].expires = this._sm.lifetime;
+  if ( typeof callback == 'function' ) {
+    callback(false, this._read(sessionid));
+  }
+};
+
+pro.destory = function( sessionid, callback ){
+  sessionid = this._checkSessionId(sessionid);
+  if ( !sessionid ) {
+    this._sm.pub('error', 'memory.destory error: sessionid is not a string type.');
     return;
   }
   delete this._sessions[sessionid];
   // destoryOk
-  sm.pub( 'destoryOk', sessionid );
+  if ( typeof callback == 'function' ) {
+    callback(false, true);
+  }
 };
 
 
@@ -101,6 +129,7 @@ pro.gc  = function() {
 pro._isExpires = function( sessionid ) {
   sessionid = this._checkSessionId(sessionid);
   if ( !sessionid ) {
+    this._sm.pub('error', 'memory. _isExpires sessionid is empty.');
     return true;
   }
   var now = (new Date).getTime();
@@ -111,17 +140,21 @@ pro._isExpires = function( sessionid ) {
 };
 
 /**
- * 检查sessionid是否合法
- * @param  {String} sessionid 
- * @return {String|Boolean}
+ * 组装return的数据格式
+ * @return {[type]} [description]
  */
-pro._checkSessionId = function( sessionid ) {
-  if ( !sessionid || typeof sessionid != 'string' ) {
-    return false;
+pro._read = function(sessionid) {
+
+  if ( !this._sessions[sessionid] ) {
+    return {
+      'sessionid': sessionid,
+      'data': false,
+      'expires': 0
+    };
   }
-  sessionid = sessionid.trim();
-  if ( sessionid ) {
-    return sessionid;
-  }
-  return false;
+  return {
+    'sessionid': sessionid,
+    'data': JSON.parse(this._sessions[sessionid].data),
+    'expires': this._sessions[sessionid].expires
+  };
 };

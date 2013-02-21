@@ -25,13 +25,16 @@ var formidable = require('../3rd/formidable');
 ///////////////////////////////////////////////////////////////////
 
 exports.createServer = function ( config, callback ) {
+    
     var port = config.PORT || 3000;
     var ip   = config.IP || '127.0.0.1';
+    callback = typeof callback == 'function' ? callback : function(){};
+
     // session Manager
-    var sm = new SessionManager(config.SESSION);
+    var session = new SessionManager(config.SESSION);
 
     return http.createServer(function(req, res){
-      init(req, res, config, sm, callback);
+      init(req, res);
     }).listen(port, ip);
 };
 
@@ -40,7 +43,7 @@ exports.createServer = function ( config, callback ) {
  * @param  {Object} oriReq 原始的request
  * @return {Object} 包装后的request
  */
-function init ( req, res, config, sm, callback ){
+function init ( req, res ){
   var app = new Framework( req, res, config );
   // 注册ready
   init_READY( app );
@@ -503,7 +506,7 @@ function init_SESSION( app )
 {
   // session 依赖于cookie
   app.sub( 'init.cookie.ready', function(message, data){
-    app.pub( 'init.session.ready' );  
+    session.parseCookie(app);  
   });
   
 }
