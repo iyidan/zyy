@@ -51,7 +51,7 @@ utils.rc4 = function(key, text) {
  * @param  {String} str 需要编码的字符串
  */
 utils.base64_encode = function(str) {
-  return new Buffer(str, 'binary').toString('base64');
+  return new Buffer(str, 'binary').toString('base64').replace(/\=+$/, '');
 };
 utils.base64_decode = function(str) {
   return new Buffer(str, 'base64').toString('binary');
