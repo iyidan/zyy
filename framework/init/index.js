@@ -361,7 +361,7 @@ function init_READY( app )
 {
   app._readyEvents.forEach(function( messageId ){
     app.sub( messageId, function(){
-      console.log(message);
+      console.log(messageId);
       // 防止其他地方触发相同的事件
       if ( app._readyEvents.length == 0 ) return;
       var index = app._readyEvents.indexOf( messageId );
