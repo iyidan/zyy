@@ -106,6 +106,10 @@ function Framework ( req, res, config )
       app.pub('init.app.ready', data);
     }
   );
+  // 注册end事件
+  app.sub('response.ready', function(){
+    
+  });
 }
 
 ////////////////////////////////////////

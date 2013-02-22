@@ -220,6 +220,7 @@ pro.writeClose = function(app, callback) {
     var key = utils.md5( __filename + app.config.PROJECT_NAME + ua);
     sessionid = utils.rc4(key, sessionid);
     sessionid = utils.base64_encode(sessionid);
+    console.log('in writeClose:', sessionid);
     app.COOKIE( 
       this.cookie_param, 
       sessionid, 
