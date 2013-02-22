@@ -15,7 +15,7 @@ module.exports = {
    */
   parse: function(app){
     var obj = {};
-    var str = app.SERVER('headers').Cookie;
+    var str = app.SERVER('headers').cookie;
 
     if (str) {
       var pairs = str.split(/[;,] */);
