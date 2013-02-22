@@ -33,7 +33,7 @@ session.SessionManager = function( config ) {
 
   // sub error message
   this.sub( 'error', function(message, err){
-    throw Error( err );
+    throw new Error( err );
   });
 
   // 储存器实例
