@@ -22,7 +22,7 @@ var utils          = require('../core/utils.js');
 /* 3rd module */
 var formidable = require('../3rd/formidable');
 
-/*  */
+/* 模块全局变量 */
 var session = null;
 
 ///////////////////////////////////////////////////////////////////
@@ -32,16 +32,12 @@ exports.createServer = function ( config, callback ) {
     var port = config.PORT || 3000;
     var ip   = config.IP || '127.0.0.1';
     callback = typeof callback == 'function' ? callback : function(){};
-
-    // session Manager
+    // session
     session = new SessionManager(config.SESSION);
 
-    return http.createServer(function(req, res){
+    return http.createServer(function(req, res) {
       // new app
       var app = new Framework( req, res, config );
-      // 注册ready
-      init_READY( app );
-      if (typeof callback == 'function') app.sub('init.app.ready', callback);
       // 注册error
       app.sub( 'error', function( message, err ){
         if ( app.config.ONDEV ) {
@@ -57,8 +53,8 @@ exports.createServer = function ( config, callback ) {
         app.setStatusCode(500);
         app.end('request was closed');
       });
-
       // 开始初始化
+      init_READY( app );
       init_SERVER( app );
       init_GET( app );
       init_POST( app );
@@ -342,13 +338,15 @@ Framework.prototype.addTrailers = function(){
  * end
  */
 Framework.prototype.end = function(){
-  // 设置cookie
+  // writeCookie
   if ( this._setCookies && this._setCookies.length ) {
     this.res.setHeader('Set-Cookie', this._setCookies);
   }
   if ( !this.res.statusCode ) {
     this.setStatusCode(200);
   }
+  // writeSession
+  session.writeClose(this);
   this.res.end.apply(this.res, arguments);
 };
 
