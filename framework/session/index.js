@@ -176,6 +176,7 @@ pro._checkSessionId = function( sessionid ) {
 pro.parseCookie = function(app, callback) {
   callback = typeof callback == 'function' ? callback : function(){};
   var sessionid = app.COOKIE(this.cookie_param);
+  console.log('sessionid-cookie', sessionid);
   // unsign sessionid
   if (sessionid) {
     var ua = app.SERVER('header')['user-agent'] || 'none-user-agent';
@@ -187,9 +188,11 @@ pro.parseCookie = function(app, callback) {
       sessionid = '';
     }  
   }
+  console.log('sessionid-parsed', sessionid);
   // 创建一个会话 
   if (!sessionid) {
     this.create(callback);
+    console.log('session create', sessionid);
   } else {
     // 更新会话
     this.renew(sessionid, callback);
