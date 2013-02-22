@@ -496,6 +496,11 @@ function init_SESSION( app )
   // session 依赖于cookie
   app.sub( 'init.cookie.ready', function(message, data){
     session.parseCookie(app, function(err, sessionData){
+      console.log('parse session');
+      if ( err ) {
+        app.pub('error', err);
+        return false;
+      }
       app._SESSION   = sessionData.data;
       app._sessionid = sessionData.sessionid;
       app.pub('init.session.ready');
