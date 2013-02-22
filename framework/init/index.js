@@ -202,9 +202,6 @@ Framework.prototype.REQUEST = function( key, def ) {
  * @param {Boolean} httpOnly 是否仅在http下有效 默认false
  */
 Framework.prototype.COOKIE = function( key, val, expires, needSign, path, domain, secure, httpOnly) {
-
-  console.log('in prototype.COOKIE:', arguments);
-
   if ( !key ) return undefined;
   if ( val === undefined ) {
     return this._COOKIE[key];
