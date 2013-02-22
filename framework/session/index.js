@@ -179,7 +179,7 @@ pro.parseCookie = function(app, callback) {
   console.log('sessionid-cookie', sessionid);
   // unsign sessionid
   if (sessionid) {
-    var ua = app.SERVER('header')['user-agent'] || 'none-user-agent';
+    var ua = app.SERVER('headers')['user-agent'] || 'none-user-agent';
     var key = utils.md5( __filename + app.config.PROJECT_NAME + ua);
     try {
       sessionid = utils.base64_decode(sessionid);
