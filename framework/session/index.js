@@ -211,6 +211,7 @@ pro.writeClose = function(app, callback) {
     return false;
   }
   // write
+  var that = this;
   this.write(sessionid, sessionData, function(err, session){
     if (err) {
       callback(err, false);
@@ -222,15 +223,15 @@ pro.writeClose = function(app, callback) {
     sessionid = utils.base64_encode(sessionid);
     console.log('in writeClose:', sessionid);
     app.COOKIE( 
-      this.cookie_param, 
+      that.cookie_param, 
       sessionid, 
       session.expires, 
       false, 
-      this.cookie_path, 
-      this.cookie_domain, 
-      this.cookie_secure, 
-      this.cookie_httponly
-      );
+      that.cookie_path, 
+      that.cookie_domain, 
+      that.cookie_secure, 
+      that.cookie_httponly
+    );
     callback(false, true);
   });
 };
