@@ -22,6 +22,9 @@ var utils          = require('../core/utils.js');
 /* 3rd module */
 var formidable = require('../3rd/formidable');
 
+/*  */
+var session = null;
+
 ///////////////////////////////////////////////////////////////////
 
 exports.createServer = function ( config, callback ) {
@@ -31,7 +34,7 @@ exports.createServer = function ( config, callback ) {
     callback = typeof callback == 'function' ? callback : function(){};
 
     // session Manager
-    var session = new SessionManager(config.SESSION);
+    session = new SessionManager(config.SESSION);
 
     return http.createServer(function(req, res){
       // new app
