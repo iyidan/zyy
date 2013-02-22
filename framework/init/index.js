@@ -345,15 +345,17 @@ Framework.prototype.addTrailers = function(){
  */
 Framework.prototype.end = function(){
   // writeSession
-  session.writeClose(this);
-  // writeCookie
-  if ( this._setCookies && this._setCookies.length ) {
-    this.res.setHeader('Set-Cookie', this._setCookies);
-  }
-  if ( !this.res.statusCode ) {
-    this.setStatusCode(200);
-  }
-  this.res.end.apply(this.res, arguments);
+  var app = this;
+  session.writeClose(this, function(){
+    // writeCookie
+    if ( app._setCookies && app._setCookies.length ) {
+      app.res.setHeader('Set-Cookie', app._setCookies);
+    }
+    if ( !app.res.statusCode ) {
+      app.setStatusCode(200);
+    }
+    app.res.end.apply(app.res, arguments);
+  });
 };
 
 ////////////////////////////////////////
