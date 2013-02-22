@@ -34,51 +34,39 @@ exports.createServer = function ( config, callback ) {
     var session = new SessionManager(config.SESSION);
 
     return http.createServer(function(req, res){
-      init(req, res);
+      // new app
+      var app = new Framework( req, res, config );
+      // 注册ready
+      init_READY( app );
+      if (typeof callback == 'function') app.sub('init.app.ready', callback);
+      // 注册error
+      app.sub( 'error', function( message, err ){
+        if ( app.config.ONDEV ) {
+          app.setStatusCode(200);
+          app.end( 'server_error: ' + util.inspect( err ) );
+        } else {
+          app.setStatusCode(500);
+          app.end('');
+        }
+      }, true, false);
+      // 注册close事件
+      app.res.on( 'close', function(){
+        app.setStatusCode(500);
+        app.end('request was closed');
+      });
+
+      // 开始初始化
+      init_SERVER( app );
+      init_GET( app );
+      init_POST( app );
+      init_FILES( app );
+      init_FORM( app );
+      init_COOKIE( app );
+      init_DB( app );
+      init_CACHE( app );
+      init_SESSION( app );
     }).listen(port, ip);
 };
-
-/**
- * 包装原始的req对象
- * @param  {Object} oriReq 原始的request
- * @return {Object} 包装后的request
- */
-function init ( req, res ){
-  var app = new Framework( req, res, config );
-  // 注册ready
-  init_READY( app );
-  if (typeof callback == 'function') app.sub('init.app.ready', callback);
-
-  // 注册error
-  app.sub( 'error', function( message, err ){
-    if ( app.config.ONDEV ) {
-      app.setStatusCode(200);
-      app.end( 'server_error: ' + util.inspect( err ) );
-    } else {
-      app.setStatusCode(500);
-      app.end('');
-    }
-  }, true, false);
-
-  // 注册close事件
-  app.res.on( 'close', function(){
-    app.setStatusCode(500);
-    app.end('request was closed');
-  });
-
-  // 开始初始化
-  init_SERVER( app );
-  init_GET( app );
-  init_POST( app );
-  init_FILES( app );
-  init_FORM( app );
-  init_COOKIE( app );
-
-  init_DB( app );
-  init_CACHE( app );
-
-  init_SESSION( app );
-}
 
 /**
  * 构造Request
