@@ -50,7 +50,7 @@ exports.createServer = function ( config, callback ) {
       init_SESSION( app );
       // callback
       app.sub('init.app.ready', function(message, data){
-        callback(app);
+        callback(message, app);
       });
     }).listen(port, ip);
 };
