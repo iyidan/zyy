@@ -72,6 +72,7 @@ function Framework ( req, res, config )
   }
   // pub&sub
   new Message(true, 50, this);
+  var app = this;
   // 注册error
   this.sub( 'error', function( message, err ){
     if ( app.config.ONDEV ) {
