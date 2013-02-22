@@ -214,6 +214,7 @@ Framework.prototype.COOKIE = function( key, val, expires, needSign, path, domain
   }
 
   // 设置cookie
+  console.log(key, val, opt);
   cookie.setCookie( this, key, val, opt );
 };
 
