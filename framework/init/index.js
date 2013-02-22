@@ -68,6 +68,8 @@ function Framework ( req, res, config )
   // 引用原始响应请求
   this.req = req;
   this.res = res;
+  // 设置的cookie
+  this._setCookies = [];
   //请求开始毫秒数
   try {
     this.startTime = req.socket.server._idleStart.getTime();  
@@ -101,7 +103,6 @@ function Framework ( req, res, config )
     'init.files.ready',
     'init.cookie.ready',
     function(messageId, data){
-      console.log(messageId, data);
       app.pub('init.app.ready', data);
     }
   );
@@ -214,7 +215,6 @@ Framework.prototype.COOKIE = function( key, val, expires, needSign, path, domain
   }
 
   // 设置cookie
-  console.log(key, val, opt);
   cookie.setCookie( this, key, val, opt );
 };
 
@@ -344,6 +344,8 @@ Framework.prototype.addTrailers = function(){
  * end
  */
 Framework.prototype.end = function(){
+  // writeSession
+  session.writeClose(this);
   // writeCookie
   if ( this._setCookies && this._setCookies.length ) {
     this.res.setHeader('Set-Cookie', this._setCookies);
@@ -351,8 +353,6 @@ Framework.prototype.end = function(){
   if ( !this.res.statusCode ) {
     this.setStatusCode(200);
   }
-  // writeSession
-  session.writeClose(this);
   this.res.end.apply(this.res, arguments);
 };
 
@@ -484,7 +484,6 @@ function init_SESSION( app )
   // session 依赖于cookie
   app.sub( 'init.cookie.ready', function(message, data){
     session.parseCookie(app, function(err, sessionData){
-      console.log('parse session');
       if ( err ) {
         app.pub('error', err);
         return false;
