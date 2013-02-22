@@ -33,6 +33,7 @@ session.SessionManager = function( config ) {
 
   // sub error message
   this.sub( 'error', function(message, err){
+    console.log(message, err);
     throw new Error( err );
   });
 
