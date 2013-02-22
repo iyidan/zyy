@@ -48,6 +48,10 @@ exports.createServer = function ( config, callback ) {
       init_DB( app );
       init_CACHE( app );
       init_SESSION( app );
+      // callback
+      app.sub('init.app.ready', function(message, data){
+        callback(app);
+      });
     }).listen(port, ip);
 };
 
@@ -354,25 +358,6 @@ Framework.prototype.end = function(){
 ////////////////////////////////////////
 // Framework.prototype end
 ////////////////////////////////////////
-
-/**
- * 注册框架加载完毕后的事件
- */
-function init_READY( app )
-{
-  app._readyEvents.forEach(function( messageId ){
-    app.sub( messageId, function(){
-      console.log(messageId);
-      // 防止其他地方触发相同的事件
-      if ( app._readyEvents.length == 0 ) return;
-      var index = app._readyEvents.indexOf( messageId );
-      app._readyEvents.splice( index, 1 );
-      if ( app._readyEvents.length == 0 ) {
-        app.pub( 'init.app.ready', app );
-      }
-    });
-  });
-}
 
 /**
  * 解析url
