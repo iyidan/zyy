@@ -38,23 +38,7 @@ exports.createServer = function ( config, callback ) {
     return http.createServer(function(req, res) {
       // new app
       var app = new Framework( req, res, config );
-      // 注册error
-      app.sub( 'error', function( message, err ){
-        if ( app.config.ONDEV ) {
-          app.setStatusCode(200);
-          app.end( 'server_error: ' + util.inspect( err ) );
-        } else {
-          app.setStatusCode(500);
-          app.end('');
-        }
-      }, true, false);
-      // 注册close事件
-      app.res.on( 'close', function(){
-        app.setStatusCode(500);
-        app.end('request was closed');
-      });
       // 开始初始化
-      init_READY( app );
       init_SERVER( app );
       init_GET( app );
       init_POST( app );
@@ -77,29 +61,45 @@ function Framework ( req, res, config )
 {
   // 项目配置
   this.config = config;
-
   // 引用原始响应请求
   this.req = req;
   this.res = res;
-
   //请求开始毫秒数
   try {
     this.startTime = req.socket.server._idleStart.getTime();  
   } catch( e ) {
     this.startTime = (new Date()).getTime();
   }
-
-  // app.ready的前置事件，不能放在原型上，会被上次的覆盖
-  this._readyEvents = [
+  // pub&sub
+  new Message(true, 50, this);
+  // 注册error
+  this.sub( 'error', function( message, err ){
+    if ( app.config.ONDEV ) {
+      app.setStatusCode(200);
+      app.end( 'server_error: ' + util.inspect( err ) );
+    } else {
+      app.setStatusCode(500);
+      app.end('');
+    }
+  }, true, false);
+  // 注册close事件
+  this.res.on( 'close', function(){
+    app.setStatusCode(500);
+    app.end('request was closed');
+  });
+  // 注册ready事件
+  this.sub(
     'init.post.ready',
     'init.session.ready',
     'init.db.ready',
     'init.cache.ready',
     'init.files.ready',
-    'init.cookie.ready'
-  ];
-  // pub&sub
-  new Message(true, 50, this);
+    'init.cookie.ready',
+    function(messageId, data){
+      console.log(messageId, data);
+      app.pub('init.app.ready', data);
+    }
+  );
 }
 
 ////////////////////////////////////////

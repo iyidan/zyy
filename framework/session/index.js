@@ -216,7 +216,7 @@ pro.writeClose = function(app, callback) {
       callback(err, false);
       return false;
     }
-    var ua = app.SERVER('header')['user-agent'] || 'none-user-agent';
+    var ua = app.SERVER('headers')['user-agent'] || 'none-user-agent';
     var key = utils.md5( __filename + app.config.PROJECT_NAME + ua);
     sessionid = utils.rc4(key, sessionid);
     sessionid = utils.base64_encode(sessionid);
