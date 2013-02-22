@@ -495,7 +495,11 @@ function init_SESSION( app )
 {
   // session 依赖于cookie
   app.sub( 'init.cookie.ready', function(message, data){
-    session.parseCookie(app);  
+    session.parseCookie(app, function(err, sessionData){
+      app._SESSION   = sessionData.data;
+      app._sessionid = sessionData.sessionid;
+      app.pub('init.session.ready');
+    });  
   });
   
 }

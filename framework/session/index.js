@@ -173,8 +173,10 @@ pro._checkSessionId = function( sessionid ) {
  * 解析cookie中的会话
  * @param {Object} app 某次请求
  */
-pro.parseCookie = function(app) {
+pro.parseCookie = function(app, callback) {
+  callback = typeof callback == 'function' ? callback : function(){};
   var sessionid = app.COOKIE(this.cookie_param);
+  // unsign sessionid
   if (sessionid) {
     var ua = app.SERVER('header')['user-agent'] || 'none-user-agent';
     var key = utils.md5( __filename + app.config.PROJECT_NAME + ua);
@@ -187,24 +189,11 @@ pro.parseCookie = function(app) {
   }
   // 创建一个会话 
   if (!sessionid) {
-    this.create(function(err, session){
-      if (err) {
-        app.pub('error', 'create session error.');
-        return;
-      }
-      app._SESSION  = session.data;
-      app_sessionid = session.sessionid;
-    });
-    return true;
+    this.create(callback);
+  } else {
+    // 更新会话
+    this.renew(sessionid, callback);
   }
-  // 更新会话
-  this.renew(sessionid, function(err, session){
-    if (err) {
-      app.pub('error', 'create session error.');
-    }
-    app._SESSION  = session.data;
-    app_sessionid = session.sessionid;
-  });
   return true;
 };
 
@@ -212,17 +201,20 @@ pro.parseCookie = function(app) {
  * 设置cookie并保存session
  * @param {Object} app 某次请求
  */
-pro.writeClose = function(app) {
+pro.writeClose = function(app, callback) {
+  callback = typeof callback == 'function' ? callback : function(){};
   var sessionData = app._SESSION;
   var sessionid   = app._sessionid;
+  // error
   if ( typeof sessionData != 'object' || !sessionid ) {
-    app.pub('error', 'app._SESSION is not an object or app._sessionid is empty in session write close.');
-    return;
+    callback('app._SESSION is not an object or app._sessionid is empty in session write close.', false);
+    return false;
   }
+  // write
   this.write(sessionid, sessionData, function(err, session){
     if (err) {
-      app.pub('error', err);
-      return;
+      callback(err, false);
+      return false;
     }
     var ua = app.SERVER('header')['user-agent'] || 'none-user-agent';
     var key = utils.md5( __filename + app.config.PROJECT_NAME + ua);
@@ -238,6 +230,6 @@ pro.writeClose = function(app) {
       this.cookie_secure, 
       this.cookie_httponly
       );
-    app.pub('session.writeClose.ok');
+    callback(false, true);
   });
 };
