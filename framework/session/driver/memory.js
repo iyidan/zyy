@@ -29,10 +29,6 @@ pro.close = function( callback ) {
 };
 
 pro.read = function( sessionid, callback ) {
-  if ( this._isExpires(sessionid) ) {
-    callback('session isExpired.', false);
-    return false;
-  }
   if ( typeof callback != 'function' ) {
     this._sm.pub('error', 'read session callback is not a function type.');
     return false;
@@ -43,13 +39,6 @@ pro.read = function( sessionid, callback ) {
 
 
 pro.write = function( sessionid, data, callback ) {
-
-  sessionid = this._checkSessionId(sessionid);
-  if ( !sessionid ) {
-    this._sm.pub('error', 'memory.write error: sessionid is not a string type.');
-    return;
-  }
-
   if ( typeof data != 'object' ) {
     this._sm.pub('error', 'memory.write error: data is not a object type.');
     return;
@@ -82,11 +71,6 @@ pro.create  = function( callback ) {
 };
 
 pro.renew = function(sessionid, callback) {
-  sessionid = this._checkSessionId(sessionid);
-  if ( !sessionid ) {
-    this._sm.pub('error', 'memory check sessionid error.');
-    return;
-  }
   if ( !this._sessions[sessionid] ) {
     return this.create(callback);
   }
@@ -97,11 +81,6 @@ pro.renew = function(sessionid, callback) {
 };
 
 pro.destory = function( sessionid, callback ){
-  sessionid = this._checkSessionId(sessionid);
-  if ( !sessionid ) {
-    this._sm.pub('error', 'memory.destory error: sessionid is not a string type.');
-    return;
-  }
   delete this._sessions[sessionid];
   // destoryOk
   if ( typeof callback == 'function' ) {
@@ -127,11 +106,6 @@ pro.gc  = function() {
 
 
 pro._isExpires = function( sessionid ) {
-  sessionid = this._checkSessionId(sessionid);
-  if ( !sessionid ) {
-    this._sm.pub('error', 'memory. _isExpires sessionid is empty.');
-    return true;
-  }
   var now = (new Date).getTime();
   if( this._sessions[sessionid] && ( now - this._sessions[sessionid].expires > 0 ) ) {
     return false;
@@ -144,7 +118,6 @@ pro._isExpires = function( sessionid ) {
  * @return {[type]} [description]
  */
 pro._read = function(sessionid) {
-
   if ( !this._sessions[sessionid] ) {
     return {
       'sessionid': sessionid,
