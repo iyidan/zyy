@@ -59,12 +59,12 @@ pro.write = function( sessionid, data, callback ) {
 };
 
 pro.create  = function( callback ) {
-  var uid = this._sm.uid();
-  while( this._sessions[uid] ) {
-    uid = this._sm.uid();
+  var sessionid = this._sm.uid();
+  while( this._sessions[sessionid] ) {
+    sessionid = this._sm.uid();
   }
 
-  this.write(uid, {});
+  this.write(sessionid, {});
   if ( typeof callback == 'function' ) {
     callback(false, this._read(sessionid));
   }
