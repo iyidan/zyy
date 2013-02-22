@@ -354,6 +354,7 @@ Framework.prototype.end = function(){
     if ( !app.res.statusCode ) {
       app.setStatusCode(200);
     }
+    console.log('arguments', arguments);
     app.res.end.apply(app.res, arguments);
   });
 };
