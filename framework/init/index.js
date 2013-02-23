@@ -129,7 +129,7 @@ Framework.prototype.SERVER = function ( key ) {
  * @param {Mixed} def 默认值
  */
 Framework.prototype.GET = function ( key, def ) {
-  if ( !key ) return undefined;
+  if ( !key || typeof key != 'string' ) return undefined;
   // 默认
   if ( def === undefined ) {
     return this._GET[key];
@@ -156,7 +156,7 @@ Framework.prototype.GET = function ( key, def ) {
  * @param {Mixed} def 默认值
  */
 Framework.prototype.POST = function ( key, def ) {
-  if ( !key ) return undefined;
+  if ( !key || typeof key != 'string' ) return undefined;
   // 默认
   if ( def === undefined ) {
     return this._POST[key];
@@ -181,7 +181,7 @@ Framework.prototype.POST = function ( key, def ) {
  * REQUEST
  */
 Framework.prototype.REQUEST = function( key, def ) {
-  if ( !key ) return undefined;
+  if ( !key || typeof key != 'string' ) return undefined;
   var getVal = this._GET[key];
   if ( getVal !== undefined ) {
     return this.GET( key, def );
@@ -202,7 +202,7 @@ Framework.prototype.REQUEST = function( key, def ) {
  * @param {Boolean} httpOnly 是否仅在http下有效 默认false
  */
 Framework.prototype.COOKIE = function( key, val, expires, needSign, path, domain, secure, httpOnly) {
-  if ( !key ) return undefined;
+  if ( !key || typeof key != 'string' ) return undefined;
   if ( val === undefined ) {
     return this._COOKIE[key];
   }
@@ -251,8 +251,12 @@ Framework.prototype.COOKIE.unsign = function( val, secretKey ) {
  * SESSION
  */
 Framework.prototype.SESSION = function ( key, val, expires ) {
-  if ( !key ) return undefined;
-  return this._SESSION[key];
+  if ( !key || typeof key != 'string' ) return undefined;
+  if ( val === undefined ) {
+    return this._SESSION[key];
+  }
+  this._SESSION[key] = val;
+  return true;
 };
 
 /**

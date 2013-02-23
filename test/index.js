@@ -6,5 +6,6 @@ var Message = require(config.FW_PATH + '/message').Message;
 
 var server = Framework.createServer( config , function( message, app ){
   //app.writeHead(200, { 'Content-Type':'text/html' });
+  app.SESSION('testsession', 'testsessionval');
   app.end( util.inspect(app) );
 });
