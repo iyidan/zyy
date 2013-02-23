@@ -66,6 +66,7 @@ function Framework ( req, res, config )
   // 引用原始响应请求
   this.req = req;
   this.res = res;
+  // 初始化变量
   this._GET     = {};
   this._POST    = {};
   this._COOKIE  = {};
