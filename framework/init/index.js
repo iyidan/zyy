@@ -396,13 +396,11 @@ function init_SERVER( app )
     'httpVersion' : app.req.httpVersion,
     'headers'     : app.req.headers,
     'trailers'    : app.req.trailers,
-    'method'      : app.req.method
+    'method'      : app.req.method,
+    'user-agent'  : app.req.headers['user-agent'] || 'none',
+    'ip'          : ( app.req.headers['x-real-ip'] || app.req.headers['x-forwarded-for'] ) || app.req.connection.remoteAddress,
+    'referer'     : app.req.headers['referer']
   };
-  // ip
-  console.log(app.req.connection.remoteAddress);
-  if ( app._SERVER['headers']['x-real-ip'] ) {
-    app._SERVER['ip'] = app._SERVER['headers']['x-real-ip'];
-  }
 }
 
 /**
