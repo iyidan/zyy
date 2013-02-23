@@ -398,6 +398,11 @@ function init_SERVER( app )
     'trailers'    : app.req.trailers,
     'method'      : app.req.method
   };
+  // ip
+  console.log(app.req.connection.remoteAddress);
+  if ( app._SERVER['headers']['x-real-ip'] ) {
+    app._SERVER['ip'] = app._SERVER['headers']['x-real-ip'];
+  }
 }
 
 /**
