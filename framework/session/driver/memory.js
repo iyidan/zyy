@@ -99,12 +99,10 @@ pro.destory = function( sessionid, callback ){
 
 
 pro.gc  = function() {
-  console.log('in memory gc');
   var m = this;
   for ( var i in m._sessions ) {
     if ( m._sessions.hasOwnProperty(i) && m._isExpires(i) ) {
       delete m._sessions[i];
-      console.log('gc delete: ' + i);
     }
   }
 };
