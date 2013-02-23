@@ -227,7 +227,7 @@ pro.writeClose = function(app, callback) {
     app.COOKIE( 
       that.cookie_param, 
       sessionid, 
-      that.lifetime / 1000, 
+      60*3, 
       false, 
       that.cookie_path, 
       that.cookie_domain, 
