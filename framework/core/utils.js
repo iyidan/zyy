@@ -51,7 +51,7 @@ utils.rc4 = function(key, text) {
  * @param  {String} str 需要编码的字符串
  */
 utils.base64_encode = function(str) {
-  return new Buffer(str, 'binary').toString('base64');
+  return new Buffer(str, 'binary').toString('base64').replace(/\=+$/, '');
 };
 utils.base64_decode = function(str) {
   return new Buffer(str, 'base64').toString('binary');
@@ -134,4 +134,38 @@ utils.rtrim = function(str, char) {
   }
   var reg = new RegExp('('+char+'*$)', 'g');
   return str.replace(reg, '');
+};
+
+/**
+ * bufferHelper 此构造函数帮助接收和拼接不同stream的buffer
+ * @see https://github.com/JacksonTian/bufferhelper/blob/master/lib/bufferhelper.js
+ */
+utils.BufferHelper = function() {
+  this.buffers = [];
+};
+/**
+ * 添加一个buffer
+ * @param {Buffer} buffer 一个buffer
+ */
+utils.BufferHelper.prototype.add = function( buffer) {
+  console.log(buffer);
+  this.buffers.push(buffer);
+  return this;
+};
+/**
+ * 获取已添加的buffer
+ * 如果只有一个则返回一个，多个则返回新的buffer
+ * @param {Number} length 获取的新的buffer的长度，不传递将会遍历添加的buffer
+ * @return {Buffer}
+ */
+utils.BufferHelper.prototype.get = function( length ) {
+  return Buffer.concat(this.buffers, length);
+};
+/**
+ * 根据指定编码将buffer转换为字符串返回
+ * @param {String} encoding 编码类型
+ *   hex、utf8、ascii、binary、base64、ucs2、utf16le
+ */
+utils.BufferHelper.prototype.toString = function(encoding, length) {
+  return this.get(length).toString(encoding);
 };

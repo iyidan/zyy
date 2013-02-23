@@ -1,62 +1,56 @@
 /**
- * http连接建立后初始化请求响应对象
+ * 初始化app
  */
-var url     = require( 'url' );
-var EventEmitter = require( 'events' ).EventEmitter;
-var crypto = require('crypto');
-var util = require( 'util' );
 
-var core    = require('../core');
-var Message = require('../message').Message;
-var db      = require('../db');
-var cache   = require('../cache');
-var cookie  = require('../cookie');
-var session = require('../session');
+///////////////////////////////////////////////////////////////////
 
-var formidable = require('../3rd/formidable');
+/* native module */
+var http         = require( 'http' );
+var url          = require( 'url' );
+var crypto       = require('crypto');
+var util         = require( 'util' );
 
+/* framework module */
+var core           = require('../core');
+var Message        = require('../message').Message;
+var db             = require('../db');
+var cache          = require('../cache');
+var cookie         = require('../cookie');
+var SessionManager = require('../session').SessionManager;
+var utils          = require('../core/utils.js');
+var parseBody      = require('../parseBody').parseBody;
 
+/* 模块全局变量 */
+var session = null;
 
-/**
- * 包装原始的req对象
- * @param  {Object} oriReq 原始的request
- * @return {Object} 包装后的request
- */
-exports.init = function( req, res, config, callback ){
-  var app = new Framework( req, res, config );
-  // 注册ready
-  init_READY( app );
-  if (typeof callback == 'function') app.sub('init.app.ready', callback);
+///////////////////////////////////////////////////////////////////
 
-  // 注册error
-  app.sub( 'error', function( message, err ){
-    if ( app.config.ONDEV ) {
-      app.setStatusCode(200);
-      app.end( 'server_error: ' + util.inspect( err ) );
-    } else {
-      app.setStatusCode(500);
-      app.end('');
-    }
-  }, true, false);
+exports.createServer = function ( config, callback ) {
+    
+    var port = config.PORT || 3000;
+    var ip   = config.IP || '127.0.0.1';
+    callback = typeof callback == 'function' ? callback : function(){};
+    // session
+    session = new SessionManager(config.SESSION);
 
-  // 注册close事件
-  app.res.on( 'close', function(){
-    app.setStatusCode(500);
-    app.end('request was closed');
-  });
-
-  // 开始初始化
-  init_SERVER( app );
-  init_GET( app );
-  init_POST( app );
-  init_FILES( app );
-  init_FORM( app );
-  init_COOKIE( app );
-
-  init_DB( app );
-  init_CACHE( app );
-
-  init_SESSION( app );
+    return http.createServer(function(req, res) {
+      // new app
+      var app = new Framework( req, res, config );
+      // 开始初始化
+      init_SERVER( app );
+      init_GET( app );
+      init_POST( app );
+      init_FILES( app );
+      init_BODY( app );
+      init_COOKIE( app );
+      init_DB( app );
+      init_CACHE( app );
+      init_SESSION( app );
+      // callback
+      app.sub('init.app.ready', function(message, data){
+        callback(message, app);
+      });
+    }).listen(port, ip);
 };
 
 /**
@@ -69,11 +63,18 @@ function Framework ( req, res, config )
 {
   // 项目配置
   this.config = config;
-
   // 引用原始响应请求
   this.req = req;
   this.res = res;
-
+  // 初始化变量
+  this._GET     = {};
+  this._POST    = {};
+  this._COOKIE  = {};
+  this._SESSION = {};
+  this._SERVER  = {};
+  this._FILES   = {};
+  this._setCookies = [];
+  this._oriBody = null;
   //请求开始毫秒数
   try {
     this.startTime = req.socket.server._idleStart.getTime();  
@@ -81,17 +82,50 @@ function Framework ( req, res, config )
     this.startTime = (new Date()).getTime();
   }
 
-  // app.ready的前置事件，不能放在原型上，会被上次的覆盖
-  this._readyEvents = [
+  // pub&sub
+  new Message(true, 50, this);
+  var app = this;
+  // 注册app error
+  this.sub( 'error', function( message, err ){
+    if ( app.config.ONDEV ) {
+      app.setStatusCode(200);
+      app.end( 'server error: ' + util.inspect( err, true ) );
+    } else {
+      app.setStatusCode(500);
+      app.end('server error.');
+    }
+  }, true, false);
+  // 注册 req error
+  this.req.on('error', function(err){
+    if ( app.config.ONDEV ) {
+      app.setStatusCode(200);
+      app.end( 'request error: ' + util.inspect( err, true ) );
+    } else {
+      app.setStatusCode(200);
+      app.end('request error.');
+    }
+  });
+  // 注册close事件
+  this.res.on( 'close', function(){
+    app.setStatusCode(500);
+    app.end('request was closed');
+  });
+  // 注册ready事件
+  this.sub(
     'init.post.ready',
     'init.session.ready',
     'init.db.ready',
     'init.cache.ready',
     'init.files.ready',
-    'init.cookie.ready'
-  ];
-  // pub&sub
-  new Message(true, 50, this);
+    'init.cookie.ready',
+    function(messageId, data){
+      app.pub('init.app.ready', data);
+    }
+  );
+  // 注册end事件
+  app.sub('response.ready', function(){
+
+  });
 }
 
 ////////////////////////////////////////
@@ -111,7 +145,7 @@ Framework.prototype.SERVER = function ( key ) {
  * @param {Mixed} def 默认值
  */
 Framework.prototype.GET = function ( key, def ) {
-  if ( !key ) return undefined;
+  if ( !key || typeof key != 'string' ) return undefined;
   // 默认
   if ( def === undefined ) {
     return this._GET[key];
@@ -138,7 +172,7 @@ Framework.prototype.GET = function ( key, def ) {
  * @param {Mixed} def 默认值
  */
 Framework.prototype.POST = function ( key, def ) {
-  if ( !key ) return undefined;
+  if ( !key || typeof key != 'string' ) return undefined;
   // 默认
   if ( def === undefined ) {
     return this._POST[key];
@@ -163,7 +197,7 @@ Framework.prototype.POST = function ( key, def ) {
  * REQUEST
  */
 Framework.prototype.REQUEST = function( key, def ) {
-  if ( !key ) return undefined;
+  if ( !key || typeof key != 'string' ) return undefined;
   var getVal = this._GET[key];
   if ( getVal !== undefined ) {
     return this.GET( key, def );
@@ -184,7 +218,7 @@ Framework.prototype.REQUEST = function( key, def ) {
  * @param {Boolean} httpOnly 是否仅在http下有效 默认false
  */
 Framework.prototype.COOKIE = function( key, val, expires, needSign, path, domain, secure, httpOnly) {
-  if ( !key ) return undefined;
+  if ( !key || typeof key != 'string' ) return undefined;
   if ( val === undefined ) {
     return this._COOKIE[key];
   }
@@ -233,8 +267,12 @@ Framework.prototype.COOKIE.unsign = function( val, secretKey ) {
  * SESSION
  */
 Framework.prototype.SESSION = function ( key, val, expires ) {
-  if ( !key ) return undefined;
-  return this._SESSION[key];
+  if ( !key || typeof key != 'string' ) return undefined;
+  if ( val === undefined ) {
+    return this._SESSION[key];
+  }
+  this._SESSION[key] = val;
+  return true;
 };
 
 /**
@@ -330,37 +368,24 @@ Framework.prototype.addTrailers = function(){
  * end
  */
 Framework.prototype.end = function(){
-  // 设置cookie
-  if ( this._setCookies && this._setCookies.length ) {
-    this.res.setHeader('Set-Cookie', this._setCookies);
-  }
-  if ( !this.res.statusCode ) {
-    this.setStatusCode(200);
-  }
-  this.res.end.apply(this.res, arguments);
+  // writeSession
+  var app  = this;
+  var args = arguments;
+  session.writeClose(this, function(){
+    // writeCookie
+    if ( app._setCookies && app._setCookies.length ) {
+      app.res.setHeader('Set-Cookie', app._setCookies);
+    }
+    if ( !app.res.statusCode ) {
+      app.setStatusCode(200);
+    }
+    app.res.end.apply(app.res, args);
+  });
 };
 
 ////////////////////////////////////////
 // Framework.prototype end
 ////////////////////////////////////////
-
-/**
- * 注册框架加载完毕后的事件
- */
-function init_READY( app )
-{
-  app._readyEvents.forEach(function( messageId ){
-    app.sub( messageId, function(){
-      // 防止其他地方触发相同的事件
-      if ( app._readyEvents.length == 0 ) return;
-      var index = app._readyEvents.indexOf( messageId );
-      app._readyEvents.splice( index, 1 );
-      if ( app._readyEvents.length == 0 ) {
-        app.pub( 'init.app.ready', app );
-      }
-    });
-  });
-}
 
 /**
  * 解析url
@@ -387,7 +412,11 @@ function init_SERVER( app )
     'httpVersion' : app.req.httpVersion,
     'headers'     : app.req.headers,
     'trailers'    : app.req.trailers,
-    'method'      : app.req.method
+    'method'      : app.req.method,
+    'userAgent'   : app.req.headers['user-agent'] || 'none',
+    'ip'          : ( app.req.headers['x-real-ip'] || app.req.headers['x-forwarded-for'] ) || app.req.connection.remoteAddress,
+    'referer'     : app.req.headers['referer'],
+    'isAjax'      : (app.req.headers['x-requested-with'] || '' ).toLowerCase() == 'xmlhttprequest' ? true : false
   };
 }
 
@@ -400,34 +429,12 @@ function init_GET( app )
 }
 
 /**
- * 解析FORM数据
+ * 解析请求体数据
  * @param {Object} req 由 Request构造产生的
  */
-function init_FORM( app )
+function init_BODY( app )
 {
-  if ( app.SERVER('method') != 'POST' ) {
-    app.pub( 'app.form.parse.ready', {
-      'err'    : null,
-      'fields' : {},
-      'files'  : {}
-    });
-    return false;
-  }
-  var form = new formidable.IncomingForm();
-  // handle error event
-  form.on( 'error', function( err ){
-    app.pub( 'error', {
-      'file': __filename,
-      'err': err
-    });
-  });
-  form.parse( app.req, function(err, fields, files) {
-    app.pub( 'app.form.parse.ready', {
-      'err'    : err,
-      'fields' : fields,
-      'files'  : files
-    });
-  });
+  parseBody(app);
   return true;
 }
 
@@ -435,8 +442,8 @@ function init_FORM( app )
  * 解析post
  */
 function init_POST( app ) {
-  app.sub( 'app.form.parse.ready', function( message, data ){
-    app._POST = data.fields;
+  app.sub( 'app.body.parse.ready', function( message, data ){
+    app._POST = data ? data.fields : {};
     app.pub( 'init.post.ready' );
   });
 }
@@ -447,8 +454,8 @@ function init_POST( app ) {
  */
 function init_FILES( app )
 {
-  app.sub( 'app.form.parse.ready', function( message, data ){
-    app._FILES = data.files;
+  app.sub( 'app.body.parse.ready', function( message, data ){
+    app._FILES = data ? data.files : {};
     app.pub( 'init.files.ready' );
   });
 }
@@ -462,7 +469,7 @@ function init_COOKIE( app )
   // 解析cookie
   cookie.parse(app);
   // 是否解析post中的数据
-  if ( !app.config.COOKIE.post_prefix ) {
+  if ( !app.config.COOKIE.post_prefix || app.SERVER('method') != 'POST') {
     app.pub( 'init.cookie.ready' );
   } else {
     var prefix = app.config.COOKIE.post_prefix;
@@ -483,7 +490,19 @@ function init_COOKIE( app )
  */
 function init_SESSION( app )
 {
-  app.pub( 'init.session.ready' );
+  // session 依赖于cookie
+  app.sub( 'init.cookie.ready', function(message, data){
+    session.parseCookie(app, function(err, sessionData){
+      if ( err ) {
+        app.pub('error', err);
+        return false;
+      }
+      app._SESSION   = sessionData.data;
+      app._sessionid = sessionData.sessionid;
+      app.pub('init.session.ready');
+    });  
+  });
+  
 }
 
 /**
