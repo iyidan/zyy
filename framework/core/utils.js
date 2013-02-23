@@ -148,7 +148,6 @@ utils.BufferHelper = function() {
  * @param {Buffer} buffer 一个buffer
  */
 utils.BufferHelper.prototype.add = function( buffer) {
-  console.log(buffer);
   this.buffers.push(buffer);
   return this;
 };
