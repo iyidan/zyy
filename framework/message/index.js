@@ -61,11 +61,13 @@ Message.prototype.pub = function( messageId, data ) {
   // 如果此消息订阅曾经被触发过 检查协同订阅，覆盖新值
   if ( this._publishedMessages[messageId] !== undefined ) {
     for( var i in this._multiSubList ) {
-      if ( i.indexOf( messageId ) != -1 && this._multiSubList[i] !== undefined ) {
+      if ( !this._multiSubList.hasOwnProperty(i) ) continue;
+      if ( i.indexOf( messageId ) != -1 && this._multiSubList[i] ) {
         for( var j = 0; j < this._multiSubList[i]['handlers'].length; j++ ) {
+          // 如果所有的handler都没有监听一次的，则没必要更新，因为会在_multiSubHandler中覆盖
+          // 如果handlers有监听过一次的话，绑定的emit是once，在之前监听到此事件已经被移除了
           if (this._multiSubList[i]['handlers'][j].isOnce){
-            var dataIndex = this._multiSubList[i]['messageIds'].indexOf(messageId);
-            if ( dataIndex != -1 ) this._multiSubList[i]['dataList'][dataIndex] = data;
+            this._multiSubList[i]['dataList'][messageId] = data;
             break;
           }
         }
@@ -153,30 +155,34 @@ Message.prototype.sub = function() {
       app._multiSubList[messageIdsKey] = {
         'messageIds': messageIds,
         'handlers'  : [ { 'handler':handler, 'subPublished':subPublished, 'isOnce':isOnce } ], 
-        'dataList'  : []
+        'dataList'  : {}
       };
-    }
-    // 若有多个协同订阅的回调，则除第一个外，不执行app._multiSubHandler，否则会重复绑定
-    else {
-      app._multiSubList[messageIdsKey]['handlers'].push({
-        'handler'      : handler, 
-        'subPublished' : subPublished, 
-        'isOnce'       : isOnce
-      });
+      handler = function( message, data ){
+        app._multiSubHandler( messageIdsKey, message.id, data );
+      };
+    } else {
       if ( app._storePub && subPublished ) {
-        var tmpDataList = [];
+        var tmpDataList = {};
+        var needAddHandler = true;
         messageIds.forEach(function(v, k){
           if ( app._publishedMessages[v] !== undefined ) {
-            tmpDataList.push(app._publishedMessages[v]);
+            tmpDataList[v] = app._publishedMessages[v];
           }
         });
-        if ( tmpDataList.length == messageIds.length ) handler(messageIdsKey, tmpDataList);
+        if ( Object.keys(tmpDataList).length == messageIds.length ){
+          if ( isOnce ) needAddHandler = false;
+          handler(messageIdsKey, tmpDataList);
+        }
+      }
+      if ( needAddHandler ) {
+        app._multiSubList[messageIdsKey]['handlers'].push({
+          'handler'      : handler, 
+          'subPublished' : subPublished, 
+          'isOnce'       : isOnce
+        });  
       }
       return;
     }
-    handler = function( message, data ){
-      app._multiSubHandler( messageIdsKey, message.id, data );
-    };
   }
   // 订阅消息
   messageIds.forEach(function(messageId, k){
@@ -200,16 +206,14 @@ Message.prototype.sub = function() {
  * @param  {Mixed} data     单个消息发布的数据内容
  */
 Message.prototype._multiSubHandler = function( messageIdsKey, messageId, data ) {
+  
   // 获取存储的协同订阅
   var multi = this._multiSubList[messageIdsKey];
   if ( !multi ) return;
 
-  var msgIndex = multi['messageIds'].indexOf( messageId );
-  if ( msgIndex != -1 ) {
-    multi['dataList'][msgIndex] = data;
-  }
+  multi['dataList'][messageId] = data;
   // 已经全部订阅到
-  if ( multi['dataList'].length == multi['messageIds'].length ) {
+  if ( Object.keys(multi['dataList']).length == multi['messageIds'].length ) {
     var app     = this;
     var message = app.generate(messageIdsKey, multi['dataList']); 
     multi['handlers'].forEach(function( handler, k ){
@@ -220,7 +224,7 @@ Message.prototype._multiSubHandler = function( messageIdsKey, messageId, data ) 
       }
     });
     // 清空订阅的数据
-    multi['dataList'] = [];
+    multi['dataList'] = {};
     if ( multi['handlers'].length == 0 ) {
       delete app._multiSubList[messageIdsKey];
     } 

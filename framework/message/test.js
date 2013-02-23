@@ -78,29 +78,33 @@ test.test('multiSubMessages', function(){
   var messager = new Message();
 
   messager.sub('test1', 'test2', 'test3', function(message, data){
-    assert.deepEqual('pub1', data[0]);
-    assert.deepEqual('pub2', data[1]);
-    assert.deepEqual('pub3', data[2]);
+    console.log('multi sub before start.');
+    assert.deepEqual('pubtest1', data['test1']);
+    assert.deepEqual('pub2', data['test2']);
+    assert.deepEqual('pub3', data['test3']);
     console.log('multi sub before ok.');
   });
 
   messager.pub('test2', 'pub2');
   messager.pub('test1', 'pub1');
+  messager.pub('test1', 'pubtest1');
   messager.pub('test3', 'pub3');
 
   messager.sub('test1', 'test2', 'test3', function(message, data){
-    assert.deepEqual('pub1', data[0]);
-    assert.deepEqual('pub2', data[1]);
-    assert.deepEqual('pub3', data[2]);
+    console.log('multi sub after start.');
+    assert.deepEqual('pubtest1', data['test1']);
+    assert.deepEqual('pub2', data['test2']);
+    assert.deepEqual('pub3', data['test3']);
     console.log('multi sub after ok.');
   });
 
   // subPublished= false
   messager.sub('test1', 'test2', 'test3', function(message, data){
-    assert.deepEqual('pub11', data[0]);
-    assert.deepEqual('pub22', data[1]);
-    assert.deepEqual('pub33', data[2]);
-    console.log('multi sub before ok.');
+    console.log('multi sub before subPublished=false start.');
+    assert.deepEqual('pub11', data['test1']);
+    assert.deepEqual('pub22', data['test2']);
+    assert.deepEqual('pub33', data['test3']);
+    console.log('multi sub before subPublished=false ok.');
   }, false);
   messager.pub('test2', 'pub22');
   messager.pub('test1', 'pub11');

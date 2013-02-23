@@ -68,7 +68,12 @@ function Framework ( req, res, config )
   // 引用原始响应请求
   this.req = req;
   this.res = res;
-  // 设置的cookie
+  this._GET     = {};
+  this._POST    = {};
+  this._COOKIE  = {};
+  this._SESSION = {};
+  this._SERVER  = {};
+  this._FILES   = {};
   this._setCookies = [];
   //请求开始毫秒数
   try {
@@ -76,19 +81,30 @@ function Framework ( req, res, config )
   } catch( e ) {
     this.startTime = (new Date()).getTime();
   }
+
   // pub&sub
   new Message(true, 50, this);
   var app = this;
-  // 注册error
+  // 注册app error
   this.sub( 'error', function( message, err ){
     if ( app.config.ONDEV ) {
       app.setStatusCode(200);
-      app.end( 'server_error: ' + util.inspect( err ) );
+      app.end( 'server error: ' + util.inspect( err, true ) );
     } else {
       app.setStatusCode(500);
-      app.end('');
+      app.end('server error.');
     }
   }, true, false);
+  // 注册 req error
+  this.req.on('error', function(err){
+    if ( app.config.ONDEV ) {
+      app.setStatusCode(200);
+      app.end( 'request error: ' + util.inspect( err, true ) );
+    } else {
+      app.setStatusCode(200);
+      app.end('request error.');
+    }
+  });
   // 注册close事件
   this.res.on( 'close', function(){
     app.setStatusCode(500);
@@ -397,9 +413,10 @@ function init_SERVER( app )
     'headers'     : app.req.headers,
     'trailers'    : app.req.trailers,
     'method'      : app.req.method,
-    'user-agent'  : app.req.headers['user-agent'] || 'none',
+    'userAgent'   : app.req.headers['user-agent'] || 'none',
     'ip'          : ( app.req.headers['x-real-ip'] || app.req.headers['x-forwarded-for'] ) || app.req.connection.remoteAddress,
-    'referer'     : app.req.headers['referer']
+    'referer'     : app.req.headers['referer'],
+    'isAjax'      : (app.req.headers['x-requested-with'] || '' ).toLowerCase() == 'xmlhttprequest' ? true : false
   };
 }
 
@@ -419,15 +436,17 @@ function init_FORM( app )
 {
   if ( app.SERVER('method') != 'POST' ) {
     app.pub( 'app.form.parse.ready', {
-      'err'    : null,
+      'err'    : false,
       'fields' : {},
       'files'  : {}
     });
     return false;
   }
   var form = new formidable.IncomingForm();
+  form.encoding = 'utf-8';
   // handle error event
   form.on( 'error', function( err ){
+    // 没有post数据
     app.pub( 'error', {
       'file': __filename,
       'err': err
@@ -474,7 +493,7 @@ function init_COOKIE( app )
   // 解析cookie
   cookie.parse(app);
   // 是否解析post中的数据
-  if ( !app.config.COOKIE.post_prefix ) {
+  if ( !app.config.COOKIE.post_prefix || app.SERVER('method') != 'POST') {
     app.pub( 'init.cookie.ready' );
   } else {
     var prefix = app.config.COOKIE.post_prefix;
