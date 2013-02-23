@@ -43,7 +43,7 @@ exports.config = {
     // 如果保存方式为文件，则需要配置保存路径
     'save_path': '/tmp/test_node_session',
     // session有效时间，单位秒(s)
-    'lifetime': 3600*24*30,
+    'lifetime': 60,
     'cookie_param': 'NODESESSIONID',
     // cookie的一些设置
     'cookie_path': '/',

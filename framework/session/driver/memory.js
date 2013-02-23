@@ -45,9 +45,10 @@ pro.write = function( sessionid, data, callback ) {
   }
 
   if ( !this._sessions[sessionid] ) {
+    var now = (new Date).getTime();
     this._sessions[sessionid] = {
       'data':   JSON.stringify(data),
-      'expires': this._sm.lifetime
+      'expires': now + this._sm.lifetime
     };
   } else {
     this._sessions[sessionid].data = JSON.stringify(data);
@@ -71,10 +72,18 @@ pro.create  = function( callback ) {
 };
 
 pro.renew = function(sessionid, callback) {
+  // 新建
   if ( !this._sessions[sessionid] ) {
     return this.create(callback);
   }
-  this._sessions[sessionid].expires = this._sm.lifetime;
+  // 过期
+  if ( this._isExpires(sessionid) ) {
+    this.destory(sessionid);
+    return this.create(callback);
+  }
+  // 未过期，续期
+  var now = (new Date).getTime();
+  this._sessions[sessionid].expires = now + this._sm.lifetime;
   if ( typeof callback == 'function' ) {
     callback(false, this._read(sessionid));
   }
@@ -107,7 +116,7 @@ pro.gc  = function() {
 
 pro._isExpires = function( sessionid ) {
   var now = (new Date).getTime();
-  if( this._sessions[sessionid] && ( now - this._sessions[sessionid].expires > 0 ) ) {
+  if( this._sessions[sessionid] && ( now - this._sessions[sessionid].expires < 0 ) ) {
     return false;
   }
   return true;
@@ -122,7 +131,7 @@ pro._read = function(sessionid) {
     return {
       'sessionid': sessionid,
       'data': false,
-      'expires': 0
+      'expires': 0,
     };
   }
   return {

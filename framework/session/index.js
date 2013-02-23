@@ -15,7 +15,7 @@ session.SessionManager = function( config ) {
 
   this.save_handler    = config.save_handler || 'memory';
   this.save_path       = config.save_path || '/tmp/node_session';
-  this.lifetime        = isNaN( config.lifetime ) ? 3600*24*30 : config.lifetime;
+  this.lifetime        = isNaN( config.lifetime ) ? 3600*24*30*1000 : config.lifetime*1000;
 
   this.cookie_param    = config.cookie_param || 'NODESESSIONID',
   this.cookie_path     = config.cookie_path || '/';
