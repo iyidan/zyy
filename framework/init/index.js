@@ -18,9 +18,7 @@ var cache          = require('../cache');
 var cookie         = require('../cookie');
 var SessionManager = require('../session').SessionManager;
 var utils          = require('../core/utils.js');
-
-/* 3rd module */
-var formidable = require('../3rd/formidable');
+var parseBody      = require('../parseBody').parseBody;
 
 /* 模块全局变量 */
 var session = null;
@@ -43,7 +41,7 @@ exports.createServer = function ( config, callback ) {
       init_GET( app );
       init_POST( app );
       init_FILES( app );
-      init_FORM( app );
+      init_BODY( app );
       init_COOKIE( app );
       init_DB( app );
       init_CACHE( app );
@@ -75,6 +73,7 @@ function Framework ( req, res, config )
   this._SERVER  = {};
   this._FILES   = {};
   this._setCookies = [];
+  this._oriBody = null;
   //请求开始毫秒数
   try {
     this.startTime = req.socket.server._idleStart.getTime();  
@@ -429,36 +428,12 @@ function init_GET( app )
 }
 
 /**
- * 解析FORM数据
+ * 解析请求体数据
  * @param {Object} req 由 Request构造产生的
  */
-function init_FORM( app )
+function init_BODY( app )
 {
-  if ( app.SERVER('method') != 'POST' ) {
-    app.pub( 'app.form.parse.ready', {
-      'err'    : false,
-      'fields' : {},
-      'files'  : {}
-    });
-    return false;
-  }
-  var form = new formidable.IncomingForm();
-  form.encoding = 'utf-8';
-  // handle error event
-  form.on( 'error', function( err ){
-    // 没有post数据
-    app.pub( 'error', {
-      'file': __filename,
-      'err': err
-    });
-  });
-  form.parse( app.req, function(err, fields, files) {
-    app.pub( 'app.form.parse.ready', {
-      'err'    : err,
-      'fields' : fields,
-      'files'  : files
-    });
-  });
+  parseBody(app);
   return true;
 }
 
@@ -466,8 +441,8 @@ function init_FORM( app )
  * 解析post
  */
 function init_POST( app ) {
-  app.sub( 'app.form.parse.ready', function( message, data ){
-    app._POST = data.fields;
+  app.sub( 'app.body.parse.ready', function( message, data ){
+    app._POST = data ? data.fields : {};
     app.pub( 'init.post.ready' );
   });
 }
@@ -478,8 +453,8 @@ function init_POST( app ) {
  */
 function init_FILES( app )
 {
-  app.sub( 'app.form.parse.ready', function( message, data ){
-    app._FILES = data.files;
+  app.sub( 'app.body.parse.ready', function( message, data ){
+    app._FILES = data ? data.files : {};
     app.pub( 'init.files.ready' );
   });
 }
