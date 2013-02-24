@@ -9,7 +9,7 @@ var server = Framework.createServer( config , function( message, app ){
   app.SESSION('testsession', 'testsessionval');
   app.db.query('SHOW TABLES', function(err, data, endErr){
     console.log(err, data);
-    app.write(util.inspect(data));
+    app.end(util.inspect(data));
   });
   //app.end(util.inspect(app));
 });

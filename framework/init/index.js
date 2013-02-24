@@ -388,6 +388,11 @@ Framework.prototype.addTrailers = function(){
  * end
  */
 Framework.prototype.end = function(){
+  if (this.ended == true) {
+    console.log('ended');
+    return;
+  }
+  this.ended = true;
   // writeSession
   var app  = this;
   var args = arguments;
