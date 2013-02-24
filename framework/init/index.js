@@ -391,10 +391,7 @@ Framework.prototype.end = function(){
   session.writeClose(this, function(){
     // writeCookie
     if ( app._setCookies && app._setCookies.length ) {
-      app.res.setHeader('Set-Cookie', app._setCookies);
-    }
-    if ( !app.res.statusCode ) {
-      app.setStatusCode(200);
+      app.setHeader('Set-Cookie', app._setCookies);
     }
     app.res.end.apply(app.res, args);
   });
