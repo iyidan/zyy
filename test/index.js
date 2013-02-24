@@ -8,7 +8,7 @@ var server = Framework.createServer( config , function( message, app ){
   //app.writeHead(200, { 'Content-Type':'text/html' });
   app.SESSION('testsession', 'testsessionval');
   app.db.query('SHOW TABLES', function(err, data){
-    app.write(util.inspect(err));
+    console.log(err, data);
     app.end(util.inspect(data));
   });
 });
