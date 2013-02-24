@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 var common     = require('../../common');
 var connection = common.createConnection({password: 'INVALID PASSWORD'});
 var assert     = require('assert');
@@ -25,3 +26,32 @@ process.on('exit', function() {
   assert.strictEqual(endErr, connectErr);
 });
 
+=======
+var common     = require('../../common');
+var connection = common.createConnection({password: 'INVALID PASSWORD'});
+var assert     = require('assert');
+
+var endErr;
+connection.on('end', function(err) {
+  assert.equal(endErr, undefined);
+  endErr = err;
+});
+
+var connectErr;
+connection.connect(function(err) {
+  assert.equal(connectErr, undefined);
+  connectErr = err;
+
+  connection.end();
+});
+
+process.on('exit', function() {
+  if (process.env.NO_GRANT == '1' && typeof endErr == 'undefined') return;
+
+  assert.equal(endErr.code, 'ER_ACCESS_DENIED_ERROR');
+  assert.ok(/access denied/i.test(endErr.message));
+
+  assert.strictEqual(endErr, connectErr);
+});
+
+>>>>>>> 7af941ee074ba19b0302249f5332e62ee930056a
