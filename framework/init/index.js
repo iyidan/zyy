@@ -104,10 +104,10 @@ function Framework ( req, res, config )
   this.ended    = false;
   // 渲染模板所用的数据
   this.assignValues = {
-    'cache'    : app.config.ONDEV ? false : true,
+    'cache'    : this.config.ONDEV ? false : true,
     'filename' : '',
-    'scope'    : app,
-    'debug'    : app.config.ONDEV ? true : false
+    'scope'    : this,
+    'debug'    : this.config.ONDEV ? true : false
   };
   //请求开始毫秒数
   try {
