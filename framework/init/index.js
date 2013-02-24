@@ -22,7 +22,7 @@ var parseBody      = require('../parseBody').parseBody;
 
 /* 模块全局变量 */
 var session = null;
-var db      = null;
+// var db      = null;
 
 ///////////////////////////////////////////////////////////////////
 
@@ -33,12 +33,12 @@ exports.createServer = function ( config, callback ) {
     callback = typeof callback == 'function' ? callback : function(){};
 
     // db
-    db = new DB(config.DB);
+    /*db = new DB(config.DB);
     db.sub('error', function(message, err){
       console.log('#### db error start ###');
       console.log(message, err);
       console.log('#### db error end   ###');
-    }, true, false);
+    }, true, false);*/
 
     // session
     session = new SessionManager(config.SESSION);
@@ -527,6 +527,12 @@ function init_SESSION( app )
  */
 function init_DB( app )
 {
+  var db = new DB(config.DB);
+  db.sub('error', function(message, err){
+    console.log('#### db error start ###');
+    console.log(message, err);
+    console.log('#### db error end   ###');
+  }, true, false);
   app.db = db;
   app.pub( 'init.db.ready' );
 }
