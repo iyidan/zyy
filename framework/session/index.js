@@ -22,32 +22,20 @@ session.SessionManager = function( config ) {
   this.cookie_domain   = config.cookie_domain || '';
   this.cookie_secure   = config.cookie_secure || false;
   this.cookie_httponly = config.cookie_httponly || false;
-  
-  this.gc_probability  = config.gc_probability || 0.1;
 
-  // session manager
-  var sm = this;
+  this.gc_probability  = config.gc_probability || 0.1;
 
   // pub/sub 不储存触发过的事件
   new Message(false, 50, this);
 
-  // sub error message
-  this.sub( 'error', function(message, err){
-    console.log(message, err);
-    throw new Error( err );
-  });
-
   // 储存器实例
   try {
     var Driver  = require( './driver/' + this.save_handler + '.js' )[this.save_handler];
-    this.driver = new Driver;
-    // 反引用
-    this.driver._sm = this;
-
+    this.driver = new Driver(this);
     // 检查配置
     this._check();
   } catch(e) {
-    this.pub('error', e.toString());
+    this.pub('error', e);
   }
 };
 
@@ -178,7 +166,7 @@ pro.parseCookie = function(app, callback) {
   var sessionid = app.COOKIE(this.cookie_param);
   // unsign sessionid
   if (sessionid) {
-    var ua = app.SERVER('headers')['user-agent'] || 'none-user-agent';
+    var ua = app.SERVER('userAgent') || 'none-user-agent';
     var key = utils.md5( __filename + app.config.PROJECT_NAME + ua);
     try {
       sessionid = utils.base64_decode(sessionid);
@@ -219,7 +207,7 @@ pro.writeClose = function(app, callback) {
       callback(err, false);
       return false;
     }
-    var ua = app.SERVER('headers')['user-agent'] || 'none-user-agent';
+    var ua = app.SERVER('userAgent') || 'none-user-agent';
     var key = utils.md5( __filename + app.config.PROJECT_NAME + ua);
     sessionid = utils.rc4(key, sessionid);
     sessionid = utils.base64_encode(sessionid);

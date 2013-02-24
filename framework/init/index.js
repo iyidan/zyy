@@ -13,15 +13,19 @@ var util         = require( 'util' );
 /* framework module */
 var core           = require('../core');
 var Message        = require('../message').Message;
-var db             = require('../db');
+var DB             = require('../db').DB;
 var cache          = require('../cache');
 var cookie         = require('../cookie');
 var SessionManager = require('../session').SessionManager;
 var utils          = require('../core/utils.js');
 var parseBody      = require('../parseBody').parseBody;
 
+/* 3rd  */
+var ejs = require('../3rd/ejs');
+
 /* 模块全局变量 */
 var session = null;
+var db      = null;
 
 ///////////////////////////////////////////////////////////////////
 
@@ -30,10 +34,24 @@ exports.createServer = function ( config, callback ) {
     var port = config.PORT || 3000;
     var ip   = config.IP || '127.0.0.1';
     callback = typeof callback == 'function' ? callback : function(){};
+
+    // db
+    db = new DB(config.DB);
+    db.sub('error', function(message, err){
+      console.log('#### db error start ###');
+      console.log(message, err);
+      console.log('#### db error end   ###');
+    }, true, false);
+
     // session
     session = new SessionManager(config.SESSION);
+    session.sub('error', function(message, err){
+      console.log('#### session error start ###');
+      console.log(message, err);
+      console.log('#### session error end   ###');
+    }, true, false);
 
-    return http.createServer(function(req, res) {
+    var server = http.createServer(function(req, res) {
       // new app
       var app = new Framework( req, res, config );
       // 开始初始化
@@ -51,6 +69,11 @@ exports.createServer = function ( config, callback ) {
         callback(message, app);
       });
     }).listen(port, ip);
+    // server err
+    server.on('error', function(err){
+      console.log(err);
+    });
+    return server;
 };
 
 /**
@@ -73,8 +96,19 @@ function Framework ( req, res, config )
   this._SESSION = {};
   this._SERVER  = {};
   this._FILES   = {};
+  // 需要设置的cookie暂存变量
   this._setCookies = [];
+  // 当请求体无法被解析时，原始的数据将存储在此处
   this._oriBody = null;
+  // 响应是否结束，防止keep-alive连接多次触发res.end
+  this.ended    = false;
+  // 渲染模板所用的数据
+  this.assignValues = {
+    'cache'    : this.config.ONDEV ? false : true,
+    'filename' : '',
+    'scope'    : this,
+    'debug'    : this.config.ONDEV ? true : false
+  };
   //请求开始毫秒数
   try {
     this.startTime = req.socket.server._idleStart.getTime();  
@@ -366,20 +400,65 @@ Framework.prototype.addTrailers = function(){
 /**
  * response method
  * end
+ * @param {String} str 返回给请求的内容
  */
-Framework.prototype.end = function(){
+Framework.prototype.end = function(str){
+  if (this.ended == true) {
+    console.log('ended');
+    return;
+  }
+  this.ended = true;
   // writeSession
-  var app  = this;
-  var args = arguments;
-  session.writeClose(this, function(){
+  var app  = this, args = arguments;
+  session.writeClose(this, function(err){
     // writeCookie
     if ( app._setCookies && app._setCookies.length ) {
-      app.res.setHeader('Set-Cookie', app._setCookies);
+      app.setHeader('Set-Cookie', app._setCookies);
     }
     if ( !app.res.statusCode ) {
       app.setStatusCode(200);
     }
+    // @todo content length and other headers
+    if ( !app.SERVER('isAjax') ) {
+      app.setHeader('Content-Type', 'text/html');
+    }
     app.res.end.apply(app.res, args);
+  });
+};
+
+/**
+ * 赋值到模板
+ */
+Framework.prototype.assign  = function(name, value) {
+  if ( !name || typeof name != 'string' ) {
+    this.pub('error', 'app.assign value name is not a stirng type.');
+    return;
+  }
+  this.assignValues[name] = value;
+};
+
+/**
+ * 渲染模板
+ * @param  {String} filename [description]
+ * @see 
+ *   - `locals`          Local variables object
+ *   - `cache`           Compiled functions are cached, requires `filename`
+ *   - `filename`        Used by `cache` to key caches
+ *   - `scope`           Function execution context
+ *   - `debug`           Output generated function body
+ *   - `open`            Open tag, defaulting to "<%"
+ *   - `close`           Closing tag, defaulting to "%>"
+ */
+Framework.prototype.display = function(filename) {
+  //@todo findout the real filename
+  var app = this;
+  app.assignValues.filename = utils.md5(filename);
+  ejs.renderFile(filename, app.assignValues, function(err, str){
+    if ( err ) {
+      app.pub('render error:', err);
+      return;
+    }
+    app.end(str);
   });
 };
 
@@ -510,6 +589,7 @@ function init_SESSION( app )
  */
 function init_DB( app )
 {
+  app.db = db;
   app.pub( 'init.db.ready' );
 }
 

@@ -56,7 +56,12 @@ exports.config = {
   },
   // db连接信息
   'DB': {
-
+    'driver': 'mysql',
+    'host': 'localhost',
+    'port': '3306',
+    'user': 'node',
+    'password': 'node',
+    'database': 'node'
   },
   // memcache 连接信息
   'MEMCACHE': {
