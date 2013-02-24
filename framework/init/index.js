@@ -527,7 +527,7 @@ function init_SESSION( app )
  */
 function init_DB( app )
 {
-  var db = new DB(config.DB);
+  var db = new DB(app.config.DB);
   db.sub('error', function(message, err){
     console.log('#### db error start ###');
     console.log(message, err);
