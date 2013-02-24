@@ -42,8 +42,8 @@ pro.query = function (sql, callback)
       return;
     }
     connection.query(sql, function(err, data){
-      //connection.end();
       callback(err, data);
+      connection.end();
     });
   });
 };
