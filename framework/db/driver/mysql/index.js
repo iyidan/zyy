@@ -2,7 +2,7 @@
  * mysql
  */
 
-var mysql = require('../../3rd/mysql');
+var mysql = require('../../../3rd/mysql');
 
 module.exports.mysql = function( db, config )
 {  
