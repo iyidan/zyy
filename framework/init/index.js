@@ -38,7 +38,7 @@ exports.createServer = function ( config, callback ) {
       console.log('#### db error start ###');
       console.log(message, err);
       console.log('#### db error end   ###');
-    });
+    }, true, false);
 
     // session
     session = new SessionManager(config.SESSION);
@@ -46,7 +46,7 @@ exports.createServer = function ( config, callback ) {
       console.log('#### session error start ###');
       console.log(message, err);
       console.log('#### session error end   ###');
-    });
+    }, true, false);
 
     var server = http.createServer(function(req, res) {
       // new app
