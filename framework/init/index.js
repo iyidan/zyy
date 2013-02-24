@@ -95,6 +95,8 @@ function Framework ( req, res, config )
   this._FILES   = {};
   this._setCookies = [];
   this._oriBody = null;
+  // 响应是否结束，防止keep-alive连接多次触发res.end
+  this.ended    = false;
   //请求开始毫秒数
   try {
     this.startTime = req.socket.server._idleStart.getTime();  
@@ -399,7 +401,6 @@ Framework.prototype.end = function(){
   session.writeClose(this, function(){
     // writeCookie
     if ( app._setCookies && app._setCookies.length ) {
-      console.log(app);
       app.setHeader('Set-Cookie', app._setCookies);
     }
     if ( !app.res.statusCode ) {

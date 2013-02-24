@@ -34,15 +34,6 @@ pro.query = function (sql, callback)
       });
     });
   });
-  /*var connection = mysql.createConnection(mysqlWr.config);
-  connection.connect(function(err) {
-    if (err) {
-      mysqlWr._db.pub('error', err);
-      return;
-    }
-  });
-  connection.query(sql, callback);
-  connection.end();*/
 };
 
 pro.checkSql = function(sql) {
