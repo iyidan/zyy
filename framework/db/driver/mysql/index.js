@@ -20,26 +20,29 @@ pro.query = function (sql, callback)
   sql = this.checkSql(sql);
 
   var mysqlWr = this;
-  /*this.pool.getConnection(function(err, connection){
+  this.pool.getConnection(function(err, connection){
     if (err) {
       mysqlWr._db.pub('error', err);
       return;
     }
     connection.query(sql, function(err, data){
+      callback(err, data);
       connection.end(function(endErr){
-        callback(err, data, endErr);  
+       if (endErr) {
+        mysqlWr._db.pub('error', endErr);
+       }   
       });
     });
-  });*/
-  var connection = mysql.createConnection(mysqlWr.config);
+  });
+  /*var connection = mysql.createConnection(mysqlWr.config);
   connection.connect(function(err) {
     if (err) {
-      mysqlWr.pub('error', err);
+      mysqlWr._db.pub('error', err);
       return;
     }
   });
   connection.query(sql, callback);
-  connection.end();
+  connection.end();*/
 };
 
 pro.checkSql = function(sql) {

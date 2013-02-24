@@ -66,7 +66,10 @@ exports.createServer = function ( config, callback ) {
         callback(message, app);
       });
     }).listen(port, ip);
-
+    // server err
+    server.on('error', function(err){
+      console.log(err);
+    });
     return server;
 };
 
