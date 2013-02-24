@@ -393,6 +393,9 @@ Framework.prototype.end = function(){
     if ( app._setCookies && app._setCookies.length ) {
       app.setHeader('Set-Cookie', app._setCookies);
     }
+    if ( !app.res.statusCode ) {
+      app.setStatusCode(200);
+    }
     app.res.end.apply(app.res, args);
   });
 };
