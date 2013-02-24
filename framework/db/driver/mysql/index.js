@@ -20,7 +20,7 @@ module.exports.mysql = function( db, config )
 
   this.pool = mysql.createPool({
     host     : host,
-    port     : port
+    port     : port,
     user     : user,
     password : password,
     database : database
