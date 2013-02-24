@@ -6,25 +6,9 @@ var mysql = require('../../../3rd/mysql');
 
 module.exports.mysql = function( db, config )
 {  
-  this._db = db;
-
-  var host     = config.host || 'localhost';
-  var port     = config.port || 3306;
-  var user     = config.user;
-  var password = config.password;
-  var database = config.database;
-  
-  if ( !user || !password || !database ) {
-    db.pub('error', 'in DB.driver mysql config is empty.');
-  }
-
-  this.pool = mysql.createPool({
-    host     : host,
-    port     : port,
-    user     : user,
-    password : password,
-    database : database
-  }); 
+  this._db    = db;
+  //this.pool   = mysql.createPool(config); 
+  this.config = config;
 };
 
 /* 原型 */
@@ -36,7 +20,7 @@ pro.query = function (sql, callback)
   sql = this.checkSql(sql);
 
   var mysqlWr = this;
-  this.pool.getConnection(function(err, connection){
+  /*this.pool.getConnection(function(err, connection){
     if (err) {
       mysqlWr._db.pub('error', err);
       return;
@@ -46,7 +30,16 @@ pro.query = function (sql, callback)
         callback(err, data, endErr);  
       });
     });
+  });*/
+  var connection = mysql.createConnection(mysqlWr.config);
+  connection.connect(function(err) {
+    if (err) {
+      mysqlWr.pub('error', err);
+      return;
+    }
   });
+  connection.query(sql, callback);
+  connection.end();
 };
 
 pro.checkSql = function(sql) {
