@@ -20,6 +20,9 @@ var SessionManager = require('../session').SessionManager;
 var utils          = require('../core/utils.js');
 var parseBody      = require('../parseBody').parseBody;
 
+/* 3rd  */
+var ejs = require('../3rd/ejs');
+
 /* 模块全局变量 */
 var session = null;
 var db      = null;
@@ -93,10 +96,19 @@ function Framework ( req, res, config )
   this._SESSION = {};
   this._SERVER  = {};
   this._FILES   = {};
+  // 需要设置的cookie暂存变量
   this._setCookies = [];
+  // 当请求体无法被解析时，原始的数据将存储在此处
   this._oriBody = null;
   // 响应是否结束，防止keep-alive连接多次触发res.end
   this.ended    = false;
+  // 渲染模板所用的数据
+  this.assignValues = {
+    'cache'    : app.config.ONDEV ? false : true,
+    'filename' : '',
+    'scope'    : app,
+    'debug'    : app.config.ONDEV ? true : false
+  };
   //请求开始毫秒数
   try {
     this.startTime = req.socket.server._idleStart.getTime();  
@@ -388,17 +400,17 @@ Framework.prototype.addTrailers = function(){
 /**
  * response method
  * end
+ * @param {String} str 返回给请求的内容
  */
-Framework.prototype.end = function(){
+Framework.prototype.end = function(str){
   if (this.ended == true) {
     console.log('ended');
     return;
   }
   this.ended = true;
   // writeSession
-  var app  = this;
-  var args = arguments;
-  session.writeClose(this, function(){
+  var app  = this, args = arguments;
+  session.writeClose(this, function(err){
     // writeCookie
     if ( app._setCookies && app._setCookies.length ) {
       app.setHeader('Set-Cookie', app._setCookies);
@@ -406,7 +418,47 @@ Framework.prototype.end = function(){
     if ( !app.res.statusCode ) {
       app.setStatusCode(200);
     }
+    // @todo content length and other headers
+    if ( !app.SERVER('isAjax') ) {
+      app.setHeader('Content-Type', 'text/html');
+    }
     app.res.end.apply(app.res, args);
+  });
+};
+
+/**
+ * 赋值到模板
+ */
+Framework.prototype.assign  = function(name, value) {
+  if ( !name || typeof name != 'string' ) {
+    this.pub('error', 'app.assign value name is not a stirng type.');
+    return;
+  }
+  this.assignValues[name] = value;
+};
+
+/**
+ * 渲染模板
+ * @param  {String} filename [description]
+ * @see 
+ *   - `locals`          Local variables object
+ *   - `cache`           Compiled functions are cached, requires `filename`
+ *   - `filename`        Used by `cache` to key caches
+ *   - `scope`           Function execution context
+ *   - `debug`           Output generated function body
+ *   - `open`            Open tag, defaulting to "<%"
+ *   - `close`           Closing tag, defaulting to "%>"
+ */
+Framework.prototype.display = function(filename) {
+  //@todo findout the real filename
+  var app = this;
+  app.assignValues.filename = utils.md5(filename);
+  ejs.renderFile(filename, app.assignValues, function(err, str){
+    if ( err ) {
+      app.pub('render error:', err);
+      return;
+    }
+    app.end(str);
   });
 };
 
