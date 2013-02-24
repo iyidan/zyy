@@ -13,7 +13,7 @@ var util         = require( 'util' );
 /* framework module */
 var core           = require('../core');
 var Message        = require('../message').Message;
-var db             = require('../db');
+var DB             = require('../db').DB;
 var cache          = require('../cache');
 var cookie         = require('../cookie');
 var SessionManager = require('../session').SessionManager;
@@ -22,6 +22,7 @@ var parseBody      = require('../parseBody').parseBody;
 
 /* 模块全局变量 */
 var session = null;
+var db      = null;
 
 ///////////////////////////////////////////////////////////////////
 
@@ -30,10 +31,24 @@ exports.createServer = function ( config, callback ) {
     var port = config.PORT || 3000;
     var ip   = config.IP || '127.0.0.1';
     callback = typeof callback == 'function' ? callback : function(){};
+
+    // db
+    db = new DB(config.DB);
+    db.sub('error', function(message, err){
+      console.log('#### db error start ###');
+      console.log(message, err);
+      console.log('#### db error end   ###');
+    });
+
     // session
     session = new SessionManager(config.SESSION);
+    session.sub('error', function(message, err){
+      console.log('#### session error start ###');
+      console.log(message, err);
+      console.log('#### session error end   ###');
+    });
 
-    return http.createServer(function(req, res) {
+    var server = http.createServer(function(req, res) {
       // new app
       var app = new Framework( req, res, config );
       // 开始初始化
@@ -51,6 +66,8 @@ exports.createServer = function ( config, callback ) {
         callback(message, app);
       });
     }).listen(port, ip);
+
+    return server;
 };
 
 /**
@@ -510,6 +527,7 @@ function init_SESSION( app )
  */
 function init_DB( app )
 {
+  app.db = db;
   app.pub( 'init.db.ready' );
 }
 

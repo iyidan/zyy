@@ -7,5 +7,8 @@ var Message = require(config.FW_PATH + '/message').Message;
 var server = Framework.createServer( config , function( message, app ){
   //app.writeHead(200, { 'Content-Type':'text/html' });
   app.SESSION('testsession', 'testsessionval');
-  app.end( util.inspect(app) );
+  app.db.query('SHOW TABLES', function(err, data){
+    app.write(util.inspect(err));
+    app.end(util.inspect(data));
+  });
 });

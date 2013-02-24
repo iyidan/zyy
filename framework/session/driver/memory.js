@@ -2,7 +2,9 @@
  * session内存储存器
  */
 
-module.exports.memory = function() {
+module.exports.memory = function(sm) {
+  // 引用sessionManager
+  this._sm = sm;
   // 用以储存session
   this._sessions = {};
 };
