@@ -7,7 +7,7 @@ var mysql = require('../../../3rd/mysql');
 module.exports.mysql = function( db, config )
 {  
   this._db    = db;
-  //this.pool   = mysql.createPool(config); 
+  this.pool   = mysql.createPool(config); 
   this.config = config;
 };
 
