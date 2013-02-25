@@ -1,11 +1,4 @@
-<<<<<<< HEAD
 # ignore any vim files:
 *.sw[a-z]
 vim/.netrwhist
 node_modules
-=======
-# ignore any vim files:
-*.sw[a-z]
-vim/.netrwhist
-node_modules
->>>>>>> 7af941ee074ba19b0302249f5332e62ee930056a

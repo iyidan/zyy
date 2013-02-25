@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <html>
   <head>
     <script src="../ejs.js"></script>
@@ -22,29 +21,4 @@
   </head>
   <body>
   </body>
-=======
-<html>
-  <head>
-    <script src="../ejs.js"></script>
-    <script id="users" type="text/template">
-      <% if (names.length) { %>
-        <ul>
-          <% names.forEach(function(name){ %>
-            <li><%= name %></li>
-          <% }) %>
-        </ul>
-      <% } %>
-    </script>
-    <script>
-      onload = function(){
-        var users = document.getElementById('users').innerHTML;
-        var names = ['loki', 'tobi', 'jane'];
-        var html = ejs.render(users, { names: names });
-        document.body.innerHTML = html;
-      }
-    </script>
-  </head>
-  <body>
-  </body>
->>>>>>> 7af941ee074ba19b0302249f5332e62ee930056a
 </html>

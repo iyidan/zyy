@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ReferenceError: error.ejs:2
     1| <ul>
  >> 2|   <% if (users) { %>
@@ -6,13 +5,4 @@ ReferenceError: error.ejs:2
     4|   <% } %>
     5| </ul>
 
-=======
-ReferenceError: error.ejs:2
-    1| <ul>
- >> 2|   <% if (users) { %>
-    3|     <p>Has users</p>
-    4|   <% } %>
-    5| </ul>
-
->>>>>>> 7af941ee074ba19b0302249f5332e62ee930056a
 users is not defined
