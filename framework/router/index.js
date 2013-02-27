@@ -18,103 +18,148 @@ exports.parse = function(app)
   var path = app.SERVER('url').path;
   
   path = utils.trim(path);
-  path = utils.trim(path, '/');
   
   // 去掉path后面的参数（如果有）
   path = path.toLowerCase();
   path = path.replace(/(\?|\&).*/, '');
-  path = path.replace(/(\.html|\.shtml|\.htm).*/i, '');
+  path = path.replace(/(\.).*/, '');
+  path = utils.trim(path, '/');
+
+  // 含有特殊字符
+  if ( path.replace(/([a-zA-Z0-9\/_])+/, '') !== '' ) {
+    return 404;
+  }
 
   app.routes = {
     // 默认index 模块， /
-    'module': 'index',
+    'module': '',
     // 默认 index 控制器
-    'controller': 'index',
+    'controller': '',
     // 默认控制器文件 index.js
     'controllerFile': 'index.js',
     // dir
     'dir': '',
     // 参数
-    'params': {}
+    'params': [],
+    // 特殊规则
+    'rule': {}
   };
 
   // @todo项目特殊的路由规则
   
-  // /[]
-  if (!path) return;
-
-  var module = '',
-    controller = '',
-    controllerFile = '',
-    dir = '';
-
   // module路径
   var modulePath = app.config.MODULE_PATH;
+  
+  // 访问根 /
+  if (!path) {
 
-  var tmpModule = '',
-    tmpController = '',
-    tmpControllerFile = '',
-    tmpDir = '',
-    tmpPath = '';
-
-  // split
-  paths = path.split('/');
-
-  // /[controller]
-  if ( paths.length == 1 ) {
-    app.routes.module         = 'index';
-    app.routes.controllerFile = 'index.js';
-    app.routes.controller     = path;
-    return;
-  }
-
-  // 优先寻找非indexmodule中的控制器，假设module为第一个参数
-  // blog/add
-  tmpModule = paths[0];
-  if ( hardCodeCachesStr.indexOf( modulePath + '/' + tmpModule + '/' ) != -1 ) {
-    app.routes.module = tmpModule;
-  } else {
-    app.routes.module = tmpModule = 'index';
-    // reset path
-    path  = 'index/' + path;
-    paths = path.split('/');
-  }
-
-  tmpPath = modulePath + '/' + tmpModule + '/controller' + path.substring(tmpModule.length) + '.js';
-  // path: ../module/blog/controller/add
-  // file: ../module/blog/controller/add.js
-  if ( hardCodeCaches.indexOf(tmpPath) != -1 ) {
+    app.routes.module = 'index';
     app.routes.controller = 'index';
-    app.routes.controllerFile = paths[paths.length-1] + '.js';
-  } else {
-    app.routes.controller = paths.pop();
-    app.routes.controllerFile = paths[paths.length -1] + '.js';
-    tmpPath = modulePath + '/' + tmpModule + '/controller/' + app.controllerFile;
-    if ( hardCodeCaches.indexOf(tmpPath) == -1 ) {
-      app.pub('routeError', 'parse path error.');
+    app.routes.controllerFile = 'index.js';
+
+  } else {  
+
+    // split
+    var paths = path.split('/');
+
+    // 优先寻找非indexmodule中的控制器，假设module为第一个参数
+    // blog/add
+    var tmpModule = paths[0];
+    if ( hardCodeCachesStr.indexOf( modulePath + '/' + tmpModule + '/' ) != -1 ) {
+      app.routes.module = tmpModule;
+    } else {
+      app.routes.module = tmpModule = 'index';
+      // reset path
+      path  = 'index/' + path;
+      paths = path.split('/');
+    }
+
+    /* 从最深层遍历    
+      tmpFile:  /data/www/zyy/test/module/index/controller/aaa/bbb/ccc/ddd/eee/fff.js
+      tmpDir :  /data/www/zyy/test/module/index/controller/aaa/bbb/ccc/ddd/eee/fff
+      tmpFile:  /data/www/zyy/test/module/index/controller/aaa/bbb/ccc/ddd/eee.js
+      tmpDir :  /data/www/zyy/test/module/index/controller/aaa/bbb/ccc/ddd/eee
+      tmpFile:  /data/www/zyy/test/module/index/controller/aaa/bbb/ccc/ddd.js
+      tmpDir :  /data/www/zyy/test/module/index/controller/aaa/bbb/ccc/ddd
+      tmpFile:  /data/www/zyy/test/module/index/controller/aaa/bbb/ccc.js
+      tmpDir :  /data/www/zyy/test/module/index/controller/aaa/bbb/ccc
+      tmpFile:  /data/www/zyy/test/module/index/controller/aaa/bbb.js
+      tmpDir :  /data/www/zyy/test/module/index/controller/aaa/bbb
+      tmpFile:  /data/www/zyy/test/module/index/controller/aaa.js
+      tmpDir :  /data/www/zyy/test/module/index/controller/aaa
+      /data/www/zyy/test/module/index/controller/index.js
+      { 
+        module: 'index',
+        controller: 'aaa',
+        controllerFile: 'index.js',
+        dir: '',
+        params: [ 'fff', 'eee', 'ddd', 'ccc', 'bbb', 'aaa' ],
+        rule: {} 
+      }
+    */
+    while( paths.length > 1 ) {
+
+      if(app.routes.controller) app.routes.params.push(app.routes.controller);
+      app.routes.controller     = '';
+
+      var dir  = path.substring(tmpModule.length + 1);
+      var file = dir + '.js';
+      var tmpDir  = modulePath + '/' + tmpModule + '/controller/' + dir;
+      var tmpFile = modulePath + '/' + tmpModule + '/controller/' + file;
+
+      // console.log('tmpFile: ', tmpFile);
+      // console.log('tmpDir : ', tmpDir);
+
+      // file: ../module/blog/controller/add.js
+      // path: ../module/blog/controller/add
+      if ( hardCodeCaches.indexOf(tmpFile) != -1 ) {
+        app.routes.controller = app.routes.params.length > 0 ? app.routes.params.pop() : 'index';
+        app.routes.controllerFile = file;
+        break;
+      // dirs
+      } else if ( hardCodeCachesStr.indexOf(tmpDir) != -1 ) {
+        app.routes.controller     = app.routes.params.length > 0 ? app.routes.params.pop() : 'index';
+        app.routes.controllerFile = dir + '/index.js';
+        break;
+      }
+
+      var last = paths.pop();
+      path = paths.join('/');
+      app.routes.controller = last;
     }
   }
+
+  // 是否真实存在
+  var realFile = modulePath + '/' + app.routes.module + '/controller/' + app.routes.controllerFile;
+  // console.log(realFile);
+  if ( hardCodeCaches.indexOf(realFile) == -1 || !app.routes.controller ) {
+    return 404;
+  }
+
+  return true;
 };
 
 /**
  * 分发路由
  * @param  {Object} app 当前请求对象
+ * @param {Function} callback
  */
-exports.dispatch = function(app) {
+exports.dispatch = function(app, callback) {
   var filename   = app.config.MODULE_PATH + '/' + app.routes.module + '/controller/' + app.routes.controllerFile;
   var Controller = require(filename).Controller;
   try {
     var actions = new Controller(app);  
   } catch(e) {
-    app.pub('error', 'route dispatch error:'+filename + ': [constructor Controller] not found.');
+    callback('route dispatch error:'+filename + ': [constructor Controller] not found.');
     return;
   }
   
   var action = actions[app.routes.controller] ? actions[app.routes.controller] : actions['__call'];
   if ( typeof action == 'function' ) {
-    return actions[app.routes.controller](app);
+    callback( null, actions, action );
+    return;
   }
-  app.pub('routeError', '404');
+  callback(404);
 };
 
 /**
@@ -137,9 +182,9 @@ exports.hardCode = function( modulePath )
     return true;
   }
 
-  modules.forEach(function(module){
+  modules.forEach(function(m){
 
-    var tmpModulePath = modulePath + '/' + module;
+    var tmpModulePath = modulePath + '/' + m;
     if (!isDirSync(tmpModulePath)) return;
 
     var tmpControllerPath = tmpModulePath + '/' + 'controller';
@@ -148,7 +193,6 @@ exports.hardCode = function( modulePath )
     // 缓存结果，在server重启前有效
     hardCodeCaches    = hardCodeCaches.concat( getDirFiles(tmpControllerPath) );
     hardCodeCachesStr = hardCodeCaches.join();
-    console.log(hardCodeCaches);
     // 缓存module
     hardCodeCaches.forEach(function(file, k){
       require(file);

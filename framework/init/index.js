@@ -5,10 +5,11 @@
 ///////////////////////////////////////////////////////////////////
 
 /* native module */
-var http         = require( 'http' );
-var url          = require( 'url' );
+var http         = require('http');
+var url          = require('url' );
 var crypto       = require('crypto');
-var util         = require( 'util' );
+var util         = require('util');
+var fs           = require('fs');
 
 /* framework module */
 var core           = require('../core');
@@ -72,6 +73,15 @@ exports.createServer = function ( config, callback ) {
       // callback
       app.sub('init.app.ready', function(message, data){
         callback(message, app);
+        router.dispatch(app, function(err, actions, action){
+          if (!err) {
+            action.call(actions, app.routes.controller, app.routes.params);
+          } else if ( err == 404 ) {
+            app.display('404');
+          } else {
+            app.pub('error', err);
+          }
+        });
       });
     }).listen(port, ip);
     // server err
@@ -113,8 +123,8 @@ function Framework ( req, res, config )
   this.assignValues = {
     'cache'    : this.config.ONDEV ? false : true,
     'filename' : '',
-    'scope'    : this,
-    'debug'    : this.config.ONDEV ? true : false
+    'scope'    : this
+    //'debug'    : this.config.ONDEV ? true : false
   };
   //请求开始毫秒数
   try {
@@ -164,10 +174,6 @@ function Framework ( req, res, config )
       app.pub('init.app.ready', data);
     }
   );
-  // 注册end事件
-  app.sub('response.ready', function(){
-
-  });
 }
 
 ////////////////////////////////////////
@@ -412,7 +418,6 @@ Framework.prototype.addTrailers = function(){
  */
 Framework.prototype.end = function(str){
   if (this.ended == true) {
-    console.log('ended');
     return;
   }
   this.ended = true;
@@ -457,16 +462,26 @@ Framework.prototype.assign  = function(name, value) {
  *   - `open`            Open tag, defaulting to "<%"
  *   - `close`           Closing tag, defaulting to "%>"
  */
-Framework.prototype.display = function(filename, module) {
+Framework.prototype.display = function(filename, controllerModule) {
+  
   var app  = this;
-  module = module ? module : app.routes.module;
-  filename = module + '/template/' + filename;
+  // 404  ...
+  if(parseInt(filename) == filename) {
+    filename = app.config.ROOT_PATH + '/' + filename + '.html';
+    app.end(fs.readFileSync(filename));
+    return;
+  }
+  // template
+  controllerModule = controllerModule ? controllerModule : app.routes.module;
+  filename = app.config.MODULE_PATH + '/' + controllerModule + '/template/' + filename;
   app.assignValues.filename = utils.md5(filename);
+  
   ejs.renderFile(filename, app.assignValues, function(err, str){
     if ( err ) {
-      app.pub('render error:', err);
+      app.pub('error', err);
       return;
     }
+
     app.end(str);
   });
 };
@@ -512,9 +527,14 @@ function init_SERVER( app )
 
 function init_ROUTE ( app )
 {
-  router.parse(app);
-  router.dispatch(app);
-  app.pub('init.route.ready');
+  var status = router.parse(app);
+  if ( status === true ) {
+    app.pub('init.route.ready');
+  } else if ( status == 404 ) {
+    app.display('404');
+  } else {
+    app.pub('error', status);
+  }
 }
 
 /**
