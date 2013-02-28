@@ -22,13 +22,17 @@ exports.config = {
   // 框架路径
   'FW_PATH': FW_PATH,
   // 模块路径
-  'MODULE_PATH': ROOT_PATH . '/' . 'module',
+  'MODULE_PATH': ROOT_PATH + '/' + 'module',
   // 自定义路由规则
+  // 1=> ../#siteControllerName/.../*
+  // 2=> ../:paramName/../*
   'ROUTER': [
-    '/*/visit_id/*',
-    '/company_id/*',
-    '/site=admin/*',
-    '/*/admin'
+    '/#admin/*',
+    '/*/#admin/*',
+    '/user/:visit_id/*',
+    '/#company/#admin/*',
+    '/#company/:company_id/#admin/*',
+    '/#company/*'
   ],
   // COOKIE配置
   'COOKIE': {

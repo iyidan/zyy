@@ -5,10 +5,11 @@
 ///////////////////////////////////////////////////////////////////
 
 /* native module */
-var http         = require( 'http' );
-var url          = require( 'url' );
+var http         = require('http');
+var url          = require('url' );
 var crypto       = require('crypto');
-var util         = require( 'util' );
+var util         = require('util');
+var fs           = require('fs');
 
 /* framework module */
 var core           = require('../core');
@@ -30,35 +31,53 @@ var db      = null;
 
 ///////////////////////////////////////////////////////////////////
 
-exports.createServer = function ( config, callback ) {
-    
-    var port = config.PORT || 3000;
-    var ip   = config.IP || '127.0.0.1';
-    callback = typeof callback == 'function' ? callback : function(){};
+/**
+ * 对外公开方法
+ * @param  {Object} config       项目配置
+ * @param  {Function} errorHandler 错误处理函数
+ *   错误处理函数包括两个参数：errorType, err
+ *   errorHandler(errorType, err);
+ *   errorHandler('app.error', err, app);
+ * @return {Object} 返回一个http服务器
+ */
+exports.createServer = function ( config, errorHandler ) 
+{    
+  var port = config.PORT || 3000;
+  var ip   = config.IP || '127.0.0.1';
+  
+  if ( typeof errorHandler != 'function' ) {
+    errorHandler = function(type, err){
+      console.log(type+': ', err);
+    };
+  } 
 
-    // 编码路由
-    router.hardCode(config.MODULE_PATH);
+  // 编码路由
+  router.hardCode(config.MODULE_PATH);
 
-    // db
-    db = new DB(config.DB);
-    db.sub('error', function(message, err){
-      console.log('#### db error start ###');
-      console.log(message, err);
-      console.log('#### db error end   ###');
-    }, true, false);
+  // db
+  db = new DB(config.DB);
+  db.sub('error', function(message, err){
+    errorHandler('db.error', err);
+  }, true, false);
 
-    // session
-    session = new SessionManager(config.SESSION);
-    session.sub('error', function(message, err){
-      console.log('#### session error start ###');
-      console.log(message, err);
-      console.log('#### session error end   ###');
-    }, true, false);
+  // session
+  session = new SessionManager(config.SESSION);
+  session.sub('error', function(message, err){
+    errorHandler('session.error', err);
+  }, true, false);
 
-    var server = http.createServer(function(req, res) {
-      // new app
-      var app = new Framework( req, res, config );
-      // 开始初始化
+  return createServer(ip, port, config, errorHandler);
+};
+
+
+/**
+ * 创建http服务
+ */
+function createServer(ip, port, config, errorHandler)
+{
+  var server = http.createServer(
+    function(req, res) {
+      var app = new Framework( req, res, config, errorHandler );
       init_SERVER( app );
       init_ROUTE( app );
       init_GET( app );
@@ -69,28 +88,35 @@ exports.createServer = function ( config, callback ) {
       init_DB( app );
       init_CACHE( app );
       init_SESSION( app );
-      // callback
-      app.sub('init.app.ready', function(message, data){
-        callback(message, app);
-      });
-    }).listen(port, ip);
-    // server err
-    server.on('error', function(err){
-      console.log(err);
-    });
-    return server;
-};
+      // callback & dispatch
+      app.sub(
+        'init.app.ready',
+        function(message, data){
+          // 分派路由
+          router.dispatch(app);
+        }
+      );
+    }
+  );
+  server.listen(port, ip);
+  server.on('error', function(err){
+    errorHandler('server.error', err);
+  });
+  return server;
+}
 
 /**
  * 构造Request
  * @param {Object} req http请求对象由http.createServer 产生
  * @param {Object} res http响应对象由http.createServer 产生
  * @param {Object} config 项目配置项
+ * @param {Function} errorHandler 错误处理
  */
-function Framework ( req, res, config )
+function Framework ( req, res, config, errorHandler )
 {
   // 项目配置
   this.config = config;
+  this.errorHandler = errorHandler;
   // 引用原始响应请求
   this.req = req;
   this.res = res;
@@ -113,8 +139,8 @@ function Framework ( req, res, config )
   this.assignValues = {
     'cache'    : this.config.ONDEV ? false : true,
     'filename' : '',
-    'scope'    : this,
-    'debug'    : this.config.ONDEV ? true : false
+    'scope'    : this
+    //'debug'    : this.config.ONDEV ? true : false
   };
   //请求开始毫秒数
   try {
@@ -128,28 +154,11 @@ function Framework ( req, res, config )
   var app = this;
   // 注册app error
   this.sub( 'error', function( message, err ){
-    if ( app.config.ONDEV ) {
-      app.setStatusCode(200);
-      app.end( 'server error: ' + util.inspect( err, true ) );
-    } else {
-      app.setStatusCode(500);
-      app.end('server error.');
-    }
+    errorHandler('app.error', err, app);
   }, true, false);
   // 注册 req error
   this.req.on('error', function(err){
-    if ( app.config.ONDEV ) {
-      app.setStatusCode(200);
-      app.end( 'request error: ' + util.inspect( err, true ) );
-    } else {
-      app.setStatusCode(200);
-      app.end('request error.');
-    }
-  });
-  // 注册close事件
-  this.res.on( 'close', function(){
-    app.setStatusCode(500);
-    app.end('request was closed');
+    errorHandler('app.error', err, app);
   });
   // 注册ready事件
   this.sub(
@@ -160,14 +169,10 @@ function Framework ( req, res, config )
     'init.files.ready',
     'init.cookie.ready',
     'init.route.ready',
-    function(messageId, data){
+    function(message, data){
       app.pub('init.app.ready', data);
     }
   );
-  // 注册end事件
-  app.sub('response.ready', function(){
-
-  });
 }
 
 ////////////////////////////////////////
@@ -412,7 +417,6 @@ Framework.prototype.addTrailers = function(){
  */
 Framework.prototype.end = function(str){
   if (this.ended == true) {
-    console.log('ended');
     return;
   }
   this.ended = true;
@@ -457,16 +461,28 @@ Framework.prototype.assign  = function(name, value) {
  *   - `open`            Open tag, defaulting to "<%"
  *   - `close`           Closing tag, defaulting to "%>"
  */
-Framework.prototype.display = function(filename, module) {
+Framework.prototype.display = function(filename, controllerModule) {
+  
   var app  = this;
-  module = module ? module : app.routes.module;
-  filename = module + '/template/' + filename;
+  // 404  ...
+  if(parseInt(filename) == filename) {
+    filename = app.config.ROOT_PATH + '/' + filename + '.html';
+    fs.readFile(filename, function(err, fileData){
+      app.end(fileData);
+    });
+    return;
+  }
+  // template
+  controllerModule = controllerModule ? controllerModule : app.routes.module;
+  filename = app.config.MODULE_PATH + '/' + controllerModule + '/template/' + filename;
   app.assignValues.filename = utils.md5(filename);
+  
   ejs.renderFile(filename, app.assignValues, function(err, str){
     if ( err ) {
-      app.pub('render error:', err);
+      app.pub('error', err);
       return;
     }
+
     app.end(str);
   });
 };
@@ -512,9 +528,14 @@ function init_SERVER( app )
 
 function init_ROUTE ( app )
 {
-  router.parse(app);
-  router.dispatch(app);
-  app.pub('init.route.ready');
+  var status = router.parse(app);
+  if ( status === true ) {
+    app.pub('init.route.ready');
+  } else if ( status == 404 ) {
+    app.display('404');
+  } else {
+    app.pub('error', status);
+  }
 }
 
 /**
