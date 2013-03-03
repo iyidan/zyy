@@ -82,7 +82,7 @@ exports.parse = function(app)
     app.routes.controllerFile = paths[paths.length -1] + '.js';
     tmpPath = modulePath + '/' + tmpModule + '/controller/' + app.controllerFile;
     if ( hardCodeCaches.indexOf(tmpPath) == -1 ) {
-      app.pub('routeError', 'parse path error.');
+      app.pub('error', 'parse path error.');
     }
   }
 };
@@ -105,7 +105,7 @@ exports.dispatch = function(app) {
   if ( typeof action == 'function' ) {
     return action.apply(actions);
   }
-  app.pub('routeError', '404');
+  app.pub('error', '404');
 };
 
 /**
