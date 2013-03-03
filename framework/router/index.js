@@ -95,7 +95,7 @@ exports.parse = function(app)
       // path: ../module/blog/controller/add
       // file: ../module/blog/controller/add.js
       if ( hardCodeCaches.indexOf(tmpFile) != -1 ) {
-        app.routes.controller = 'index';
+        app.routes.controller = app.routes.params.length > 0 ? app.routes.params.pop() : 'index';
         app.routes.controllerFile = file;
         break;
       // dirs
