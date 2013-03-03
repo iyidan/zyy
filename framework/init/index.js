@@ -460,7 +460,7 @@ Framework.prototype.assign  = function(name, value) {
 Framework.prototype.display = function(filename, module) {
   
   var app  = this;
-  module = module ? app.config.MODULE_PATH + '/' module : app.routes.module;
+  module = module ? app.config.MODULE_PATH + '/' + module : app.routes.module;
   filename = module + '/template/' + filename;
   console.log('display:', filename);
 
@@ -470,7 +470,7 @@ Framework.prototype.display = function(filename, module) {
       app.pub('render error:', err);
       return;
     }
-    
+
     app.end(str);
   });
 };
