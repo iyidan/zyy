@@ -22,7 +22,7 @@ var actions = Controller.prototype;
  */
 actions.__call = function()
 {
-  this.app.assign('names', ['blog/user/__call:'+app.routes.controller, 'bar', 'baz']);
+  this.app.assign('names', ['blog/user/__call:'+this.app.routes.controller, 'bar', 'baz']);
   this.app.display('tpl.ejs');
 };
 
