@@ -35,7 +35,9 @@ exports.parse = function(app)
     // dir
     'dir': '',
     // 参数
-    'params': {}
+    'params': [],
+    // 特殊规则
+    'rule': {}
   };
 
   // @todo项目特殊的路由规则
@@ -45,7 +47,6 @@ exports.parse = function(app)
     var modulePath = app.config.MODULE_PATH;
     // split
     var paths = path.split('/');
-
 
     // 优先寻找非indexmodule中的控制器，假设module为第一个参数
     // blog/add
@@ -58,27 +59,29 @@ exports.parse = function(app)
       path  = 'index/' + path;
       paths = path.split('/');
     }
-    if ( paths.length > 1 ) {
+
+    // 从最深层遍历
+    while( paths.length > 1 ) {
       var dir  = path.substring(tmpModule.length + 1);
       var file = dir + '.js';
-      tmpFile = modulePath + '/' + tmpModule + '/controller/' + file;
+      var tmpDir  = modulePath + '/' + tmpModule + '/controller/' + dir;
+      var tmpFile = modulePath + '/' + tmpModule + '/controller/' + file;
       // path: ../module/blog/controller/add
       // file: ../module/blog/controller/add.js
       if ( hardCodeCaches.indexOf(tmpFile) != -1 ) {
         app.routes.controller = 'index';
         app.routes.controllerFile = file;
+        break;
       // dirs
       } else if ( hardCodeCachesStr.indexOf(dir) != -1 ) {
         app.routes.controller     = 'index';
         app.routes.controllerFile = dir + '/index.js';
-      } else {
-        app.routes.controller = paths.pop();
-        if ( paths.length > 1 ) {
-          paths.shift();
-          tmpFile = paths.join('/') + '.js';
-          app.routes.controllerFile = tmpFile;
-        }  
+        break;
       }
+      var last = paths.pop();
+      path = utils.rtrim(path, '/'+last);
+      app.routes.params.push(last);
+      app.routes.controller = last;
     }
   }
   // 是否真实存在
