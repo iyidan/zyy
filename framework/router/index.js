@@ -43,16 +43,13 @@ exports.parse = function(app)
   if (path) {
     // module路径
     var modulePath = app.config.MODULE_PATH;
-    var tmpModule = '',
-      tmpFile = '';
-
     // split
-    paths = path.split('/');
+    var paths = path.split('/');
 
 
     // 优先寻找非indexmodule中的控制器，假设module为第一个参数
     // blog/add
-    tmpModule = paths[0];
+    var tmpModule = paths[0];
     if ( hardCodeCachesStr.indexOf( modulePath + '/' + tmpModule + '/' ) != -1 ) {
       app.routes.module = tmpModule;
     } else {
@@ -62,13 +59,18 @@ exports.parse = function(app)
       paths = path.split('/');
     }
     if ( paths.length > 1 ) {
-      var file = path.substring(tmpModule.length + 1) + '.js';
+      var dir  = path.substring(tmpModule.length + 1);
+      var file = dir + '.js';
       tmpFile = modulePath + '/' + tmpModule + '/controller/' + file;
       // path: ../module/blog/controller/add
       // file: ../module/blog/controller/add.js
       if ( hardCodeCaches.indexOf(tmpFile) != -1 ) {
         app.routes.controller = 'index';
         app.routes.controllerFile = file;
+      // dirs
+      } else if ( hardCodeCachesStr.indexOf(dir) != -1 ) {
+        app.routes.controller     = 'index';
+        app.routes.controllerFile = dir + '/index.js';
       } else {
         app.routes.controller = paths.pop();
         if ( paths.length > 1 ) {
