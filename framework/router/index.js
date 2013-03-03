@@ -23,7 +23,7 @@ exports.parse = function(app)
   // 去掉path后面的参数（如果有）
   path = path.toLowerCase();
   path = path.replace(/(\?|\&).*/, '');
-  path = path.replace(/(\.html|\.shtml|\.htm).*/i, '');
+  path = path.replace(/(\.).*/, '');
 
   app.routes = {
     // 默认index 模块， /

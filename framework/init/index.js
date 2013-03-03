@@ -458,15 +458,19 @@ Framework.prototype.assign  = function(name, value) {
  *   - `close`           Closing tag, defaulting to "%>"
  */
 Framework.prototype.display = function(filename, module) {
+  
   var app  = this;
-  module = module ? module : app.routes.module;
+  module = module ? app.config.MODULE_PATH + '/' module : app.routes.module;
   filename = module + '/template/' + filename;
+  console.log('display:', filename);
+
   app.assignValues.filename = utils.md5(filename);
   ejs.renderFile(filename, app.assignValues, function(err, str){
     if ( err ) {
       app.pub('render error:', err);
       return;
     }
+    
     app.end(str);
   });
 };
