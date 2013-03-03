@@ -99,7 +99,7 @@ exports.parse = function(app)
         app.routes.controllerFile = file;
         break;
       // dirs
-      } else if ( hardCodeCachesStr.indexOf(dir) != -1 ) {
+      } else if ( hardCodeCachesStr.indexOf(tmpDir) != -1 ) {
         app.routes.controller     = app.routes.params.length > 0 ? app.routes.params.pop() : 'index';
         app.routes.controllerFile = dir + '/index.js';
         break;
