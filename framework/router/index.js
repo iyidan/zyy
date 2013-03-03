@@ -62,8 +62,8 @@ exports.parse = function(app)
       paths = path.split('/');
     }
     if ( paths.length > 1 ) {
-      var file = path.substring(tmpModule.length) + '.js';
-      tmpFile = modulePath + '/' + tmpModule + '/controller' + file;
+      var file = path.substring(tmpModule.length + 1) + '.js';
+      tmpFile = modulePath + '/' + tmpModule + '/controller/' + file;
       // path: ../module/blog/controller/add
       // file: ../module/blog/controller/add.js
       if ( hardCodeCaches.indexOf(tmpFile) != -1 ) {
