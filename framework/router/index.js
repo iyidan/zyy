@@ -66,6 +66,10 @@ exports.parse = function(app)
       var file = dir + '.js';
       var tmpDir  = modulePath + '/' + tmpModule + '/controller/' + dir;
       var tmpFile = modulePath + '/' + tmpModule + '/controller/' + file;
+
+      console.log('tmpDir : ', tmpDir);
+      console.log('tmpFile: ', tmpFile);
+
       // path: ../module/blog/controller/add
       // file: ../module/blog/controller/add.js
       if ( hardCodeCaches.indexOf(tmpFile) != -1 ) {
@@ -74,7 +78,7 @@ exports.parse = function(app)
         break;
       // dirs
       } else if ( hardCodeCachesStr.indexOf(dir) != -1 ) {
-        app.routes.controller     = 'index';
+        app.routes.controller     = app.routes.params.length > 0 ? app.routes.params.pop() : 'index';
         app.routes.controllerFile = dir + '/index.js';
         break;
       }
