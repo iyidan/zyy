@@ -513,8 +513,13 @@ function init_SERVER( app )
 
 function init_ROUTE ( app )
 {
-  router.parse(app);
-  app.pub('init.route.ready');
+  router.parse(app, function(err){
+    if ( !err ) {
+      app.pub('init.route.ready');
+    } else {
+      app.pub('error', err);
+    }
+  });
 }
 
 /**

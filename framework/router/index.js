@@ -12,8 +12,9 @@ var hardCodeCachesStr = '';
 /**
  * 解析路由
  * @param  {Object} app [description]
+ * @param {Function} callback [description]
  */
-exports.parse = function(app) 
+exports.parse = function(app, callback) 
 {
   var path = app.SERVER('url').path;
   
@@ -82,7 +83,7 @@ exports.parse = function(app)
     app.routes.controllerFile = paths[paths.length -1] + '.js';
     tmpPath = modulePath + '/' + tmpModule + '/controller/' + app.controllerFile;
     if ( hardCodeCaches.indexOf(tmpPath) == -1 ) {
-      app.pub('error', 'parse path error.');
+      callback('parse path error.');
     }
   }
 };
