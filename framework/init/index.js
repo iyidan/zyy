@@ -457,14 +457,14 @@ Framework.prototype.assign  = function(name, value) {
 Framework.prototype.display = function(filename, controllerModule) {
   
   var app  = this;
-  controllerModule = controllerModule ? app.config.MODULE_PATH + '/' + controllerModule : app.routes.module;
-  filename = controllerModule + '/template/' + filename;
+  controllerModule = controllerModule ? controllerModule : app.routes.module;
+  filename = app.config.MODULE_PATH + '/' + controllerModule + '/template/' + filename;
   console.log('display:', filename);
 
   app.assignValues.filename = utils.md5(filename);
   ejs.renderFile(filename, app.assignValues, function(err, str){
     if ( err ) {
-      app.pub('render error:', err);
+      app.pub('error', err);
       return;
     }
 
