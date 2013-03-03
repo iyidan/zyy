@@ -113,7 +113,7 @@ exports.parse = function(app)
   // 是否真实存在
   var realFile = modulePath + '/' + app.routes.module + '/controller/' + app.routes.controllerFile;
   // console.log(realFile);
-  if ( hardCodeCaches.indexOf(realFile) == -1 ) {
+  if ( hardCodeCaches.indexOf(realFile) == -1 || !app.routes.controller ) {
     return 404;
   }
   return true;
