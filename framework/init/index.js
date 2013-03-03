@@ -454,11 +454,11 @@ Framework.prototype.assign  = function(name, value) {
  *   - `open`            Open tag, defaulting to "<%"
  *   - `close`           Closing tag, defaulting to "%>"
  */
-Framework.prototype.display = function(filename, module) {
+Framework.prototype.display = function(filename, controllerModule) {
   
   var app  = this;
-  module = module ? app.config.MODULE_PATH + '/' + module : app.routes.module;
-  filename = module + '/template/' + filename;
+  controllerModule = controllerModule ? app.config.MODULE_PATH + '/' + controllerModule : app.routes.module;
+  filename = controllerModule + '/template/' + filename;
   console.log('display:', filename);
 
   app.assignValues.filename = utils.md5(filename);

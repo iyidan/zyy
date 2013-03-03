@@ -43,18 +43,9 @@ exports.parse = function(app)
   // /[]
   if (!path) return;
 
-  var module = '',
-    controller = '',
-    controllerFile = '',
-    dir = '';
-
   // module路径
   var modulePath = app.config.MODULE_PATH;
-
   var tmpModule = '',
-    tmpController = '',
-    tmpControllerFile = '',
-    tmpDir = '',
     tmpPath = '';
 
   // split
@@ -137,9 +128,9 @@ exports.hardCode = function( modulePath )
     return true;
   }
 
-  modules.forEach(function(module){
+  modules.forEach(function(m){
 
-    var tmpModulePath = modulePath + '/' + module;
+    var tmpModulePath = modulePath + '/' + m;
     if (!isDirSync(tmpModulePath)) return;
 
     var tmpControllerPath = tmpModulePath + '/' + 'controller';
