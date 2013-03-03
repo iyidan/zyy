@@ -75,7 +75,7 @@ exports.createServer = function ( config, callback ) {
         callback(message, app);
         router.dispatch(app, function(err, actions, action){
           if (!err) {
-            action.apply(actions);
+            action.apply(actions, app.routes.action, app.routes.params);
           } else if ( err == 404 ) {
             app.display('404');
           } else {
