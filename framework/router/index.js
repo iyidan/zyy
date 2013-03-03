@@ -60,14 +60,37 @@ exports.parse = function(app)
       paths = path.split('/');
     }
 
-    // 从最深层遍历
+    /* 从最深层遍历    
+      tmpFile:  /data/www/zyy/test/module/index/controller/aaa/bbb/ccc/ddd/eee/fff.js
+      tmpDir :  /data/www/zyy/test/module/index/controller/aaa/bbb/ccc/ddd/eee/fff
+      tmpFile:  /data/www/zyy/test/module/index/controller/aaa/bbb/ccc/ddd/eee.js
+      tmpDir :  /data/www/zyy/test/module/index/controller/aaa/bbb/ccc/ddd/eee
+      tmpFile:  /data/www/zyy/test/module/index/controller/aaa/bbb/ccc/ddd.js
+      tmpDir :  /data/www/zyy/test/module/index/controller/aaa/bbb/ccc/ddd
+      tmpFile:  /data/www/zyy/test/module/index/controller/aaa/bbb/ccc.js
+      tmpDir :  /data/www/zyy/test/module/index/controller/aaa/bbb/ccc
+      tmpFile:  /data/www/zyy/test/module/index/controller/aaa/bbb.js
+      tmpDir :  /data/www/zyy/test/module/index/controller/aaa/bbb
+      tmpFile:  /data/www/zyy/test/module/index/controller/aaa.js
+      tmpDir :  /data/www/zyy/test/module/index/controller/aaa
+      /data/www/zyy/test/module/index/controller/index.js
+      { 
+        module: 'index',
+        controller: 'aaa',
+        controllerFile: 'index.js',
+        dir: '',
+        params: [ 'fff', 'eee', 'ddd', 'ccc', 'bbb', 'aaa' ],
+        rule: {} 
+      }
+    */
     while( paths.length > 1 ) {
       var dir  = path.substring(tmpModule.length + 1);
       var file = dir + '.js';
       var tmpDir  = modulePath + '/' + tmpModule + '/controller/' + dir;
       var tmpFile = modulePath + '/' + tmpModule + '/controller/' + file;
-      console.log('tmpFile: ', tmpFile);
-      console.log('tmpDir : ', tmpDir);
+      
+      // console.log('tmpFile: ', tmpFile);
+      // console.log('tmpDir : ', tmpDir);
 
       // path: ../module/blog/controller/add
       // file: ../module/blog/controller/add.js
@@ -89,7 +112,7 @@ exports.parse = function(app)
   }
   // 是否真实存在
   var realFile = modulePath + '/' + app.routes.module + '/controller/' + app.routes.controllerFile;
-  console.log(realFile);
+  // console.log(realFile);
   if ( hardCodeCaches.indexOf(realFile) == -1 ) {
     return 404;
   }
