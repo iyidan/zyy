@@ -18,12 +18,12 @@ exports.parse = function(app)
   var path = app.SERVER('url').path;
   
   path = utils.trim(path);
-  path = utils.trim(path, '/');
   
   // 去掉path后面的参数（如果有）
   path = path.toLowerCase();
   path = path.replace(/(\?|\&).*/, '');
   path = path.replace(/(\.).*/, '');
+  path = utils.trim(path, '/');
 
   app.routes = {
     // 默认index 模块， /
@@ -42,6 +42,7 @@ exports.parse = function(app)
   
   // /[]
   if (!path) return true;
+  
 
   // module路径
   var modulePath = app.config.MODULE_PATH;
@@ -51,13 +52,6 @@ exports.parse = function(app)
   // split
   paths = path.split('/');
 
-  // /[controller]
-  if ( paths.length == 1 ) {
-    app.routes.module         = 'index';
-    app.routes.controllerFile = 'index.js';
-    app.routes.controller     = path;
-    return true;
-  }
 
   // 优先寻找非indexmodule中的控制器，假设module为第一个参数
   // blog/add
@@ -71,7 +65,9 @@ exports.parse = function(app)
     paths = path.split('/');
   }
 
-  tmpPath = modulePath + '/' + tmpModule + '/controller' + path.substring(tmpModule.length) + '.js';
+  var file = path.substring(tmpModule.length);
+  if(!file || file == '/') file = '/index';
+  tmpPath = modulePath + '/' + tmpModule + '/controller' + file + '.js';
   // path: ../module/blog/controller/add
   // file: ../module/blog/controller/add.js
   if ( hardCodeCaches.indexOf(tmpPath) != -1 ) {
