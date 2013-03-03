@@ -142,7 +142,6 @@ exports.hardCode = function( modulePath )
     // 缓存结果，在server重启前有效
     hardCodeCaches    = hardCodeCaches.concat( getDirFiles(tmpControllerPath) );
     hardCodeCachesStr = hardCodeCaches.join();
-    console.log(hardCodeCaches);
     // 缓存module
     hardCodeCaches.forEach(function(file, k){
       require(file);
