@@ -112,7 +112,7 @@ exports.dispatch = function(app) {
   
   var action = actions[app.routes.controller] ? actions[app.routes.controller] : actions['__call'];
   if ( typeof action == 'function' ) {
-    return actions[app.routes.controller](app);
+    return action.apply(actions);
   }
   app.pub('routeError', '404');
 };
