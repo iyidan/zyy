@@ -19,6 +19,7 @@ var cookie         = require('../cookie');
 var SessionManager = require('../session').SessionManager;
 var utils          = require('../core/utils.js');
 var parseBody      = require('../parseBody').parseBody;
+var router         = require('../router');
 
 /* 3rd  */
 var ejs = require('../3rd/ejs');
@@ -34,6 +35,9 @@ exports.createServer = function ( config, callback ) {
     var port = config.PORT || 3000;
     var ip   = config.IP || '127.0.0.1';
     callback = typeof callback == 'function' ? callback : function(){};
+
+    // 编码路由
+    router.hardCode(config.MODULE_PATH);
 
     // db
     db = new DB(config.DB);
@@ -56,6 +60,7 @@ exports.createServer = function ( config, callback ) {
       var app = new Framework( req, res, config );
       // 开始初始化
       init_SERVER( app );
+      init_ROUTE( app );
       init_GET( app );
       init_POST( app );
       init_FILES( app );
@@ -102,6 +107,8 @@ function Framework ( req, res, config )
   this._oriBody = null;
   // 响应是否结束，防止keep-alive连接多次触发res.end
   this.ended    = false;
+  // 初始化路由访问
+  this.routes   = {};
   // 渲染模板所用的数据
   this.assignValues = {
     'cache'    : this.config.ONDEV ? false : true,
@@ -152,6 +159,7 @@ function Framework ( req, res, config )
     'init.cache.ready',
     'init.files.ready',
     'init.cookie.ready',
+    'init.route.ready',
     function(messageId, data){
       app.pub('init.app.ready', data);
     }
@@ -449,9 +457,10 @@ Framework.prototype.assign  = function(name, value) {
  *   - `open`            Open tag, defaulting to "<%"
  *   - `close`           Closing tag, defaulting to "%>"
  */
-Framework.prototype.display = function(filename) {
-  //@todo findout the real filename
-  var app = this;
+Framework.prototype.display = function(filename, module) {
+  var app  = this;
+  module = module ? module : app.routes.module;
+  filename = module + '/template/' + filename;
   app.assignValues.filename = utils.md5(filename);
   ejs.renderFile(filename, app.assignValues, function(err, str){
     if ( err ) {
@@ -472,9 +481,11 @@ Framework.prototype.display = function(filename) {
  */
 function init_URL( req )
 {
-  var urlStr = req.url;
+  if ( req.url.indexOf('?') == -1 ) {
+    req.url = req.url.replace('&', '?');
+  }
   // 解析 query 为 obj
-  urlObj =  url.parse( urlStr, true );
+  urlObj =  url.parse( req.url, true );
   return urlObj;
 }
 
@@ -497,6 +508,13 @@ function init_SERVER( app )
     'referer'     : app.req.headers['referer'],
     'isAjax'      : (app.req.headers['x-requested-with'] || '' ).toLowerCase() == 'xmlhttprequest' ? true : false
   };
+}
+
+function init_ROUTE ( app )
+{
+  router.parse(app);
+  router.dispatch(app);
+  app.pub('init.route.ready');
 }
 
 /**

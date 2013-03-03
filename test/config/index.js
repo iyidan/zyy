@@ -21,6 +21,15 @@ exports.config = {
   'ROOT_PATH': ROOT_PATH,
   // 框架路径
   'FW_PATH': FW_PATH,
+  // 模块路径
+  'MODULE_PATH': ROOT_PATH . '/' . 'module',
+  // 自定义路由规则
+  'ROUTER': [
+    '/*/visit_id/*',
+    '/company_id/*',
+    '/site=admin/*',
+    '/*/admin'
+  ],
   // COOKIE配置
   'COOKIE': {
     // 加密cookie所用的key
