@@ -40,46 +40,49 @@ exports.parse = function(app)
 
   // @todo项目特殊的路由规则
   
-  // /[]
-  if (!path) return true;
-  
+  if (path) {
+    // module路径
+    var modulePath = app.config.MODULE_PATH;
+    var tmpModule = '',
+      tmpFile = '';
 
-  // module路径
-  var modulePath = app.config.MODULE_PATH;
-  var tmpModule = '',
-    tmpPath = '';
-
-  // split
-  paths = path.split('/');
-
-
-  // 优先寻找非indexmodule中的控制器，假设module为第一个参数
-  // blog/add
-  tmpModule = paths[0];
-  if ( hardCodeCachesStr.indexOf( modulePath + '/' + tmpModule + '/' ) != -1 ) {
-    app.routes.module = tmpModule;
-  } else {
-    app.routes.module = tmpModule = 'index';
-    // reset path
-    path  = 'index/' + path;
+    // split
     paths = path.split('/');
-  }
 
-  var file = path.substring(tmpModule.length);
-  if(!file || file == '/') file = '/index';
-  tmpPath = modulePath + '/' + tmpModule + '/controller' + file + '.js';
-  // path: ../module/blog/controller/add
-  // file: ../module/blog/controller/add.js
-  if ( hardCodeCaches.indexOf(tmpPath) != -1 ) {
-    app.routes.controller = 'index';
-    app.routes.controllerFile = paths[paths.length-1] + '.js';
-  } else {
-    app.routes.controller = paths.pop();
-    app.routes.controllerFile = paths[paths.length -1] + '.js';
-    tmpPath = modulePath + '/' + tmpModule + '/controller/' + app.controllerFile;
-    if ( hardCodeCaches.indexOf(tmpPath) == -1 ) {
-      return 404;
+
+    // 优先寻找非indexmodule中的控制器，假设module为第一个参数
+    // blog/add
+    tmpModule = paths[0];
+    if ( hardCodeCachesStr.indexOf( modulePath + '/' + tmpModule + '/' ) != -1 ) {
+      app.routes.module = tmpModule;
+    } else {
+      app.routes.module = tmpModule = 'index';
+      // reset path
+      path  = 'index/' + path;
+      paths = path.split('/');
     }
+    if ( paths.length > 1 ) {
+      var file = path.substring(tmpModule.length) + '.js';
+      tmpFile = modulePath + '/' + tmpModule + '/controller' + file;
+      // path: ../module/blog/controller/add
+      // file: ../module/blog/controller/add.js
+      if ( hardCodeCaches.indexOf(tmpFile) != -1 ) {
+        app.routes.controller = 'index';
+        app.routes.controllerFile = file;
+      } else {
+        app.routes.controller = paths.pop();
+        if ( paths.length > 1 ) {
+          paths.shift();
+          tmpFile = paths.join('/') + '.js';
+          app.routes.controllerFile = tmpFile;
+        }  
+      }
+    }
+  }
+  // 是否真实存在
+  var realFile = modulePath + '/' + app.routes.module + '/controller/' + app.controllerFile;
+  if ( hardCodeCaches.indexOf(realFile) == -1 ) {
+    return 404;
   }
   return true;
 };
