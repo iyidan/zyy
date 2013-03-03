@@ -20,9 +20,9 @@ var actions = Controller.prototype;
 /**
  * __call 如果没有指定的action则访问此方法
  */
-actions.__call = function(action)
+actions.__call = function(action, params)
 {
-  this.app.assign('names', ['blog/user/__call:'+action, 'bar', 'baz']);
+  this.app.assign('names', ['blog/user/profile/add/__call:'+action, 'bar', 'baz']);
   this.app.display('tpl.ejs');
 };
 
@@ -31,12 +31,6 @@ actions.__call = function(action)
  */
 actions.add = function()
 {
-  this.app.assign('names', ['blog/user/add', 'bar', 'baz']);
-  this.app.display('tpl.ejs');
-};
-
-actions.test = function()
-{
-  this.app.assign('names', ['blog/user/test', 'bar', 'baz']);
+  this.app.assign('names', ['blog/user/profile/add/add', 'bar', 'baz']);
   this.app.display('tpl.ejs');
 };

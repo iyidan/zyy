@@ -22,21 +22,15 @@ var actions = Controller.prototype;
  */
 actions.__call = function(action)
 {
-  this.app.assign('names', ['blog/user/__call:'+action, 'bar', 'baz']);
+  this.app.assign('names', ['blog/user.js/__call'+action, 'bar', 'baz']);
   this.app.display('tpl.ejs');
 };
 
 /**
  * 默认方法，若没有控制器则会访问此方法
  */
-actions.add = function()
+actions.index = function()
 {
-  this.app.assign('names', ['blog/user/add', 'bar', 'baz']);
-  this.app.display('tpl.ejs');
-};
-
-actions.test = function()
-{
-  this.app.assign('names', ['blog/user/test', 'bar', 'baz']);
+  this.app.assign('names', ['blog/user.js/index', 'bar', 'baz']);
   this.app.display('tpl.ejs');
 };
