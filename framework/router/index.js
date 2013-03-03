@@ -42,9 +42,9 @@ exports.parse = function(app)
 
   // @todo项目特殊的路由规则
   
-  if (path) {
-    // module路径
-    var modulePath = app.config.MODULE_PATH;
+  // module路径
+  var modulePath = app.config.MODULE_PATH;
+  if (path) {  
     // split
     var paths = path.split('/');
 
