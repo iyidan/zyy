@@ -72,6 +72,7 @@ exports.createServer = function ( config, callback ) {
       // callback
       app.sub('init.app.ready', function(message, data){
         callback(message, app);
+        router.dispatch(app);
       });
     }).listen(port, ip);
     // server err
@@ -164,10 +165,6 @@ function Framework ( req, res, config )
       app.pub('init.app.ready', data);
     }
   );
-  // 注册end事件
-  app.sub('response.ready', function(){
-
-  });
 }
 
 ////////////////////////////////////////
@@ -517,7 +514,6 @@ function init_SERVER( app )
 function init_ROUTE ( app )
 {
   router.parse(app);
-  router.dispatch(app);
   app.pub('init.route.ready');
 }
 
