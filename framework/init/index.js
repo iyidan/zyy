@@ -123,8 +123,8 @@ function Framework ( req, res, config )
   this.assignValues = {
     'cache'    : this.config.ONDEV ? false : true,
     'filename' : '',
-    'scope'    : this,
-    'debug'    : this.config.ONDEV ? true : false
+    'scope'    : this
+    //'debug'    : this.config.ONDEV ? true : false
   };
   //请求开始毫秒数
   try {
