@@ -66,9 +66,8 @@ exports.parse = function(app)
       var file = dir + '.js';
       var tmpDir  = modulePath + '/' + tmpModule + '/controller/' + dir;
       var tmpFile = modulePath + '/' + tmpModule + '/controller/' + file;
-
-      console.log('tmpDir : ', tmpDir);
       console.log('tmpFile: ', tmpFile);
+      console.log('tmpDir : ', tmpDir);
 
       // path: ../module/blog/controller/add
       // file: ../module/blog/controller/add.js
