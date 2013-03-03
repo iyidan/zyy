@@ -22,7 +22,7 @@ exports.config = {
   // 框架路径
   'FW_PATH': FW_PATH,
   // 模块路径
-  'MODULE_PATH': ROOT_PATH . '/' . 'module',
+  'MODULE_PATH': ROOT_PATH + '/' + 'module',
   // 自定义路由规则
   'ROUTER': [
     '/*/visit_id/*',
