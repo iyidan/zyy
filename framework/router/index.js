@@ -12,9 +12,8 @@ var hardCodeCachesStr = '';
 /**
  * 解析路由
  * @param  {Object} app [description]
- * @param {Function} callback [description]
  */
-exports.parse = function(app, callback) 
+exports.parse = function(app) 
 {
   var path = app.SERVER('url').path;
   
@@ -42,7 +41,7 @@ exports.parse = function(app, callback)
   // @todo项目特殊的路由规则
   
   // /[]
-  if (!path) return;
+  if (!path) return true;
 
   // module路径
   var modulePath = app.config.MODULE_PATH;
@@ -57,7 +56,7 @@ exports.parse = function(app, callback)
     app.routes.module         = 'index';
     app.routes.controllerFile = 'index.js';
     app.routes.controller     = path;
-    return;
+    return true;
   }
 
   // 优先寻找非indexmodule中的控制器，假设module为第一个参数
@@ -83,30 +82,33 @@ exports.parse = function(app, callback)
     app.routes.controllerFile = paths[paths.length -1] + '.js';
     tmpPath = modulePath + '/' + tmpModule + '/controller/' + app.controllerFile;
     if ( hardCodeCaches.indexOf(tmpPath) == -1 ) {
-      callback('parse path error.');
+      return 404;
     }
   }
+  return true;
 };
 
 /**
  * 分发路由
  * @param  {Object} app 当前请求对象
+ * @param {Function} callback
  */
-exports.dispatch = function(app) {
+exports.dispatch = function(app, callback) {
   var filename   = app.config.MODULE_PATH + '/' + app.routes.module + '/controller/' + app.routes.controllerFile;
   var Controller = require(filename).Controller;
   try {
     var actions = new Controller(app);  
   } catch(e) {
-    app.pub('error', 'route dispatch error:'+filename + ': [constructor Controller] not found.');
+    callback('route dispatch error:'+filename + ': [constructor Controller] not found.');
     return;
   }
   
   var action = actions[app.routes.controller] ? actions[app.routes.controller] : actions['__call'];
   if ( typeof action == 'function' ) {
-    return action.apply(actions);
+    callback( null, actions, action );
+    return;
   }
-  app.pub('error', '404');
+  callback(404);
 };
 
 /**
