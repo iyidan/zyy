@@ -32,11 +32,11 @@ exports.parse = function(app)
 
   app.routes = {
     // 默认index 模块， /
-    'module': 'index',
+    'module': '',
     // 默认 index 控制器
-    'controller': 'index',
+    'controller': '',
     // 默认控制器文件 index.js
-    'controllerFile': 'index.js',
+    'controllerFile': '',
     // dir
     'dir': '',
     // 参数
@@ -49,7 +49,16 @@ exports.parse = function(app)
   
   // module路径
   var modulePath = app.config.MODULE_PATH;
-  if (path) {  
+  
+  // 访问根 /
+  if (!path) {
+
+    app.routes.module = 'index';
+    app.routes.controller = 'index';
+    app.routes.controllerFile = 'index.js';
+
+  } else {  
+
     // split
     var paths = path.split('/');
 
@@ -89,11 +98,15 @@ exports.parse = function(app)
       }
     */
     while( paths.length > 1 ) {
+
+      if(app.routes.controller) app.routes.params.push(app.routes.controller);
+      app.routes.controller = '';
+
       var dir  = path.substring(tmpModule.length + 1);
       var file = dir + '.js';
       var tmpDir  = modulePath + '/' + tmpModule + '/controller/' + dir;
       var tmpFile = modulePath + '/' + tmpModule + '/controller/' + file;
-      
+
       // console.log('tmpFile: ', tmpFile);
       // console.log('tmpDir : ', tmpDir);
 
@@ -112,20 +125,17 @@ exports.parse = function(app)
 
       var last = paths.pop();
       path = paths.join('/');
-      app.routes.params.push(last);
       app.routes.controller = last;
     }
-    // 去掉多余的 param
-    if ( app.routes.params.length && app.routes.params[app.routes.params.length-1] == app.routes.controller ) {
-      app.routes.params.pop();
-    }
   }
+
   // 是否真实存在
   var realFile = modulePath + '/' + app.routes.module + '/controller/' + app.routes.controllerFile;
   // console.log(realFile);
   if ( hardCodeCaches.indexOf(realFile) == -1 || !app.routes.controller ) {
     return 404;
   }
+  
   return true;
 };
 
