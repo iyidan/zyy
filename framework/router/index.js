@@ -116,7 +116,7 @@ exports.parse = function(app)
       app.routes.controller = last;
     }
     // 去掉多余的 param
-    if ( app.routes.params.length && ap.routes.params[app.routes.params.length-1] == app.routes.controller ) {
+    if ( app.routes.params.length && app.routes.params[app.routes.params.length-1] == app.routes.controller ) {
       app.routes.params.pop();
     }
   }
