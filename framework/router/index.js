@@ -110,10 +110,12 @@ exports.parse = function(app)
         break;
       }
       var last = paths.pop();
-      path = utils.rtrim(path, '/'+last);
+      path = paths.join('/');
       app.routes.params.push(last);
       app.routes.controller = last;
     }
+    // 去掉多余的 param
+    if ( app.routes.params.length && ap.routes.params[app.routes.params.length-1] == app.routes.controller )
   }
   // 是否真实存在
   var realFile = modulePath + '/' + app.routes.module + '/controller/' + app.routes.controllerFile;
