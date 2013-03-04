@@ -36,7 +36,7 @@ exports.parse = function(app)
     // 默认 index 控制器
     'controller': '',
     // 默认控制器文件 index.js
-    'controllerFile': '',
+    'controllerFile': 'index.js',
     // dir
     'dir': '',
     // 参数
@@ -100,7 +100,7 @@ exports.parse = function(app)
     while( paths.length > 1 ) {
 
       if(app.routes.controller) app.routes.params.push(app.routes.controller);
-      app.routes.controller = '';
+      app.routes.controller     = '';
 
       var dir  = path.substring(tmpModule.length + 1);
       var file = dir + '.js';
@@ -135,7 +135,7 @@ exports.parse = function(app)
   if ( hardCodeCaches.indexOf(realFile) == -1 || !app.routes.controller ) {
     return 404;
   }
-  
+
   return true;
 };
 
