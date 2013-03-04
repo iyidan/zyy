@@ -97,8 +97,8 @@ exports.parse = function(app)
       // console.log('tmpFile: ', tmpFile);
       // console.log('tmpDir : ', tmpDir);
 
-      // path: ../module/blog/controller/add
       // file: ../module/blog/controller/add.js
+      // path: ../module/blog/controller/add
       if ( hardCodeCaches.indexOf(tmpFile) != -1 ) {
         app.routes.controller = app.routes.params.length > 0 ? app.routes.params.pop() : 'index';
         app.routes.controllerFile = file;
@@ -109,13 +109,16 @@ exports.parse = function(app)
         app.routes.controllerFile = dir + '/index.js';
         break;
       }
+
       var last = paths.pop();
       path = paths.join('/');
       app.routes.params.push(last);
       app.routes.controller = last;
     }
     // 去掉多余的 param
-    if ( app.routes.params.length && ap.routes.params[app.routes.params.length-1] == app.routes.controller )
+    if ( app.routes.params.length && ap.routes.params[app.routes.params.length-1] == app.routes.controller ) {
+      app.routes.params.pop();
+    }
   }
   // 是否真实存在
   var realFile = modulePath + '/' + app.routes.module + '/controller/' + app.routes.controllerFile;
