@@ -25,6 +25,11 @@ exports.parse = function(app)
   path = path.replace(/(\.).*/, '');
   path = utils.trim(path, '/');
 
+  // 含有特殊字符
+  if ( path.replace(/([a-zA-Z0-9\/_])+/, '') !== '' ) {
+    return 404;
+  }
+
   app.routes = {
     // 默认index 模块， /
     'module': 'index',
