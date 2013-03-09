@@ -20,10 +20,9 @@ exports.parse = function(app)
   path = utils.trim(path);
   
   // 去掉path后面的参数（如果有）
-  path = path.toLowerCase();
-  path = path.replace(/(\?|\&).*/, '');
-  path = path.replace(/(\.).*/, '');
-  path = utils.trim(path, '/');
+  path = utils.trim(path.toLowerCase()
+          .replace(/(\?|\&|\.).*/, '')
+          .replace('//', '/'));
 
   // 含有特殊字符
   if ( path.replace(/([a-zA-Z0-9\/_])+/, '') !== '' ) {
@@ -41,11 +40,13 @@ exports.parse = function(app)
     'dir': '',
     // 参数
     'params': [],
-    // 特殊规则
-    'rule': {}
+    // 项目自定义的特殊规则
+    'rule': {
+      'siteController': [],
+      'params': {}
+    }
   };
 
-  // @todo项目特殊的路由规则
   
   // module路径
   var modulePath = app.config.MODULE_PATH;
@@ -57,10 +58,11 @@ exports.parse = function(app)
     app.routes.controller = 'index';
     app.routes.controllerFile = 'index.js';
 
-  } else {  
+  } else {
 
-    // split
-    var paths = path.split('/');
+    // 解析自定义的路由规则
+    path  = parseRule(app, path);
+    paths = path.split('/');   
 
     // 优先寻找非indexmodule中的控制器，假设module为第一个参数
     // blog/add
@@ -72,7 +74,7 @@ exports.parse = function(app)
       // reset path
       path  = 'index/' + path;
       paths = path.split('/');
-    }
+    }    
 
     /* 从最深层遍历    
       tmpFile:  /data/www/zyy/test/module/index/controller/aaa/bbb/ccc/ddd/eee/fff.js
@@ -139,6 +141,7 @@ exports.parse = function(app)
   return true;
 };
 
+
 /**
  * 分发路由
  * @param  {Object} app 当前请求对象
@@ -200,6 +203,69 @@ exports.hardCode = function( modulePath )
   });
 
 };
+
+/**
+ * @private
+ * 解析自定义路由
+ * @param {Object} app 请求对象
+ * @param {String} path 请求路径
+ */
+function parseRule(app, path)
+{
+  // 规则：
+  // 总控制器site：/#siteName/../../* ...
+  // 参数：/*/:paramName/../../* ...
+  var paths = path.split('/');
+  var rules = app.config.ROUTER || [];
+  
+  for ( var i=0; i<rules.length; i++ ) {
+
+    var ruleArr = utils.ltrim( utils.rtrim(utils.trim(rules[i]), '/*'), '/').split('/');
+    
+    if ( !isMatchRule(paths, ruleArr) ) continue;
+    
+    ruleArr.forEach(function(v ,k){
+      if ( /^(\#|\:).+/.test(v) ) {
+        var name = v.substring(1);
+        var val  = paths[k];
+        if ( v.charAt(0) == '#' ) {
+          // 总路由控制器
+          app.routes.rule.siteController.push(name);
+        } else {
+          // 参数
+          app.routes.rule.params[name] = val;
+          paths[k] = '';
+        }
+      }
+    });
+
+    return paths.join('/').replace('//', '/');    
+  }
+}
+
+/**
+ * 检查路径与规则是否相等
+ * @param  {Array}  paths 路径数组
+ * @param  {Array}  rules 路由规则
+ * @return {Boolean}       相等返回true，否则返回false
+ */
+function isMatchRule(paths, rules)
+{
+  if ( !(paths instanceof Array) || !(rules instanceof Array) )  return false;
+
+  if ( paths.length < rules.length  ) return false;
+
+  for(var i = 0; i < rules.length; i ++) {
+    var tmpPath = paths[i];
+    var tmpRule = rules[i];
+    if ( /^(\#|\:).+/.test(tmpRule) ) tmpRule = tmpRule.substring(1);
+    // all
+    if ( tmpRule == '*' ) continue;
+    // not match
+    if ( tmpPath !== tmpRule ) return false;
+  }
+  return true;
+}
 
 /**
  * 返回一个包含这个目录下的所有文件的列表

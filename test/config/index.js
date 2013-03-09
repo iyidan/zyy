@@ -24,11 +24,13 @@ exports.config = {
   // 模块路径
   'MODULE_PATH': ROOT_PATH + '/' + 'module',
   // 自定义路由规则
+  // 1=> ../#siteControllerName/.../*
+  // 2=> ../:paramName/../*
   'ROUTER': [
-    '/*/visit_id/*',
-    '/company_id/*',
-    '/site=admin/*',
-    '/*/admin'
+    '/user/:visit_id/*',
+    '/#admin/*',
+    '/*/#admin/*',
+    '/#company/:company_id/*'
   ],
   // COOKIE配置
   'COOKIE': {
