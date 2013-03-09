@@ -262,9 +262,12 @@ function isMatchRule(paths, rules)
   for(var i = 0; i < rules.length; i ++) {
     var tmpPath = paths[i];
     var tmpRule = rules[i];
-    if ( /^(\#|\:).+/.test(tmpRule) ) tmpRule = tmpRule.substring(1);
+    if ( /^(\#).+/.test(tmpRule) ) tmpRule = tmpRule.substring(1);
+
     // all
     if ( tmpRule == '*' ) continue;
+    // params
+    if ( /^(\:).+/.test(tmpRule) ) continue;
     // not match
     if ( tmpPath !== tmpRule ) return false;
   }
