@@ -27,10 +27,11 @@ exports.config = {
   // 1=> ../#siteControllerName/.../*
   // 2=> ../:paramName/../*
   'ROUTER': [
-    '/user/:visit_id/*',
     '/#admin/*',
+    '/user/:visit_id/*',
     '/*/#admin/*',
-    '/#company/:company_id/*'
+    '/#company/#admin/*',
+    '/#company/:company_id/#admin/*'
   ],
   // COOKIE配置
   'COOKIE': {

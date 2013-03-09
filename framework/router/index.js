@@ -219,6 +219,7 @@ function parseRule(app, path)
   // 参数：/*/:paramName/../../* ...
   var paths = path.split('/');
   var rules = app.config.ROUTER || [];
+  var paramsMatchedIndex = [];
   
   for ( var i=0; i<rules.length; i++ ) {
 
@@ -236,15 +237,17 @@ function parseRule(app, path)
         } else {
           // 参数
           app.routes.rule.params[name] = val;
-          paths[k] = '';
+          paramsMatchedIndex.push(k);
         }
       }
-    });
-
-    return paths.join('/').replace('//', '/');    
+    });    
   }
 
-  return path;
+  paramsMatchedIndex.forEach(function(v){
+    paths[v] = '';
+  });
+
+  return paths.join('/').replace('//', '/');
 }
 
 /**
