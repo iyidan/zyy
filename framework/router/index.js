@@ -17,12 +17,13 @@ exports.parse = function(app)
 {
   var path = app.SERVER('url').path;
   
-  path = utils.trim(path);
-  
-  // 去掉path后面的参数（如果有）
-  path = utils.trim(path.toLowerCase()
-          .replace(/(\?|\&|\.).*/, '')
-          .replace('//', '/'));
+  // 去掉path后面的参数及.（如果有）  
+  path = utils.trim(path)
+         .toLowerCase()
+         .replace(/(\?|\&|\.).*/, '')
+         .replace('//', '/');
+
+  path = utils.trim(path, '/');
 
   // 含有特殊字符
   if ( path.replace(/([a-zA-Z0-9\/_])+/, '') !== '' ) {
