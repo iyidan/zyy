@@ -241,6 +241,8 @@ function parseRule(app, path)
 
     return paths.join('/').replace('//', '/');    
   }
+  
+  return path;
 }
 
 /**
