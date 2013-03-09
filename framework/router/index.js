@@ -233,7 +233,9 @@ function parseRule(app, path)
         var val  = paths[k];
         if ( v.charAt(0) == '#' ) {
           // 总路由控制器
-          app.routes.rule.siteController.push(name);
+          if ( app.routes.rule.siteController.indexOf(name) == -1 ) {
+            app.routes.rule.siteController.push(name);
+          }
         } else {
           // 参数
           app.routes.rule.params[name] = val;
