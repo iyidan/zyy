@@ -33,7 +33,7 @@ exports.parse = function(app)
   app.routes = {
     // 默认index 模块， /
     'module': '',
-    // 默认 index 控制器
+    // 默认空 控制器
     'controller': '',
     // 默认控制器文件 index.js
     'controllerFile': 'index.js',
@@ -69,14 +69,14 @@ exports.parse = function(app)
     // 优先寻找非indexmodule中的控制器，假设module为第一个参数
     // blog/add
     var tmpModule = paths[0];
-    if ( hardCodeCachesStr.indexOf( modulePath + '/' + tmpModule + '/' ) != -1 ) {
-      app.routes.module = tmpModule;
-    } else {
-      app.routes.module = tmpModule = 'index';
-      // reset path
+    if ( hardCodeCachesStr.indexOf( modulePath + '/' + tmpModule + '/' ) == -1 ) {
+      tmpModule = 'index';
       path  = 'index/' + path;
       paths = path.split('/');
-    }    
+    }
+
+    // 找到module
+    app.routes.module = tmpModule;    
 
     /* 从最深层遍历    
       tmpFile:  /data/www/zyy/test/module/index/controller/aaa/bbb/ccc/ddd/eee/fff.js
