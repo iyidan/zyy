@@ -475,7 +475,7 @@ Framework.prototype.display = function(filename, controllerModule) {
   // template
   controllerModule = controllerModule ? controllerModule : app.routes.module;
   filename = app.config.MODULE_PATH + '/' + controllerModule + '/template/' + filename;
-  app.assignValues.filename = utils.md5(filename);
+  app.assignValues.filename = filename;
   
   // ejs使用readFileSync 这里采用readFile 代替
   fs.readFile(filename, 'utf8', function(err, fileData){
