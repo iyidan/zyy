@@ -208,7 +208,7 @@ function dispatchController(app)
     // 尝试加载
     try {
       var siteController = require(app.config.ROOT_PATH + '/controller/' + controller)[controller];
-    } catch() { }
+    } catch(e) { }
     if ( typeof siteController == 'function' ) {
       controllerEvents.push('router.controller.'+controller+'.ok');
       siteController(app);
