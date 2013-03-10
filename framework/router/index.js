@@ -63,7 +63,6 @@ exports.parse = function(app)
 
     // 解析自定义的路由规则
     path  = parseRule(app, path);
-    console.log('path:', path);
     paths = path.split('/');   
 
     // 优先寻找非indexmodule中的控制器，假设module为第一个参数
