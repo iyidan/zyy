@@ -4,6 +4,6 @@
  */
 module.exports.admin = function(app){
   //
-  
-  app.pub('router.controller.admin.ok');
+  app.end('access forbidden.');
+  //app.pub('router.controller.admin.ok');
 };
