@@ -477,13 +477,14 @@ Framework.prototype.display = function(filename, controllerModule) {
   filename = app.config.MODULE_PATH + '/' + controllerModule + '/template/' + filename;
   app.assignValues.filename = utils.md5(filename);
   
-  ejs.renderFile(filename, app.assignValues, function(err, str){
+  // ejs使用readFileSync 这里采用readFile 代替
+  fs.readFile(filename, 'utf8', function(err, fileData){
     if ( err ) {
       app.pub('error', err);
       return;
     }
-
-    app.end(str);
+    var html = ejs.render(fileData, app.assignValues);
+    app.end(html);
   });
 };
 
