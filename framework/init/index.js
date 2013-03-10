@@ -467,7 +467,9 @@ Framework.prototype.display = function(filename, controllerModule) {
   // 404  ...
   if(parseInt(filename) == filename) {
     filename = app.config.ROOT_PATH + '/' + filename + '.html';
-    app.end(fs.readFileSync(filename));
+    fs.readFile(filename, function(err, fileData){
+      app.end(fileData);
+    });
     return;
   }
   // template

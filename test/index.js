@@ -14,8 +14,8 @@ var server = Framework.createServer(config , function(errType, err, app){
       app.end('request error.');
     }
   } else if ( errType == 'db.error' ) {
-
+    console.log(err);
   } else if ( errType == 'session.error' ) {
-    
+    console.log(err);
   }
 });
