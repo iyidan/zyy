@@ -143,30 +143,6 @@ exports.parse = function(app)
   return true;
 };
 
-
-/**
- * 分发路由
- * @param  {Object} app 当前请求对象
- * @param {Function} callback
- */
-exports.dispatch = function(app, callback) {
-  var filename   = app.config.MODULE_PATH + '/' + app.routes.module + '/controller/' + app.routes.controllerFile;
-  var Controller = require(filename).Controller;
-  try {
-    var actions = new Controller(app);  
-  } catch(e) {
-    callback('route dispatch error:'+filename + ': [constructor Controller] not found.');
-    return;
-  }
-  
-  var action = actions[app.routes.controller] ? actions[app.routes.controller] : actions['__call'];
-  if ( typeof action == 'function' ) {
-    callback( null, actions, action );
-    return;
-  }
-  callback(404);
-};
-
 /**
  * 遍历出所有控制器文件
  * 此方法为同步执行方法，只在项目启动的时候编码
@@ -205,6 +181,79 @@ exports.hardCode = function( modulePath )
   });
 
 };
+
+/**
+ * 分发路由
+ * @param  {Object} app 当前请求对象
+ */
+exports.dispatch = function(app) {
+  if( app.routes.rule.siteController.length ) {
+    dispatchController(app); 
+  } else {
+    dispatchAction(app);
+  }
+};
+
+/**
+ * 分发大控制器
+ */
+function dispatchController(app)
+{
+  
+  // 执行的siteController
+  var controllerEvents = [];
+
+  // 并行执行siteController
+  app.routes.rule.siteController.forEach(function(controller){
+    // 尝试加载
+    try {
+      var siteController = require(app.config.ROOT_PATH + '/controller/' + controller)[controller];
+    } catch() { }
+    if ( typeof siteController == 'function' ) {
+      controllerEvents.push('router.controller.'+controller+'.ok');
+      siteController(app);
+    }
+  });
+
+  // 若无大控制器，分派action
+  if( !controllerEvents.length ) return dispatchAction(app);
+  
+  // 注册消息事件回调
+  controllerEvents.push(function(message, data){
+    dispatchAction(app);
+  });
+
+  // 监听
+  app.sub.apply(app, controllerEvents);
+}
+
+/**
+ * 分发action
+ * @return {[type]} [description]
+ */
+function dispatchAction(app)
+{
+  var filename   = app.config.MODULE_PATH + '/' + app.routes.module + '/controller/' + app.routes.controllerFile;
+  var Controller = require(filename).Controller;
+
+  // new
+  try {
+    var actions = new Controller(app);  
+  } catch(e) {
+    app.pub('error', 'route dispatch error:'+filename + ': [constructor Controller] not found.');
+    return;
+  }
+
+  // 若无action，则访问__call
+  var action = actions[app.routes.controller] ? actions[app.routes.controller] : actions['__call'];
+  if ( typeof action == 'function' ) {
+    action.call(actions, app.routes.controller, app.routes.params);
+    return;
+  }
+
+  // 404
+  app.display('404');
+}
 
 /**
  * @private
