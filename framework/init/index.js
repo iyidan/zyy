@@ -278,36 +278,11 @@ Framework.prototype.COOKIE = function( key, val, expires, needSign, path, domain
   opt.httpOnly = httpOnly || false;
 
   if ( needSign ) {
-    val = this.COOKIE.sign( val, this.config.COOKIE.secret );
+    val = cookie.sign( val, this.config.COOKIE.secret );
   }
 
   // 设置cookie
   cookie.setCookie( this, key, val, opt );
-};
-
-/**
- * 生成cookie加密值字符串，防止被篡改
- * @param {String} val 需要加密的字符串
- * @param {String} secret 密钥
- * @return {String} 
- */
-Framework.prototype.COOKIE.sign = function( val, secretKey ) {
-  return val + '.' + crypto
-    .createHmac('sha256', secretKey)
-    .update(val)
-    .digest('base64')
-    .replace(/\=+$/, '');
-};
-
-/**
- * 反解cookie加密后的值
- * @param {String} val 需要加密的字符串
- * @param {String} secret 密钥
- * @return {Boolean|String} 如果没被篡改，返回值否则返回false
- */
-Framework.prototype.COOKIE.unsign = function( val, secretKey ) {
-  var str = val.slice(0, val.lastIndexOf('.'));
-  return this.sign(str, secretKey) === val ? str : false;
 };
 
 /**
