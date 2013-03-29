@@ -110,7 +110,7 @@ template.parseInclude = function(file, cb) {
       cb(err);
       return;
     }
-    console.log(content, typeof content);
+    console.log(file, content, typeof content);
     var matches = content.match(includeReg); 
     if (!matches) {
       cb(null, content);
