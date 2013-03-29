@@ -149,12 +149,7 @@ function Framework ( req, res, config, errorHandler )
   // 初始化路由访问
   this.routes   = {};
   // 渲染模板所用的数据
-  this.assignValues = {
-    'cache'    : this.config.ONDEV ? false : true,
-    'filename' : '',
-    'scope'    : this
-    //'debug'    : this.config.ONDEV ? true : false
-  };
+  this.assignValues = {};
   //请求开始毫秒数
   try {
     this.startTime = req.socket.server._idleStart.getTime();  
