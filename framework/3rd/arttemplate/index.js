@@ -8,7 +8,7 @@ var fs = require('fs');
 var arttemplate = require('./lib/template-syntax');
 // 工具包
 var utils   = require('../../core/utils');
-var Message = require('../../message');
+var Message = require('../../message').Message;
 
 
 var template = exports;
