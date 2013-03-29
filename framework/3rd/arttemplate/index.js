@@ -101,10 +101,13 @@ template.parseInclude = function(file, cb) {
     return;
   }
 
+
+  var fileMd5 = utils.md5(file);
+
   // 缓存
-  console.log('fileCache: ', fileCache);
-  if (fileCache[file]) {
-    cb(null, fileCache[file]);
+  console.log('fileCache: ', Object.keys(fileCache));
+  if (fileCache[fileMd5]) {
+    cb(null, fileCache[fileMd5]);
   }
 
   var that = this;
@@ -123,7 +126,6 @@ template.parseInclude = function(file, cb) {
     }
 
     // 订阅多个事件
-    var fileMd5 = utils.md5(file);
     var subMsgs = matches.map(function(v){
       return fileMd5 +  '.' + v;
     });
@@ -175,8 +177,9 @@ template.parseInclude = function(file, cb) {
           tmpFile = that.rootPath + '/template/' + that.theme + '/' + tmpFile; 
         }
         
-        if ( fileCache[tmpFile] ) {
-          that.pub(messageId, { err: null, content: fileCache[tmpFile] });
+        var tmpFileMd5 = utils.md5(tmpFile);
+        if ( fileCache[tmpFileMd5] ) {
+          that.pub(messageId, { err: null, content: fileCache[tmpFileMd5] });
           return;
         }
 
@@ -187,8 +190,8 @@ template.parseInclude = function(file, cb) {
             return;
           }
           // 存入cache
-          if ( that.cache ) fileCache[tmpFile] = tmpContent;
-          console.log('cache file: ', fileCache, tmpFile);
+          if ( that.cache ) fileCache[tmpFileMd5] = tmpContent;
+          console.log('cache file: ', Object.keys(fileCache));
           that.pub(messageId, { err: null, content: tmpContent });
         });
       });
