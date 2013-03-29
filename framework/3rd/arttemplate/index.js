@@ -105,6 +105,7 @@ template.parseInclude = function(file, cb) {
   // 缓存
   if (fileCache[file]) return fileCache[file];
 
+  var that = this;
 
   fs.readFile(file, 'utf8', function(err, content){
     if (err) {
@@ -123,6 +124,9 @@ template.parseInclude = function(file, cb) {
       return fileMd5 +  '.' + v;
     });
     subMsgs.push(function(message, dataList){
+
+      console.log(message, dataList);
+      
       var ids = message.id.split(',');
       for (var i = 0; i < ids.length; i++) {
         var includeInfo = dataList[ids[i]];
@@ -141,10 +145,10 @@ template.parseInclude = function(file, cb) {
       cb(null, content);
     });
 
-    // 监听事件
-    this.sub.apply(this, subMsgs);
+    console.log('subMsgs: ', subMsgs);
 
-    var that    = this;
+    // 监听事件
+    that.sub.apply(that, subMsgs);
 
     try {
 
