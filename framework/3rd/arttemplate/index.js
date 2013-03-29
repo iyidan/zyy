@@ -46,6 +46,9 @@ template.init = function(config) {
 
   this.config      = config;
   this.initialized = true;
+
+  // test
+  this.cache = true;
 }
 
 /**
@@ -63,6 +66,9 @@ template.render = function(content, data) {
   
   var cached = htmlCache[md5];
   if (cached && htmlCache.hasOwnProperty(md5)) {
+
+    console.log('cached: ', cached);
+
     return cached;
   }
 
@@ -107,6 +113,9 @@ template.parseInclude = function(file, cb) {
 
   // 缓存
   if (fileCache[file]) {
+
+    console.log('fileCache: ', file);
+    
     cb(null, fileCache[file]);
   }
 

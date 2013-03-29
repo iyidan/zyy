@@ -32,5 +32,5 @@ actions.__call = function(action)
 actions.index = function()
 {
   this.app.assign('names', ['index', 'bar', 'baz']);
-  this.app.display('tpl.ejs');
+  this.app.display('test.html');
 };
