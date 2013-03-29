@@ -80,6 +80,8 @@ template.render = function(content, data) {
     delete renderCache[renderMd5];
     delete htmlCache[md5];
     
+    if(this.isDebug) console.log('render: ', e);
+
     this.pub('error', e);
     
     return '';
