@@ -117,15 +117,10 @@ template.parseInclude = function(file, cb) {
       cb(err);
       return;
     }
+
     var matches = content.match(includeReg);
-
-    console.log('in readFile: ',file, content, matches);
-
+    
     if (!matches) {
-      console.log('################');
-      console.log(cb.toString());
-      var util = require('util');
-      util.inspect(cb, false, 3);
       cb(null, content);
       return;
     }
@@ -135,10 +130,7 @@ template.parseInclude = function(file, cb) {
     var subMsgs = matches.map(function(v){
       return fileMd5 +  '.' + v;
     });
-    subMsgs.push(function(message, dataList){
-
-      console.log(message, dataList);
-      
+    subMsgs.push(function(message, dataList){      
       var ids = message.id.split(',');
       for (var i = 0; i < ids.length; i++) {
         var includeInfo = dataList[ids[i]];
@@ -157,8 +149,6 @@ template.parseInclude = function(file, cb) {
       }
       cb(null, content);
     });
-
-    console.log('subMsgs: ', subMsgs);
 
     // 监听事件
     that.sub.apply(that, subMsgs);
@@ -193,22 +183,14 @@ template.parseInclude = function(file, cb) {
           return;
         }
 
-        console.log('tmpFile: ', tmpFile);
-        console.log('messageId: ', messageId);
-
         // 递归读取
         return that.parseInclude(tmpFile, function(err, tmpContent){
-          console.log('!!!!!!!!!!!!!!!');
-          console.log(err, messageId, tmpContent);
           if (err) {
             that.pub(messageId, { err: err, content: '' });
             return;
           }
           // 存入cache
           if ( that.cache ) fileCache[tmpFile] = tmpContent;
-
-          console.log('in inner: ', err, tmpContent, messageId);
-
           that.pub(messageId, { err: null, content: tmpContent });
         });
       });
