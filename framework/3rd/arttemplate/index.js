@@ -151,7 +151,8 @@ template.parseInclude = function(file, cb) {
           return;
         }
         var tmpContent = includeInfo.content;
-        var include    = ids[i].split('.')[1];
+        // md5 32 + 1 (".")
+        var include    = ids[i].substring(33);
         content = content.replace(include, tmpContent);
       }
       cb(null, content);
