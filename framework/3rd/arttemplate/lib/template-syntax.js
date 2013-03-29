@@ -7,6 +7,7 @@
  
 var template = require('./template');
 exports = template;
+console.log(template);
 
 (function (exports) {
 
