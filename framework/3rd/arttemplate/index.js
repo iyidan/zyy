@@ -104,9 +104,9 @@ template.parseInclude = function(file, cb) {
 
   var fileMd5 = utils.md5(file);
 
-  // 缓存
-  console.log('fileCache: ', Object.keys(fileCache));
+  // 文件缓存
   if (fileCache[fileMd5]) {
+    console.log('fileCache: ', Object.keys(fileCache));
     cb(null, fileCache[fileMd5]);
   }
 
