@@ -156,7 +156,6 @@ template.parseInclude = function(file, cb) {
       matches.forEach(function(include, k){
         
         var messageId = fileMd5 +  '.' + include; 
-        subMsgs.push(messageId);
 
         include = include.replace(/\'/g, '"');
         var tmpFile   = include.match(/file\=\"(.+?)\"/);
@@ -187,6 +186,9 @@ template.parseInclude = function(file, cb) {
           return;
           // 存入cache
           if ( that.cache ) fileCache[tmpFile] = tmpContent;
+
+          console.log('in inner: ', err, tmpContent, messageId);
+
           that.pub(messageId, { err: null, content: tmpContent });
         });
       });
