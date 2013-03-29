@@ -7,10 +7,6 @@ var fs = require('fs');
 // 类似于smarty的语法风格
 var arttemplate = require('./lib/template-syntax');
 
-console.dir(arttemplate);
-var util = require('util');
-console.log(util.inspect(arttemplate, true));
-
 // 工具包
 var utils   = require('../../core/utils');
 var Message = require('../../message').Message;
@@ -84,8 +80,6 @@ template.render = function(content, data) {
 
     delete renderCache[renderMd5];
     delete htmlCache[md5];
-    
-    if(this.isDebug) console.log('render: ', e);
 
     this.pub('error', e);
     
@@ -117,7 +111,6 @@ template.parseInclude = function(file, cb) {
       cb(err);
       return;
     }
-    console.log(file, content, typeof content);
     var matches = content.match(includeReg); 
     if (!matches) {
       cb(null, content);

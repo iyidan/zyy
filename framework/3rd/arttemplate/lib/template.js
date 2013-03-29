@@ -181,9 +181,11 @@ exports.onerror = function (e) {
         + e.temp;
     }
     
-    //if (global.console) {
-        console.error(content);
-    //}
+    if (this.pub) {
+        this.pub('error', content);
+    } else {
+        console.log(content);
+    }
 };
 
 
