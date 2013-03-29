@@ -146,6 +146,8 @@ template.parseInclude = function(file, cb) {
         var include    = ids[i].substring(33);
         content = content.replace(include, tmpContent);
       }
+      // 存入缓存
+      if(that.cache) fileCache[fileMd5] = content;
       cb(null, content);
     });
 
