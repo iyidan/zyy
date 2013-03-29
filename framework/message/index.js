@@ -75,7 +75,7 @@ Message.prototype.pub = function( messageId, data ) {
     }
   }
 
-  var message = this.generate( messageId, data );
+  var message = this.generate( messageId );
   if (this._storePub) {
     this._publishedMessages[messageId] = data;
   }  
@@ -92,7 +92,7 @@ Message.prototype.pub = function( messageId, data ) {
  *    // 完整参数
  *    // subPublished = true :默认订阅已经发布过的消息（只要message实例storePub不指定为false）
  *    // isOnce       = true :默认只订阅一次
- *    // handler      = function( message, dataList ){ console.log(dataList[0]); ... }
+ *    // handler      = function( message, dataList ){ console.log(dataList[messageId]); ... }
  *    // handler      = function( message, data ){ console.log(data); ... }
  *    app.sub( messageId1, messageId2, messageId3, [...], handler, subPublished = true, isOnce = true);
  *
@@ -171,7 +171,8 @@ Message.prototype.sub = function() {
         });
         if ( Object.keys(tmpDataList).length == messageIds.length ){
           if ( isOnce ) needAddHandler = false;
-          handler(messageIdsKey, tmpDataList);
+          var message = app.generate(messageIdsKey); 
+          handler(message, tmpDataList);
         }
       }
       if ( needAddHandler ) {
@@ -188,7 +189,7 @@ Message.prototype.sub = function() {
   messageIds.forEach(function(messageId, k){
     var tmpData = app._publishedMessages[messageId]; 
     if (  tmpData !== undefined && subPublished ) {
-      var message = app.generate( messageId, tmpData );
+      var message = app.generate( messageId );
       handler( message, tmpData );
       if ( isOnce ) needSub = false;
     }
@@ -215,7 +216,7 @@ Message.prototype._multiSubHandler = function( messageIdsKey, messageId, data ) 
   // 已经全部订阅到
   if ( Object.keys(multi['dataList']).length == multi['messageIds'].length ) {
     var app     = this;
-    var message = app.generate(messageIdsKey, multi['dataList']); 
+    var message = app.generate(messageIdsKey); 
     multi['handlers'].forEach(function( handler, k ){
       handler['handler']( message, multi['dataList'] );
       // 判断重复订阅
@@ -234,9 +235,8 @@ Message.prototype._multiSubHandler = function( messageIdsKey, messageId, data ) 
 /**
  * 创建message对象在发布的时候传递标示
  * @param {String} messageId 消息id
- * @param {Mixed} data 发布的内容
  */
-Message.prototype.generate = function( messageId, data ) {
+Message.prototype.generate = function( messageId ) {
   var message = { 
     'id'   :  messageId,
     'time' : (new Date).getTime()

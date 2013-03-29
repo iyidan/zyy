@@ -23,7 +23,8 @@ var parseBody      = require('../parseBody').parseBody;
 var router         = require('../router');
 
 /* 3rd  */
-var ejs = require('../3rd/ejs');
+// 模板引擎
+var template       = require('../3rd/arttemplate');
 
 /* 模块全局变量 */
 var session = null;
@@ -65,6 +66,18 @@ exports.createServer = function ( config, errorHandler )
   session.sub('error', function(message, err){
     errorHandler('session.error', err);
   }, true, false);
+
+  // 模板引擎
+  var templateConf = {
+    isDebug  : config.ONDEV ? true : false,
+    rootPath : config.ROOT_PATH,
+    theme    : config.THEME ? config.THEME : 'default',
+    cache    : config.ONDEV ? config.false : true
+  };
+  template.init(templateConf);
+  template.sub('error', function(message, err){
+    errorHandler('template.error', err);
+  });
 
   return createServer(ip, port, config, errorHandler);
 };
@@ -449,16 +462,15 @@ Framework.prototype.display = function(filename, controllerModule) {
   }
   // template
   controllerModule = controllerModule ? controllerModule : app.routes.module;
-  filename = app.config.MODULE_PATH + '/' + controllerModule + '/template/' + filename;
-  app.assignValues.filename = filename;
+  filename = app.config.MODULE_PATH + '/' + controllerModule + '/template/' + template.config.theme + '/' + filename;
   
-  // ejs使用readFileSync 这里采用readFile 代替
-  fs.readFile(filename, 'utf8', function(err, fileData){
-    if ( err ) {
+  // 解析包含
+  template.parseInclude(filename, function(err, content){
+    if (err) {
       app.pub('error', err);
       return;
     }
-    var html = ejs.render(fileData, app.assignValues);
+    var html = template.render(content, app.assignValues);
     app.end(html);
   });
 };

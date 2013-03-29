@@ -1,3 +1,3 @@
 console.log(this === module);
 
-console.log(this.console);
+console.log(module.exports === exports);
