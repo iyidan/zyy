@@ -96,14 +96,19 @@ template.render = function(content, data) {
  */
 template.parseInclude = function(file, cb) {
 
-  if (!file) return '';
   if (typeof cb != 'function') {
     this.pub('error', 'template.parseInclude error: parsing '+file+' cb is not a function obj.');
     return;
   }
+  if (!file) {
+    cb('file is empty.');
+    return;
+  }
 
   // 缓存
-  if (fileCache[file]) return fileCache[file];
+  if (fileCache[file]) {
+    cb(null, fileCache[file]);
+  }
 
   var that = this;
 
@@ -112,7 +117,10 @@ template.parseInclude = function(file, cb) {
       cb(err);
       return;
     }
-    var matches = content.match(includeReg); 
+    var matches = content.match(includeReg);
+
+    console.log('in readFile: ',file, content, matches);
+
     if (!matches) {
       cb(null, content);
       return;
