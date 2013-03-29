@@ -23,7 +23,7 @@ var actions = Controller.prototype;
 actions.__call = function(action)
 {
   this.app.assign('names', ['__call', 'bar', 'baz']);
-  this.app.display('tpl.ejs');
+  this.app.display('test.html');
 };
 
 /**
