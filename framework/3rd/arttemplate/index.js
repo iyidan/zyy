@@ -105,7 +105,7 @@ template.parseInclude = function(file, cb) {
   if (fileCache[file]) return fileCache[file];
 
 
-  fs.readFile(file, { encoding: 'utf8' }, function(err, content){
+  fs.readFile(file, 'utf8', function(err, content){
     if (err) {
       cb(err);
       return;
