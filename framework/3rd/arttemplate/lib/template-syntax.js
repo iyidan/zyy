@@ -6,8 +6,6 @@
  */
  
 var template = require('./template');
-exports = template;
-console.log(template);
 
 (function (exports) {
 
@@ -128,3 +126,6 @@ exports.helper('$each', function (data, callback) {
 
 
 })(template);
+
+module.exports = template;
+console.log(module);
