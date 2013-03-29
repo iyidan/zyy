@@ -19,7 +19,6 @@ new Message(false, 50, template);
 // 是否初始化过
 template.initialized = false;
 
-var htmlCache = {};
 var renderCache = {};
 var fileCache = {};
 
@@ -62,15 +61,6 @@ template.render = function(content, data) {
   content = content + '';
 
   var renderMd5 = utils.md5(content);
-  var md5 = utils.md5(renderMd5 + JSON.stringify(data));  
-  
-  var cached = htmlCache[md5];
-  if (cached && htmlCache.hasOwnProperty(md5)) {
-
-    console.log('cached: ');
-
-    return cached;
-  }
 
   // 渲染
   try {
@@ -79,13 +69,11 @@ template.render = function(content, data) {
       renderCache[renderMd5] = arttemplate.compile(content, this.isDebug); 
     }
 
-    htmlCache[md5] = renderCache[renderMd5](data);
-    return htmlCache[md5];
+    return renderCache[renderMd5](data);
 
   } catch(e) {
 
     delete renderCache[renderMd5];
-    delete htmlCache[md5];
 
     this.pub('error', e);
     
@@ -218,7 +206,6 @@ template.parseInclude = function(file, cb) {
  * @return {[type]} [description]
  */
 template.clearCache = function() {
-  htmlCache   = {};
   renderCache = {};
   fileCache   = {};
 };
