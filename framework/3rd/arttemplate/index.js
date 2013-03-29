@@ -181,10 +181,11 @@ template.parseInclude = function(file, cb) {
         }
 
         console.log('tmpFile: ', tmpFile);
+        console.log('messageId: ', messageId);
 
         // 递归读取
         return that.parseInclude(tmpFile, function(err, tmpContent){
-          if (err) cb(err);
+          if (err) that.pub(messageId, { err: err, content: '' });
           return;
           // 存入cache
           if ( that.cache ) fileCache[tmpFile] = tmpContent;
