@@ -67,7 +67,7 @@ template.render = function(content, data) {
   var cached = htmlCache[md5];
   if (cached && htmlCache.hasOwnProperty(md5)) {
 
-    console.log('cached: ', cached);
+    console.log('cached: ');
 
     return cached;
   }
@@ -115,7 +115,7 @@ template.parseInclude = function(file, cb) {
   if (fileCache[file]) {
 
     console.log('fileCache: ', file);
-    
+
     cb(null, fileCache[file]);
   }
 
