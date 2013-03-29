@@ -6,6 +6,11 @@ var fs = require('fs');
 
 // 类似于smarty的语法风格
 var arttemplate = require('./lib/template-syntax');
+
+console.dir(arttemplate);
+var util = require('util');
+console.log(util.inspect(arttemplate, true));
+
 // 工具包
 var utils   = require('../../core/utils');
 var Message = require('../../message').Message;
