@@ -180,6 +180,8 @@ template.parseInclude = function(file, cb) {
           return;
         }
 
+        console.log('tmpFile: ', tmpFile);
+
         // 递归读取
         that.parseInclude(tmpFile, function(err, tmpContent){
           if (err) cb(err);
