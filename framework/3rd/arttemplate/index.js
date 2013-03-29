@@ -122,6 +122,7 @@ template.parseInclude = function(file, cb) {
     console.log('in readFile: ',file, content, matches);
 
     if (!matches) {
+      console.log('################');
       var util = require('util');
       util.inspect(cb, true, null);
       cb(null, content);
