@@ -183,7 +183,7 @@ template.parseInclude = function(file, cb) {
         console.log('tmpFile: ', tmpFile);
 
         // 递归读取
-        that.parseInclude(tmpFile, function(err, tmpContent){
+        return that.parseInclude(tmpFile, function(err, tmpContent){
           if (err) cb(err);
           return;
           // 存入cache
