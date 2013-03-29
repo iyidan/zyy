@@ -68,7 +68,7 @@ template.render = function(content, data) {
     if ( !renderCache[renderMd5] ) {
       renderCache[renderMd5] = arttemplate.compile(content, this.isDebug); 
     } else {
-      console.log('render cache');
+      //console.log('render cache');
     }
 
     return renderCache[renderMd5](data);
@@ -106,7 +106,7 @@ template.parseInclude = function(file, cb) {
 
   // 文件缓存
   if (fileCache[fileMd5]) {
-    console.log('fileCache: ', Object.keys(fileCache));
+    //console.log('fileCache: ', Object.keys(fileCache));
     cb(null, fileCache[fileMd5]);
   }
 
@@ -193,7 +193,7 @@ template.parseInclude = function(file, cb) {
           }
           // 存入cache
           if ( that.cache ) fileCache[tmpFileMd5] = tmpContent;
-          console.log('cache file: ', Object.keys(fileCache));
+          //console.log('cache file: ', Object.keys(fileCache));
           that.pub(messageId, { err: null, content: tmpContent });
         });
       });
