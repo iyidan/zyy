@@ -181,9 +181,9 @@ exports.onerror = function (e) {
         + e.temp;
     }
     
-    if (global.console) {
+    //if (global.console) {
         console.error(content);
-    }
+    //}
 };
 
 
