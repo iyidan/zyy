@@ -199,8 +199,10 @@ template.parseInclude = function(file, cb) {
         return that.parseInclude(tmpFile, function(err, tmpContent){
           console.log('!!!!!!!!!!!!!!!');
           console.log(err, messageId, tmpContent);
-          if (err) that.pub(messageId, { err: err, content: '' });
-          return;
+          if (err) {
+            that.pub(messageId, { err: err, content: '' });
+            return;
+          }
           // 存入cache
           if ( that.cache ) fileCache[tmpFile] = tmpContent;
 
