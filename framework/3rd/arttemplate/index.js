@@ -1,22 +1,22 @@
 /**
- * å°è£…ç³–é¥¼çš„atrTemplate
+ * ·â×°ÌÇ±ıµÄatrTemplate
  */
 
 var fs = require('fs');
 
-// ç±»ä¼¼äºsmartyçš„è¯­æ³•é£æ ¼
+// ÀàËÆÓÚsmartyµÄÓï·¨·ç¸ñ
 var arttemplate = require('./lib/template-syntax');
 
-// å·¥å…·åŒ…
+// ¹¤¾ß°ü
 var utils   = require('../../core/utils');
 var Message = require('../../message').Message;
 
 
 var template = exports;
-// pub/sub ä¸å‚¨å­˜è§¦å‘è¿‡çš„äº‹ä»¶
+// pub/sub ²»´¢´æ´¥·¢¹ıµÄÊÂ¼ş
 new Message(false, 50, template);
 
-// æ˜¯å¦åˆå§‹åŒ–è¿‡
+// ÊÇ·ñ³õÊ¼»¯¹ı
 template.initialized = false;
 
 var renderCache = {};
@@ -25,14 +25,14 @@ var fileCache = {};
 var includeReg = /\{include(.*?)\}/gm;
 
 /**
- * åˆå§‹åŒ–
+ * ³õÊ¼»¯
  */
 template.init = function(config) {
-  // æ˜¯å¦debug
+  // ÊÇ·ñdebug
   this.isDebug  = config.isDebug  || true;
-  // æ˜¯å¦æ–‡ä»¶ç¼“å­˜
+  // ÊÇ·ñÎÄ¼ş»º´æ
   this.cache    = config.cache || true;
-  // æ¨¡æ¿ï¼ˆé¡¹ç›®ï¼‰æ ¹è·¯å¾„
+  // Ä£°å£¨ÏîÄ¿£©¸ùÂ·¾¶
   this.rootPath = config.rootPath || '';
   if ( !this.rootPath ) {
     this.pub('error', 'template.init error: config.rootPath is not defined.');
@@ -40,7 +40,7 @@ template.init = function(config) {
   }
   this.rootPath = utils.rtrim(this.rootPath, '/');
 
-  // æ¨¡æ¿ä¸»é¢˜
+  // Ä£°åÖ÷Ìâ
   this.theme = config.theme || 'default';
 
   this.config      = config;
@@ -51,10 +51,10 @@ template.init = function(config) {
 }
 
 /**
- * ç”±dataæ¸²æŸ“æ¨¡æ¿content
- * @param  {String} content æ¨¡æ¿
- * @param  {Object} data    æ¨¡æ¿æ•°æ®
- * @return {String}         æ¸²æŸ“å¥½çš„htmlå­—ç¬¦ä¸²
+ * ÓÉdataäÖÈ¾Ä£°åcontent
+ * @param  {String} content Ä£°å
+ * @param  {Object} data    Ä£°åÊı¾İ
+ * @return {String}         äÖÈ¾ºÃµÄhtml×Ö·û´®
  */
 template.render = function(content, data) {
 
@@ -62,7 +62,7 @@ template.render = function(content, data) {
 
   var renderMd5 = utils.md5(content);
 
-  // æ¸²æŸ“
+  // äÖÈ¾
   try {
 
     if ( !renderCache[renderMd5] ) {
@@ -85,10 +85,10 @@ template.render = function(content, data) {
 };
 
 /**
- * è§£æinclude
- * @param {String} file éœ€è¦è§£ææ–‡ä»¶å…¨è·¯å¾„
- * @param {Function} cb callback ä¼šå°†err, contentä¼ é€’ç»™cb
- * @return {String} è¿”å›è§£æå®Œæ¯•çš„å­—ç¬¦ä¸²ï¼Œå¯ç”¨äºartTemplate
+ * ½âÎöinclude
+ * @param {String} file ĞèÒª½âÎöÎÄ¼şÈ«Â·¾¶
+ * @param {Function} cb callback »á½«err, content´«µİ¸øcb
+ * @return {String} ·µ»Ø½âÎöÍê±ÏµÄ×Ö·û´®£¬¿ÉÓÃÓÚartTemplate
  */
 template.parseInclude = function(file, cb) {
 
@@ -104,7 +104,7 @@ template.parseInclude = function(file, cb) {
 
   var fileMd5 = utils.md5(file);
 
-  // æ–‡ä»¶ç¼“å­˜
+  // ÎÄ¼ş»º´æ
   if (fileCache[fileMd5]) {
     //console.log('fileCache: ', Object.keys(fileCache));
     cb(null, fileCache[fileMd5]);
@@ -125,7 +125,7 @@ template.parseInclude = function(file, cb) {
       return;
     }
 
-    // è®¢é˜…å¤šä¸ªäº‹ä»¶
+    // ¶©ÔÄ¶à¸öÊÂ¼ş
     var subMsgs = matches.map(function(v){
       return fileMd5 +  '.' + v;
     });
@@ -135,7 +135,8 @@ template.parseInclude = function(file, cb) {
 
       var ids = message.id.split(',');
       for (var i = 0; i < ids.length; i++) {
-        var includeInfo = dataList[ids[i]];
+        // µ¥¸ö°üº¬ ¶à¸ö°üº¬
+        var includeInfo = ids.length == 1 ? dataList : dataList[ids[i]];
         if (!includeInfo) {
           cb('in template subMsgs dataList '+ids[i]+' parse error.');
           return;
@@ -149,17 +150,17 @@ template.parseInclude = function(file, cb) {
         var include    = ids[i].substring(33);
         content = content.replace(include, tmpContent);
       }
-      // å­˜å…¥ç¼“å­˜
+      // ´æÈë»º´æ
       if(that.cache) fileCache[fileMd5] = content;
       cb(null, content);
     });
 
-    // ç›‘å¬äº‹ä»¶
+    // ¼àÌıÊÂ¼ş
     that.sub.apply(that, subMsgs);
 
     try {
 
-      // éå†ï¼Œå¹¶è¡Œè¯»å–æ–‡ä»¶
+      // ±éÀú£¬²¢ĞĞ¶ÁÈ¡ÎÄ¼ş
       matches.forEach(function(include, k){
         
         var messageId = fileMd5 +  '.' + include; 
@@ -188,13 +189,13 @@ template.parseInclude = function(file, cb) {
           return;
         }
 
-        // é€’å½’è¯»å–
+        // µİ¹é¶ÁÈ¡
         return that.parseInclude(tmpFile, function(err, tmpContent){
           if (err) {
             that.pub(messageId, { err: err, content: '' });
             return;
           }
-          // å­˜å…¥cache
+          // ´æÈëcache
           if ( that.cache ) fileCache[tmpFileMd5] = tmpContent;
           //console.log('cache file: ', Object.keys(fileCache));
           that.pub(messageId, { err: null, content: tmpContent });
@@ -211,7 +212,7 @@ template.parseInclude = function(file, cb) {
 };
 
 /**
- * æ¸…é™¤æ¨¡æ¿ç¼“å­˜
+ * Çå³ıÄ£°å»º´æ
  * @return {[type]} [description]
  */
 template.clearCache = function() {
