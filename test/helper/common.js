@@ -10,7 +10,7 @@ var com = module.exports;
  * @param {Function} cb 解析后的callback
  *   function(err, userInfo)
  */
-com.remember_me = function(app, op, cb) {
+com.remember_me = function(app, cb) {
   
   // cookie key
   var remember_me_key = app.config.COOKIE.remember_me;
