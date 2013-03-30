@@ -76,3 +76,9 @@ actions.login = function() {
 
   });
 };
+
+actions.logout = function() {
+  var com = require(this.app.config.ROOT_PATH + '/helper/common');
+  com.remember_me_expires();
+  this.app.end('logout success.');
+};
