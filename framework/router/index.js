@@ -130,6 +130,7 @@ exports.parse = function(app)
       path = paths.join('/');
       app.routes.controller = last;
     }
+    if (!app.routes.controller) app.routes.controller = 'index';
   }
 
   // 是否真实存在
@@ -239,7 +240,7 @@ function dispatchAction(app)
   try {
     var actions = new Controller(app);  
   } catch(e) {
-    app.pub('error', 'route dispatch error:'+filename + ': [constructor Controller] not found.');
+    app.pub('error', e);
     return;
   }
 
