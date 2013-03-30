@@ -466,6 +466,9 @@ Framework.prototype.display = function(filename, controllerModule) {
   var app  = this;
   // 404  ...
   if(parseInt(filename) == filename) {
+
+    console.log(app.routes);
+
     filename = app.config.ROOT_PATH + '/template/' + template.config.theme + '/' + filename + '.html';
     fs.readFile(filename, function(err, fileData){
       app.end(fileData);
