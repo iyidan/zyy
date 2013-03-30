@@ -487,6 +487,25 @@ Framework.prototype.display = function(filename, controllerModule) {
   });
 };
 
+/**
+ * redirect跳转
+ * @param {String} url 需要跳转的地址
+ * @param {Number} status 跳转状态码 默认302
+ */
+Framework.prototype.redirect = function(url, status) {
+  url = url + '';
+  if (!url) {
+    this.pub('error', 'redirect url is empty.');
+    return;
+  }
+
+  if (!status) status = 302;
+
+  this.setStatusCode(status);
+  this.setHeader('Location', url);
+  this.end('');
+};
+
 ////////////////////////////////////////
 // Framework.prototype end
 ////////////////////////////////////////
