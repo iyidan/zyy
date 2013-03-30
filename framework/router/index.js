@@ -209,7 +209,7 @@ exports.dispatch = function(app) {
   } else {
     dispatchAction(app);
   }
-  
+
 };
 
 /**
@@ -311,7 +311,7 @@ function parseRule(app, path)
         if (v.indexOf('[') != -1) {
           var reg = utils.trim( v.substring( v.indexOf('[') ), '[]' ); 
           reg  = new RegExp(reg);
-          name = v.substring( 0, v.indexOf('/') );
+          name = v.substring( 0, v.indexOf('[') );
           if (!reg.test(val)) {
             return;
           }
