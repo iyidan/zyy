@@ -11,6 +11,7 @@ module.exports.init = function(app) {
 
   console.log(app.routes);
   console.log(app._SESSION);
+  console.log(app._sessionid);
 
   // 解析用户信息
   common.remember_me(app, function(err, user_info){
