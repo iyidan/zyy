@@ -46,7 +46,11 @@ exports.config = {
     'expires': 3600*24*30,
     // 某些时候无法设置cookie，可以通过post方式传递到服务器解析，设置此前缀将会解析这种cookie
     // 如 cookie_remember_me
-    'post_prefix': 'cookie_'
+    'post_prefix': 'cookie_',
+    // 记录用户信息的cookie
+    'remember_me': 'nodeappuser',
+    'remember_me_secret': 'thiskeyisforrememberdecode',
+    'remember_me_expires': 3600*24*30
   },
   // SESSION配置项
   'SESSION': {

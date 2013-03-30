@@ -29,6 +29,7 @@ var template       = require('../3rd/arttemplate');
 /* 模块全局变量 */
 var session = null;
 var db      = null;
+var setup   = null;
 
 ///////////////////////////////////////////////////////////////////
 
@@ -79,6 +80,9 @@ exports.createServer = function ( config, errorHandler )
     errorHandler('template.error', err);
   });
 
+  // 项目自身setup
+  setup = require(config.ROOT_PATH + '/helper/setup');
+
   return createServer(ip, port, config, errorHandler);
 };
 
@@ -105,8 +109,17 @@ function createServer(ip, port, config, errorHandler)
       app.sub(
         'init.app.ready',
         function(message, data){
-          // 分派路由
-          router.dispatch(app);
+          // 执行项目自身的controller
+          app.sub('setup.ok', function(){
+            // 分派路由
+            router.dispatch(app);
+          });
+          // 调用项目setup
+          if (typeof setup.init == 'function') {
+            setup.init(app);
+          } else {
+            app.pub('setup.ok');
+          }
         }
       );
     }
@@ -133,6 +146,10 @@ function Framework ( req, res, config, errorHandler )
   // 引用原始响应请求
   this.req = req;
   this.res = res;
+
+  // 全局工具
+  this.utils  = utils;
+
   // 初始化变量
   this._GET     = {};
   this._POST    = {};
@@ -286,7 +303,7 @@ Framework.prototype.COOKIE = function( key, val, expires, needSign, path, domain
   opt.httpOnly = httpOnly || false;
 
   if ( needSign ) {
-    val = cookie.sign( val, this.config.COOKIE.secret );
+    val = utils.sign( val, this.config.COOKIE.secret );
   }
 
   // 设置cookie
@@ -296,7 +313,7 @@ Framework.prototype.COOKIE = function( key, val, expires, needSign, path, domain
 /**
  * SESSION
  */
-Framework.prototype.SESSION = function ( key, val, expires ) {
+Framework.prototype.SESSION = function ( key, val ) {
   if ( !key || typeof key != 'string' ) return undefined;
   if ( val === undefined ) {
     return this._SESSION[key];
