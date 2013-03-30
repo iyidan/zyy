@@ -49,13 +49,14 @@ actions.login = function() {
   }
 
   var that = this;
-  
+
   this.app.db.query('SELECT * FROM `user` WHERE `user_name` = "'+username+'" LIMIT 1', function(err, user_info){
     if (err){
       that.app.pub('error', err);
       return;
     }
     if ( !user_info || user_info.status != 1 ) {
+      console.log(username, user_info);
       return that.app.end('user not found.');
     }
     if ( that.app.utils.md5(password) != user_info.password ) {
