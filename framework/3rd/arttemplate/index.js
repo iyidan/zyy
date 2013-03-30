@@ -130,9 +130,7 @@ template.parseInclude = function(file, cb) {
       return fileMd5 +  '.' + v;
     });
     subMsgs.push(function(message, dataList){
-
-      console.log(message, dataList);
-
+      //console.log(message, dataList);
       var ids = message.id.split(',');
       for (var i = 0; i < ids.length; i++) {
         // 单个包含 多个包含
