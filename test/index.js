@@ -17,5 +17,7 @@ var server = Framework.createServer(config , function(errType, err, app){
     console.log(err);
   } else if ( errType == 'session.error' ) {
     console.log(err);
+  } else if ( errType == 'template.error' ) {
+    app.end( 'template render error: ' + util.inspect( err, true ) );
   }
 });
