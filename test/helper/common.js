@@ -93,6 +93,7 @@ com.remember_me = function(app, cb) {
       cb(err);
       return;
     }
+    user_info = user_info ? user_info[0] : user_info;
     if (!user_info || !user_info.id || user_info.status != 1 ) {
       that.remember_me_expires(app);
       cb('user_info is not found in database.');

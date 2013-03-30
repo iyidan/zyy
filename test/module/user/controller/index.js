@@ -55,8 +55,8 @@ actions.login = function() {
       that.app.pub('error', err);
       return;
     }
+    user_info = user_info ? user_info[0] : user_info;
     if ( !user_info || user_info.status != 1 ) {
-      console.log(username, user_info);
       return that.app.end('user not found.');
     }
     if ( that.app.utils.md5(password) != user_info.password ) {
