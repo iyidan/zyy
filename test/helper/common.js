@@ -2,8 +2,6 @@
  * 项目通用函数
  */
 
-var utils = 
-
 var com = module.exports;
 
 /**
