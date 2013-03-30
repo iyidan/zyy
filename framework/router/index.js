@@ -277,16 +277,26 @@ function parseRule(app, path)
     if ( !isMatchRule(paths, ruleArr) ) continue;
     
     ruleArr.forEach(function(v ,k){
-      if ( /^(\#|\:).+/.test(v) ) {
-        var name = v.substring(1);
-        var val  = paths[k];
-        if ( v.charAt(0) == '#' ) {
-          // 总路由控制器
-          if ( app.routes.rule.siteController.indexOf(name) == -1 ) {
-            app.routes.rule.siteController.push(name);
+      if ( !/^(\#|\:).+/.test(v) ) { 
+        return;
+      }
+      var name = v.substring(1);
+      var val  = paths[k];
+      if ( v.charAt(0) == '#' ) {
+        // 总路由控制器
+        if ( app.routes.rule.siteController.indexOf(name) == -1 ) {
+          app.routes.rule.siteController.push(name);
+        }
+      } else {
+        // 匹配参数
+        // 有正则
+        if (v.indexOf('[') != -1) {
+          var reg = utils.trim( v.substring( v.indexOf('[') ), '[]' ); 
+          reg  = new RegExp(reg);
+          name = v.substring( 0, v.indexOf('/') );
+          if (!reg.test(val)) {
+            return;
           }
-        } else {
-          // 参数
           app.routes.rule.params[name] = val;
           paramsMatchedIndex.push(k);
         }

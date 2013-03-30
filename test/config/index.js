@@ -26,12 +26,13 @@ exports.config = {
   // 自定义路由规则
   // 1=> ../#siteControllerName/.../*
   // 2=> ../:paramName/../*
+  // :name[正则] 需要转义，与直接量不一样
   'ROUTER': [
     '/#admin/*',
     '/*/#admin/*',
-    '/user/:visit_id/*',
+    '/user/:visit_id[\\d+]/*',
     '/#company/#admin/*',
-    '/#company/:company_id/#admin/*',
+    '/#company/:company_id[\\d+]/#admin/*',
     '/#company/*'
   ],
   // COOKIE配置
