@@ -71,8 +71,8 @@ actions.login = function() {
       if (err) {
         return that.app.pub('error', err);
       }
-      that.redirect('/user');
+      that.app.redirect('/user');
     });
-    
+
   });
 };
