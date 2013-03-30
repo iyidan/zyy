@@ -548,13 +548,7 @@ function init_SERVER( app )
 function init_ROUTE ( app )
 {
   var status = router.parse(app);
-  if ( status === true ) {
-    app.pub('init.route.ready');
-  } else if ( status == 404 ) {
-    app.display('404');
-  } else {
-    app.pub('error', status);
-  }
+  app.pub('init.route.ready');
 }
 
 /**

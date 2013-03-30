@@ -27,6 +27,7 @@ exports.parse = function(app)
 
   // 含有特殊字符
   if ( path.replace(/([a-zA-Z0-9\/_])+/, '') !== '' ) {
+    app.routes.status = 404;
     return 404;
   }
 
@@ -75,9 +76,16 @@ exports.parse = function(app)
     }
 
     // 找到module
-    app.routes.module = tmpModule;    
+    app.routes.module = tmpModule;
+    
+    if ( paths.length == 1 ) {
 
-    /* 从最深层遍历    
+      app.routes.controller = 'index';
+      app.routes.controllerFile = 'index.js';
+    
+    } else {
+
+      /* 从最深层遍历    
       tmpFile:  /data/www/zyy/test/module/index/controller/aaa/bbb/ccc/ddd/eee/fff.js
       tmpDir :  /data/www/zyy/test/module/index/controller/aaa/bbb/ccc/ddd/eee/fff
       tmpFile:  /data/www/zyy/test/module/index/controller/aaa/bbb/ccc/ddd/eee.js
@@ -99,47 +107,50 @@ exports.parse = function(app)
         params: [ 'fff', 'eee', 'ddd', 'ccc', 'bbb', 'aaa' ],
         rule: {} 
       }
-    */
-    while( paths.length > 1 ) {
+      */
+      while( paths.length > 1 ) {
 
-      if(app.routes.controller) app.routes.params.push(app.routes.controller);
-      app.routes.controller     = '';
+        if(app.routes.controller) app.routes.params.push(app.routes.controller);
+        app.routes.controller     = '';
 
-      var dir  = path.substring(tmpModule.length + 1);
-      var file = dir + '.js';
-      var tmpDir  = modulePath + '/' + tmpModule + '/controller/' + dir;
-      var tmpFile = modulePath + '/' + tmpModule + '/controller/' + file;
+        var dir  = path.substring(tmpModule.length + 1);
 
-      // console.log('tmpFile: ', tmpFile);
-      // console.log('tmpDir : ', tmpDir);
+        var file = dir + '.js';
+        var tmpDir  = modulePath + '/' + tmpModule + '/controller/' + dir;
+        var tmpFile = modulePath + '/' + tmpModule + '/controller/' + file;
 
-      // file: ../module/blog/controller/add.js
-      // path: ../module/blog/controller/add
-      if ( hardCodeCaches.indexOf(tmpFile) != -1 ) {
-        app.routes.controller = app.routes.params.length > 0 ? app.routes.params.pop() : 'index';
-        app.routes.controllerFile = file;
-        break;
-      // dirs
-      } else if ( hardCodeCachesStr.indexOf(tmpDir) != -1 ) {
-        app.routes.controller     = app.routes.params.length > 0 ? app.routes.params.pop() : 'index';
-        app.routes.controllerFile = dir + '/index.js';
-        break;
+        // console.log('tmpFile: ', tmpFile);
+        // console.log('tmpDir : ', tmpDir);
+
+        // file: ../module/blog/controller/add.js
+        // path: ../module/blog/controller/add
+        if ( hardCodeCaches.indexOf(tmpFile) != -1 ) {
+          app.routes.controller = app.routes.params.length > 0 ? app.routes.params.pop() : 'index';
+          app.routes.controllerFile = file;
+          break;
+        // dirs
+        } else if ( hardCodeCachesStr.indexOf(tmpDir) != -1 ) {
+          app.routes.controller     = app.routes.params.length > 0 ? app.routes.params.pop() : 'index';
+          app.routes.controllerFile = dir + '/index.js';
+          break;
+        }
+
+        var last = paths.pop();
+        path = paths.join('/');
+        app.routes.controller = last;
       }
-
-      var last = paths.pop();
-      path = paths.join('/');
-      app.routes.controller = last;
     }
-    if (!app.routes.controller) app.routes.controller = 'index';
   }
 
   // 是否真实存在
   var realFile = modulePath + '/' + app.routes.module + '/controller/' + app.routes.controllerFile;
   // console.log(realFile);
   if ( hardCodeCaches.indexOf(realFile) == -1 || !app.routes.controller ) {
+    app.routes.status = 404;
     return 404;
   }
 
+  app.routes.status = true;
   return true;
 };
 
@@ -187,11 +198,18 @@ exports.hardCode = function( modulePath )
  * @param  {Object} app 当前请求对象
  */
 exports.dispatch = function(app) {
+
+  if (app.routes.status !== true) {
+    app.display(app.routes.status);
+    return;
+  }
+
   if( app.routes.rule.siteController.length ) {
     dispatchController(app); 
   } else {
     dispatchAction(app);
   }
+  
 };
 
 /**
@@ -308,7 +326,7 @@ function parseRule(app, path)
     paths[v] = '';
   });
 
-  return paths.join('/').replace('//', '/');
+  return utils.trim( paths.join('/').replace('//', '/'), '/' );
 }
 
 /**
