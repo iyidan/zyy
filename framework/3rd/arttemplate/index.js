@@ -129,7 +129,10 @@ template.parseInclude = function(file, cb) {
     var subMsgs = matches.map(function(v){
       return fileMd5 +  '.' + v;
     });
-    subMsgs.push(function(message, dataList){      
+    subMsgs.push(function(message, dataList){
+
+      console.log(message, dataList);
+
       var ids = message.id.split(',');
       for (var i = 0; i < ids.length; i++) {
         var includeInfo = dataList[ids[i]];
