@@ -9,7 +9,7 @@ var common = require('./common');
 module.exports.init = function(app) {
   
 
-  console.log(app.routes);
+  //console.log(app.routes);
 
   // 解析用户信息
   common.remember_me(app, function(err, user_info){
