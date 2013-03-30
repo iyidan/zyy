@@ -306,8 +306,9 @@ function parseRule(app, path)
           app.routes.rule.siteController.push(name);
         }
       } else {
+        v = v.substring(1);
         // 匹配参数
-        // 有正则
+        // 如果有正则过滤
         if (v.indexOf('[') != -1) {
           var reg = utils.trim( v.substring( v.indexOf('[') ), '[]' ); 
           reg  = new RegExp(reg);
