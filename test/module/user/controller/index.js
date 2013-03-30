@@ -55,6 +55,7 @@ actions.login = function() {
       that.app.pub('error', err);
       return;
     }
+    
     user_info = user_info ? user_info[0] : user_info;
     if ( !user_info || user_info.status != 1 ) {
       return that.app.end('user not found.');
@@ -62,13 +63,16 @@ actions.login = function() {
     if ( that.app.utils.md5(password) != user_info.password ) {
       return that.app.end('user password is not correct.');
     }
+
+    that.app.user_info = user_info;
+
     var com = require(that.app.config.ROOT_PATH + '/helper/common');
-    
     com.remember_me(that.app, function(err){
       if (err) {
         return that.app.pub('error', err);
       }
       that.redirect('/user');
     });
+    
   });
 };
