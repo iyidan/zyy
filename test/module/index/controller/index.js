@@ -22,8 +22,8 @@ var actions = Controller.prototype;
  */
 actions.__call = function(action)
 {
-  this.app.app.assign('names', ['__call', 'bar', 'baz']);
-  this.app.display('tpl.ejs');
+  this.app.assign('names', ['__call', 'bar', 'baz']);
+  this.app.display('test.html');
 };
 
 /**
@@ -31,6 +31,6 @@ actions.__call = function(action)
  */
 actions.index = function()
 {
-  this.app.app.assign('names', ['index', 'bar', 'baz']);
-  this.app.display('tpl.ejs');
+  this.app.assign('names', ['index', 'bar', 'baz']);
+  this.app.display('test.html');
 };

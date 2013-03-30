@@ -114,26 +114,45 @@ utils.uid = function(len) {
  * @param {String} char 可选， 默认为空格
  * @return {String}
  */
-utils.trim = function(str, char) {
-  if (!char) {
-    char = '\\s';
-  }
-  var reg = new RegExp('(^'+char+'*)|('+char+'*$)', 'g');
-  return str.replace(reg, '');
+utils.trim = function(str, chars) {
+  if (!chars) return str.replace(/(^\s*)|(\s*$)/g, '');
+  return this.rtrim(this.ltrim(str, chars), chars);
 };
-utils.ltrim = function(str, char) {
-  if (!char) {
-    char = '\\s';
+
+utils.ltrim = function(str, chars) {
+  
+  str  = String(str);
+  
+  // 空白
+  if (!chars) return str.replace(/(^\s*)/g, '');
+  
+  chars = String(chars);
+
+  // 非空白，和php trim处理类似
+  var firstChar = str.charAt(0);
+  if( chars.indexOf(firstChar) != -1 ) {
+    str = str.substr(1);
+    if (str.length == 0) return str;
+    return this.ltrim(str, chars);
   }
-  var reg = new RegExp('(^'+char+'*)', 'g');
-  return str.replace(reg, '');
+  return str;
 };
-utils.rtrim = function(str, char) {
-    if (!char) {
-    char = '\\s';
+
+utils.rtrim = function(str, chars) {
+  // 转换
+  str  = String(str);
+  // 空白
+  if (!chars) return str.replace(/(\s*$)/g, '');
+
+  chars = String(chars);
+
+  var lastChar = str.charAt(str.length-1);
+  if( chars.indexOf(lastChar) != -1 ) {
+    str = str.substr(0, str.length -1);
+    if (str.length == 0) return str;
+    return this.rtrim(str, chars);
   }
-  var reg = new RegExp('('+char+'*$)', 'g');
-  return str.replace(reg, '');
+  return str;
 };
 
 /**
