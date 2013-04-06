@@ -8,7 +8,6 @@
 var http         = require('http');
 var url          = require('url' );
 var crypto       = require('crypto');
-var util         = require('util');
 var fs           = require('fs');
 
 /* framework module */
