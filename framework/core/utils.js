@@ -1,8 +1,14 @@
 /**
  * 核心工具集
  */
+var util   = require('util');
 var crypto = require('crypto');
-var utils = module.exports;
+
+/**
+ * 覆盖nodejs的util
+ */
+var utils = module.exports = util;
+
 
 /**
  * md5
