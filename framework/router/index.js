@@ -251,26 +251,44 @@ function dispatchController(app)
  */
 function dispatchAction(app)
 {
-  var filename   = app.config.MODULE_PATH + '/' + app.routes.module + '/controller/' + app.routes.controllerFile;
-  var Controller = require(filename).Controller;
-
-  // new
-  try {
-    var actions = new Controller(app);  
-  } catch(e) {
-    app.pub('error', e);
-    return;
-  }
+  var filename = app.config.MODULE_PATH + '/' + app.routes.module + '/controller/' + app.routes.controllerFile;
+  var actions   = require(filename);
 
   // 若无action，则访问__call
-  var action = actions[app.routes.controller] ? actions[app.routes.controller] : actions['__call'];
-  if ( typeof action == 'function' ) {
-    action.call(actions, app.routes.controller, app.routes.params);
+  var action = actions[app.routes.controller] ? actions[app.routes.controller] : actions['__call'];   
+  if ( typeof action != 'function' ) {
+    app.display('404');
     return;
   }
 
-  // 404
-  app.display('404');
+  try {
+
+    // 控制器实例
+    var actionInstance = {};
+
+    // 监听事件，不监听已经发布的事件
+    app.sub('router.actions.ready', function(){
+      var msg = action.call(actionInstance, app, app.routes.controller, app.routes.params);
+      if ( msg && typeof msg != 'boolean' ) {
+        app.showMsg(msg);
+      }
+    }, false);
+
+    // 发布事件
+    if ( typeof actions.__construct == 'function' ) {
+      actions.__construct.call(actionInstance, app, function(){
+        app.pub('router.actions.ready');
+      });
+    } else {
+      app.pub('router.actions.ready');
+    }
+
+  } catch(e) {
+    
+    app.pub('error', e);
+    return;
+  
+  }
 }
 
 /**

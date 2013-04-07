@@ -3,9 +3,6 @@
  * 需要定义init方法供框架调用
  * 可初始化一些信息等
  */
-
-var common = require('./common');
-
 module.exports.init = function(app) {
   
 
@@ -14,7 +11,7 @@ module.exports.init = function(app) {
   //console.log(app._sessionid);
 
   // 解析用户信息
-  common.remember_me(app, function(err, user_info){
+  app.helper('common').remember_me(app, function(err, user_info){
     app.pub('setup.ok');
   });
 };

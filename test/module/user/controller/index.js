@@ -1,84 +1,106 @@
 /**
- * 默认控制器
+ * 控制器
  */
 
+////////////////////////////////////////////////////////
+//
+// return {String, Object, Array, Boolean}
+// ajax:   如果返回字符串，则输出{info:str}
+//         如果返回对象，则输出json格式的字符串
+//         如果返回布尔值，则不操作
+// 非ajax：如果返回字符串，则输出提示信息，类型为info
+//         如果返回Array,[msgType, msg, redirectUrl]
+//         
+/////////////////////////////////////////////////////////
+
+
 /**
- * [Controller 控制器构造器]
- * 可用于一些初始化
+ * [Action 控制器构造器]
+ * @param {Object} app 具体的一次http请求响应
  */
-var Controller = module.exports.Controller = function(app)
+var actions = module.exports;
+
+
+/**
+ * 在路由 new Controller调用，如果定义了则会调用
+ * @param {Object} app  具体的一次http请求
+ * @param {Function} callback 若定义__construct 必须调用callback请求才能继续
+ */
+actions.__construct = function(app, callback)
 {
-  this.app = app;
-  //this.user = ...;
+  this.startTime = (new Date).getTime();  
+  callback();
 };
 
 /**
- * 在prototype上定义action
+ * 访问不存在的方法调用
+ * @param  {Object} app    具体的一次http请求
+ * @param  {String} action 请求的方法名
+ * @param  {Array} params 参数
  */
-var actions = Controller.prototype;
-
-/**
- * 默认方法，若没有控制器则会访问此方法
- */
-actions.__call = function()
+actions.__call = function(app, action, params)
 {
-
-  if ( this.app.user_info ) {
-    
-    this.app.assign('title', '个人主页');
-    this.app.assign('user_info', this.app.user_info);
-
-    this.app.display('profile.html');
-    return;
+  if ( app.user_info ) {
+    app.assign('title', '个人信息');
+    app.assign('user_info', app.user_info);
+    app.display('profile.html');
+  } else {
+    app.assign('title', '请先登录');
+    app.display('login.html');
   }
-
-  this.app.assign('title', '用户登录');
-  this.app.display('login.html');
 };
 
-actions.login = function() {
+/**
+ * 登录
+ * @param {Object} app 具体的一次http请求
+ * @return {[type]} [description]
+ */
+actions.login = function(app) {
 
-  if (this.app.user_info) {
-    return this.app.redirect('/user');
+  if (app.user_info) {
+    app.redirect('/user');
+    return false;
   }
 
-  var username = this.app.utils.trim(this.app.POST('username', ''));
-  var password = this.app.utils.trim(this.app.POST('password', ''));
+  var username = app.utils.trim(app.POST('username', ''));
+  var password = app.utils.trim(app.POST('password', ''));
   if (!username || !password) {
-    return this.app.end('username or password is empty.');
+    return 'username or password is empty.';
   }
 
+  // 异步获取数据
   var that = this;
-
-  this.app.db.query('SELECT * FROM `user` WHERE `user_name` = "'+username+'" LIMIT 1', function(err, user_info){
+  app.db.query('SELECT * FROM `user` WHERE `user_name` = "'+username+'" LIMIT 1', function(err, user_info){
     if (err){
-      that.app.pub('error', err);
+      app.pub('error', err);
       return;
     }
     
     user_info = user_info ? user_info[0] : user_info;
     if ( !user_info || user_info.status != 1 ) {
-      return that.app.end('user not found.');
+      return app.end('user not found.');
     }
-    if ( that.app.utils.md5(password) != user_info.password ) {
-      return that.app.end('user password is not correct.');
+    if ( app.utils.md5(password) != user_info.password ) {
+      return app.end('user password is not correct.');
     }
 
-    that.app.user_info = user_info;
+    app.user_info = user_info;
 
-    var com = require(that.app.config.ROOT_PATH + '/helper/common');
-    com.remember_me(that.app, function(err){
+    app.helper('common').remember_me(app, function(err){
       if (err) {
-        return that.app.pub('error', err);
+        return app.pub('error', err);
       }
-      that.app.redirect('/user');
+      app.redirect('/user');
     });
 
   });
 };
 
-actions.logout = function() {
-  var com = require(this.app.config.ROOT_PATH + '/helper/common');
-  com.remember_me_expires(this.app);
-  this.app.end('logout success.');
+/**
+ * 登出
+ * @param  {[type]} app [description]
+ */
+actions.logout = function(app) {
+  app.helper('common').remember_me_expires(app);
+  return 'ok';
 };

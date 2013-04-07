@@ -8,7 +8,6 @@
 var http         = require('http');
 var url          = require('url' );
 var crypto       = require('crypto');
-var util         = require('util');
 var fs           = require('fs');
 
 /* framework module */
@@ -452,14 +451,7 @@ Framework.prototype.assign  = function(name, value) {
 /**
  * 渲染模板
  * @param  {String} filename [description]
- * @see 
- *   - `locals`          Local variables object
- *   - `cache`           Compiled functions are cached, requires `filename`
- *   - `filename`        Used by `cache` to key caches
- *   - `scope`           Function execution context
- *   - `debug`           Output generated function body
- *   - `open`            Open tag, defaulting to "<%"
- *   - `close`           Closing tag, defaulting to "%>"
+ * @param {String} controllerModule 模板所在module，默认当前路由的module，如果传递root，则渲染/template/下的模板
  */
 Framework.prototype.display = function(filename, controllerModule) {
   
@@ -474,7 +466,11 @@ Framework.prototype.display = function(filename, controllerModule) {
   }
   // template
   controllerModule = controllerModule ? controllerModule : app.routes.module;
-  filename = app.config.MODULE_PATH + '/' + controllerModule + '/template/' + template.config.theme + '/' + filename;
+  if ( controllerModule == 'root' ) {
+    filename = app.config.ROOT_PATH + '/template/' + template.config.theme + '/' + filename;
+  } else {
+    filename = app.config.MODULE_PATH + '/' + controllerModule + '/template/' + template.config.theme + '/' + filename;
+  }
   
   // 解析包含
   template.parseInclude(filename, function(err, content){
@@ -504,6 +500,73 @@ Framework.prototype.redirect = function(url, status) {
   this.setStatusCode(status);
   this.setHeader('Location', url);
   this.end('');
+};
+
+/**
+ * 根据请求类型响应不同的请求
+ * @param  {String, Object, Array} msg 消息类型
+ * 字符串：
+ *   是ajax：返回json: {info:msg}
+ *   非ajax：返回提示信息['notice', msg, 'history.back()']
+ * 对象：
+ *   是ajax：返回json对象
+ *   非ajax：返回提示信息
+ * 数组：
+ *   是ajax：--
+ *   非ajax，返回提示信息
+ */
+Framework.prototype.showMsg = function(msg) {
+  
+  if (this.SERVER('isAjax')) {
+    if ( typeof msg == 'string' ) {
+      this.end(JSON.stringify({ 'info': msg }));
+      return;
+    } else if ( typeof msg == 'object' ) {
+      this.end(JSON.stringify( msg ));
+      return;
+    }
+  } else {
+    if ( typeof msg == 'string' ) {
+      this.assign('type', 'notice');
+      this.assign('message', msg);
+      this.assign('redirect_url', '');
+      this.display('msg.html', 'root');
+      return;
+    } else if ( msg instanceof Array && msg.length == 3 ) {
+      this.assign('type', msg[0]);
+      this.assign('message', msg[1]);
+      this.assign('redirect_url', msg[2]);
+      this.display('msg.html', 'root');
+      return;
+    }
+  }
+
+  this.end(JSON.stringify(msg));
+
+};
+
+/**
+ * 通用获取公共函数库
+ * @param {String} name 公共函数库名
+ *   module的函数库：
+ *     moduleName
+ *   非module下的函数库
+ *     helperName
+ */
+Framework.prototype.helper = function(name) {
+  // 优先加载module
+  var filename = this.config.MODULE_PATH + '/'+ name + '/helper/index.js';
+  try {
+    var helper = require(filename);
+    return helper;
+  } catch(e) {
+    if (e.code == 'MODULE_NOT_FOUND') {
+      filename = this.config.ROOT_PATH + '/helper/' + name + '.js';
+      helper = require(filename);
+      return helper;
+    }
+    this.pub('error', e);
+  }
 };
 
 ////////////////////////////////////////

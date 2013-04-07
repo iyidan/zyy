@@ -1,36 +1,39 @@
 /**
- * 默认控制器
+ * 控制器
  */
 
-/**
- * [Controller 控制器构造器]
- * 可用于一些初始化
- */
-var Controller = module.exports.Controller = function(app)
-{
-  this.app = app;
-  //this.user = ...;
-};
+////////////////////////////////////////////////////////
+//
+// return {String, Object, Array, Boolean}
+// ajax:   如果返回字符串，则输出{info:str}
+//         如果返回对象，则输出json格式的字符串
+//         如果返回布尔值，则不操作
+// 非ajax：如果返回字符串，则输出提示信息，类型为info
+//         如果返回Array,[msgType, msg, redirectUrl]
+//         
+/////////////////////////////////////////////////////////
+
 
 /**
- * 在prototype上定义action
+ * [Action 控制器构造器]
+ * @param {Object} app 具体的一次http请求响应
  */
-var actions = Controller.prototype;
+var actions = module.exports;
 
 /**
  * __call 如果没有指定的action则访问此方法
  */
-actions.__call = function(action)
+actions.__call = function(app, action, params)
 {
-  this.app.assign('names', ['__call', 'bar', 'baz']);
-  this.app.display('test.html');
+  app.assign('names', ['__call', 'bar', 'baz']);
+  app.display('test.html');
 };
 
 /**
  * 默认方法，若没有控制器则会访问此方法
  */
-actions.index = function()
+actions.index = function(app)
 {
-  this.app.assign('names', ['index', 'bar', 'baz']);
-  this.app.display('test.html');
+  app.assign('names', ['index', 'bar', 'baz']);
+  app.display('test.html');
 };
