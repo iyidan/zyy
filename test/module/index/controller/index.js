@@ -25,8 +25,8 @@ var actions = module.exports;
  */
 actions.__call = function(app, action, params)
 {
-  app..assign('names', ['__call', 'bar', 'baz']);
-  app..display('test.html');
+  app.assign('names', ['__call', 'bar', 'baz']);
+  app.display('test.html');
 };
 
 /**
@@ -34,6 +34,6 @@ actions.__call = function(app, action, params)
  */
 actions.index = function()
 {
-  app..assign('names', ['index', 'bar', 'baz']);
-  app..display('test.html');
+  app.assign('names', ['index', 'bar', 'baz']);
+  app.display('test.html');
 };
