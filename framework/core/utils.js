@@ -88,7 +88,7 @@ utils.unsign = function(val, secret){
   if ('string' != typeof val) throw new TypeError('cookie required');
   if ('string' != typeof secret) throw new TypeError('secret required');
   var str = val.slice(0, val.lastIndexOf('.'));
-  return exports.sign(str, secret) == val ? str : false;
+  return this.sign(str, secret) == val ? str : false;
 };
 
 /**
