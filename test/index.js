@@ -7,7 +7,7 @@ var server = Framework.createServer(config , function(errType, err, app){
   if ( errType == 'app.error' ) {
     if ( app.config.ONDEV ) {
       app.setStatusCode(200);
-      app.end( 'request error: ' + utils.inspect( err, true ) + utils.inspect(err.stack, true) );
+      app.end( 'request error: ' + utils.inspect( err, true ) + "stack: \r\n" + err.stack);
     } else {
       app.setStatusCode(200);
       app.end('request error.');
@@ -17,6 +17,6 @@ var server = Framework.createServer(config , function(errType, err, app){
   } else if ( errType == 'session.error' ) {
     console.log(err);
   } else if ( errType == 'template.error' ) {
-    app.end( 'template render error: ' + utils.inspect( err, true )  + utils.inspect(err.stack, true) );
+    app.end( 'template render error: ' + utils.inspect( err, true )  + "stack: \r\n" + err.stack );
   }
 });
