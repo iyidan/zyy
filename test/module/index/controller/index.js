@@ -32,7 +32,7 @@ actions.__call = function(app, action, params)
 /**
  * 默认方法，若没有控制器则会访问此方法
  */
-actions.index = function()
+actions.index = function(app)
 {
   app.assign('names', ['index', 'bar', 'baz']);
   app.display('test.html');
