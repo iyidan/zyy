@@ -1,3 +1,3 @@
-console.log(this === module);
-
-console.log(module.exports === exports);
+module.exports = function () {
+  console.log('1111');
+}

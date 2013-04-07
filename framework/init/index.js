@@ -505,6 +505,73 @@ Framework.prototype.redirect = function(url, status) {
   this.end('');
 };
 
+/**
+ * 根据请求类型响应不同的请求
+ * @param  {String, Object, Array} msg 消息类型
+ * 字符串：
+ *   是ajax：返回json: {info:msg}
+ *   非ajax：返回提示信息['notice', msg, 'history.back()']
+ * 对象：
+ *   是ajax：返回json对象
+ *   非ajax：返回提示信息
+ * 数组：
+ *   是ajax：--
+ *   非ajax，返回提示信息
+ */
+Framework.prototype.showMsg = function(msg) {
+  
+  if (this.SERVER('isAjax')) {
+    if ( typeof msg == 'string' ) {
+      this.end(JSON.stringify({ 'info': msg }));
+      return;
+    } else if ( typeof msg == 'object' ) {
+      this.end(JSON.stringify( msg ));
+      return;
+    }
+  } else {
+    if ( typeof msg == 'string' ) {
+      this.assign('type', 'notice');
+      this.assign('message', msg);
+      this.assign('redirect_url', '');
+      this.display('msg.html');
+      return;
+    } else if ( msg instanceof Array && msg.length == 3 ) {
+      this.assign('type', msg[0]);
+      this.assign('message', msg[1]);
+      this.assign('redirect_url', msg[2]);
+      this.display('msg.html');
+      return;
+    }
+  }
+
+  this.end(JSON.stringify(msg));
+
+};
+
+/**
+ * 通用获取公共函数库
+ * @param {String} name 公共函数库名
+ *   module的函数库：
+ *     moduleName
+ *   非module下的函数库
+ *     helperName
+ */
+Framework.prototype.helper = function(name) {
+  // 优先加载module
+  var filename = this.config.MODULE_PATH + '/'+ name + '/helper/index.js';
+  try {
+    var helper = require(filename);
+    return helper;
+  } catch(e) {
+    if (e.code == 'MODULE_NOT_FOUND') {
+      filename = this.config.ROOT_PATH + '/helper/' + name + '.js';
+      helper = require(filename);
+      return helper;
+    }
+    this.pub('error', e);
+  }
+};
+
 ////////////////////////////////////////
 // Framework.prototype end
 ////////////////////////////////////////
