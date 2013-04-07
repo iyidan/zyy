@@ -86,7 +86,7 @@ actions.login = function(app) {
 
     app.user_info = user_info;
 
-    app.helper('common').remember_me(that.app, function(err){
+    app.helper('common').remember_me(app, function(err){
       if (err) {
         return app.pub('error', err);
       }
@@ -101,6 +101,6 @@ actions.login = function(app) {
  * @param  {[type]} app [description]
  */
 actions.logout = function(app) {
-  app.helper('common').remember_me_expires(this.app);
+  app.helper('common').remember_me_expires(app);
   return 'ok';
 };
