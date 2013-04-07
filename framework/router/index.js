@@ -268,7 +268,7 @@ function dispatchAction(app)
 
     // 监听事件，不监听已经发布的事件
     app.sub('router.actions.ready', function(){
-      var msg = action.call(actionInstance, app.routes.controller, app.routes.params);
+      var msg = action.call(actionInstance, app, app.routes.controller, app.routes.params);
       if ( msg && typeof msg != 'boolean' ) {
         app.showMsg(msg);
       }
