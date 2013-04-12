@@ -1,6 +1,6 @@
 var events = require("events"),
     util = require("../util"),
-    hiredis = require("/data/www/zyy/framework/3rd/hiredis");
+    hiredis = require("../../../../hiredis");
 
 exports.debug_mode = false;
 exports.name = "hiredis";
