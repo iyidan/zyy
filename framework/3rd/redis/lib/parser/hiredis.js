@@ -1,6 +1,6 @@
 var events = require("events"),
     util = require("../util"),
-    hiredis = require("../../../../hiredis");
+    hiredis = require("../../../hiredis");
 
 exports.debug_mode = false;
 exports.name = "hiredis";
