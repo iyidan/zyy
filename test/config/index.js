@@ -71,7 +71,7 @@ exports.config = {
   'SESSION': {
     // SESSION保存的方式，默认为文件，可配置为：memcache、redis、mysql、memory、files
     // 建议最好配置为memcached或redis，让第三方管理session过期清理
-    'save_handler': 'memory',
+    'save_handler': 'redis',
     // 如果保存方式为文件，则需要配置保存路径
     'save_path': '/tmp/test_node_session',
     // session有效时间，单位秒(s)
