@@ -146,7 +146,7 @@ pro.gc  = function() { };
  * 组装return的数据格式
  * @return {[type]} [description]
  */
-pro.read = function(sessionid, cb) {
+pro.read = function(sessionid, callback) {
 
   this.open().get( this._key(sessionid), function( err, val ){
     if ( err ) {
