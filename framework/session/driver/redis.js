@@ -101,7 +101,7 @@ pro.create  = function( callback ) {
       that.create(callback);
       return;
     } else {
-      that.open().expire( key, that._sm.lifetime, function(err, status){
+      that.open().pexpire( key, that._sm.lifetime, function(err, status){
         if ( err ) {
           callback(err, null);
           return;
@@ -116,7 +116,7 @@ pro.renew = function(sessionid, callback) {
 
   var that = this;
   
-  this.open().expire( this._key(sessionid), this._sm.lifetime, function(err, status){
+  this.open().pexpire( this._key(sessionid), this._sm.lifetime, function(err, status){
 
     if ( err ) {
       callback(err, null);
