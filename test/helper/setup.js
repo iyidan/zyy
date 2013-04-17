@@ -3,7 +3,7 @@
  * 需要定义init方法供框架调用
  * 可初始化一些信息等
  */
-module.exports.init = function(app) {
+module.exports.init = function(app, successCb) {
   
 
   //console.log(app.routes);
@@ -12,7 +12,7 @@ module.exports.init = function(app) {
 
   // 解析用户信息
   app.helper('common').remember_me(app, function(err, user_info){
-    app.pub('setup.ok');
+    successCb(err, user_info);
   });
 };
 

@@ -13,17 +13,19 @@ var session = module.exports;
  */
 session.SessionManager = function( config ) {
 
-  this.save_handler    = config.save_handler || 'memory';
-  this.save_path       = config.save_path || '/tmp/node_session';
-  this.lifetime        = isNaN( config.lifetime ) ? 3600*24*30*1000 : config.lifetime*1000;
+  this.config = config;
 
-  this.cookie_param    = config.cookie_param || 'NODESESSIONID',
-  this.cookie_path     = config.cookie_path || '/';
-  this.cookie_domain   = config.cookie_domain || '';
-  this.cookie_secure   = config.cookie_secure || false;
-  this.cookie_httponly = config.cookie_httponly || false;
+  this.save_handler    = config.SESSION.save_handler || 'memory';
+  this.save_path       = config.SESSION.save_path || '/tmp/node_session';
+  this.lifetime        = isNaN( config.SESSION.lifetime ) ? 3600*24*30*1000 : config.SESSION.lifetime*1000;
 
-  this.gc_probability  = config.gc_probability || 0.1;
+  this.cookie_param    = config.SESSION.cookie_param || 'NODESESSIONID',
+  this.cookie_path     = config.SESSION.cookie_path || '/';
+  this.cookie_domain   = config.SESSION.cookie_domain || '';
+  this.cookie_secure   = config.SESSION.cookie_secure || false;
+  this.cookie_httponly = config.SESSION.cookie_httponly || false;
+
+  this.gc_probability  = config.SESSION.gc_probability || 0.1;
 
   // pub/sub 不储存触发过的事件
   new Message(false, 50, this);

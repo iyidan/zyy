@@ -43,9 +43,11 @@ var setup   = null;
  */
 exports.createServer = function ( config, errorHandler ) 
 {    
+
   var port = config.PORT || 3000;
   var ip   = config.IP || '127.0.0.1';
   
+  // 错误处理  
   if ( typeof errorHandler != 'function' ) {
     errorHandler = function(type, err){
       console.log(type+': ', err);
@@ -56,23 +58,27 @@ exports.createServer = function ( config, errorHandler )
   router.hardCode(config.MODULE_PATH);
 
   // db
-  db = new DB(config.DB);
-  db.sub('error', function(message, err){
-    errorHandler('db.error', err);
-  }, true, false);
+  if ( config.DB ) {
+    db = new DB(config);
+    db.sub('error', function(message, err){
+      errorHandler('db.error', err);
+    }, true, false);
+  }
 
   // session
-  session = new SessionManager(config.SESSION);
-  session.sub('error', function(message, err){
-    errorHandler('session.error', err);
-  }, true, false);
+  if ( config.SESSION ) {
+    session = new SessionManager(config);
+    session.sub('error', function(message, err){
+      errorHandler('session.error', err);
+    }, true, false);
+  }
 
   // 模板引擎
   var templateConf = {
     isDebug  : config.ONDEV ? true : false,
     rootPath : config.ROOT_PATH,
     theme    : config.THEME ? config.THEME : 'default',
-    cache    : config.ONDEV ? config.false : true
+    cache    : config.ONDEV ? false : true
   };
   template.init(templateConf);
   template.sub('error', function(message, err){
@@ -91,42 +97,44 @@ exports.createServer = function ( config, errorHandler )
  */
 function createServer(ip, port, config, errorHandler)
 {
-  var server = http.createServer(
-    function(req, res) {
-      var app = new Framework( req, res, config, errorHandler );
-      init_SERVER( app );
-      init_ROUTE( app );
-      init_GET( app );
-      init_POST( app );
-      init_FILES( app );
-      init_BODY( app );
-      init_COOKIE( app );
-      init_DB( app );
-      init_CACHE( app );
-      init_SESSION( app );
-      // callback & dispatch
-      app.sub(
-        'init.app.ready',
-        function(message, data){
-          // 执行项目自身的controller
-          app.sub('setup.ok', function(){
-            // 分派路由
-            router.dispatch(app);
-          });
-          // 调用项目setup
-          if (typeof setup.init == 'function') {
-            setup.init(app);
-          } else {
-            app.pub('setup.ok');
-          }
-        }
-      );
-    }
-  );
+  var server = http.createServer(function(req, res) {
+    
+    var app = new Framework( req, res, config, errorHandler );
+    
+    init_SERVER( app );
+    init_ROUTE( app );
+    init_GET( app );
+    init_POST( app );
+    init_FILES( app );
+    init_BODY( app );
+    init_COOKIE( app );
+    init_DB( app );
+    init_CACHE( app );
+    init_SESSION( app );
+    
+    // 分派路由
+    app.sub('setup.ok', function(){
+      router.dispatch(app);
+    });
+
+    // 调用项目setup
+    app.sub('init.app.ready', function(message, data){
+      if ( setup && typeof setup.init == 'function') {
+        setup.init(app, function(err, data){
+          app.pub('setup.ok');
+        });
+        return;
+      }
+      app.pub('setup.ok');
+    });
+  });
+  
   server.listen(port, ip);
+  
   server.on('error', function(err){
     errorHandler('server.error', err);
   });
+
   return server;
 }
 
@@ -166,24 +174,34 @@ function Framework ( req, res, config, errorHandler )
   this.routes   = {};
   // 渲染模板所用的数据
   this.assignValues = {};
+  
   //请求开始毫秒数
-  try {
-    this.startTime = req.socket.server._idleStart.getTime();  
-  } catch( e ) {
-    this.startTime = (new Date()).getTime();
-  }
+  this.startTime = (new Date()).getTime();
 
   // pub&sub
   new Message(true, 50, this);
+
   var app = this;
+  
   // 注册app error
   this.sub( 'error', function( message, err ){
     errorHandler('app.error', err, app);
   }, true, false);
+
   // 注册 req error
   this.req.on('error', function(err){
     errorHandler('app.error', err, app);
   });
+
+  // 注册debug
+  this.sub('init.get.ready', function(message, data){
+    if ( app.GET('debug') && ( app.config.ONDEV || app.GET('powerby') === app.config.POWERBY ) ) {
+      app.debug = true;
+    } else {
+      app.debug = false;
+    }
+  });
+
   // 注册ready事件
   this.sub(
     'init.post.ready',
@@ -433,6 +451,12 @@ Framework.prototype.end = function(str){
     if ( !app.SERVER('isAjax') ) {
       app.setHeader('Content-Type', 'text/html');
     }
+
+    app.stopTime = (new Date).getTime();
+    
+    if ( app.debug ) {
+      app.write( 'request-time:'+(app.stopTime - app.startTime) );
+    }
     app.res.end.apply(app.res, args);
   });
 };
@@ -620,6 +644,7 @@ function init_ROUTE ( app )
 function init_GET( app )
 {
   app._GET = app.SERVER( 'url' ).query;
+  app.pub('init.get.ready');
 }
 
 /**
@@ -685,13 +710,18 @@ function init_COOKIE( app )
 function init_SESSION( app )
 {
   // session 依赖于cookie
+  if ( !session ) {
+    app.pub('init.session.ready');
+    return;
+  }
+
   app.sub( 'init.cookie.ready', function(message, data){
     session.parseCookie(app, function(err, sessionData){
       if ( err ) {
         app.pub('error', err);
         return false;
       }
-      app._SESSION   = sessionData.data;
+      app._SESSION   = sessionData.data || {};
       app._sessionid = sessionData.sessionid;
       app.pub('init.session.ready');
     });  
