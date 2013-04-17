@@ -118,7 +118,7 @@ pro.renew = function(sessionid, callback) {
   
   this.open().expire( this._key(sessionid), this._sm.lifetime, function(err, status){
 
-    console.log(this._key(sessionid), err, status);
+    console.log(that._key(sessionid), err, status);
 
     if ( err ) {
       callback(err, null);
