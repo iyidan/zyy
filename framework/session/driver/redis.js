@@ -75,12 +75,22 @@ pro.write = function( sessionid, data, callback ) {
     return;
   }
 
-  this.open().set( this._key(sessionid), JSON.stringify(data), function(err, status){
+  var that = this;
+  var key  = this._key(sessionid);
+
+  this.open().set( key, JSON.stringify(data), function(err, status){
     if ( err ) {
       callback(err, null);
       return;
     }
-    callback(false, { 'sessionid':sessionid, 'data':data });
+    that.open().pexpire(key, that._sm.lifetime, function(err, status){
+      if ( err ) {
+        callback(err, null);
+        return;
+      }
+      callback(false, { 'sessionid':sessionid, 'data':data });
+    });
+    
   });
 
 };
