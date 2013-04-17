@@ -75,7 +75,7 @@ pro.write = function( sessionid, data, callback ) {
     return;
   }
 
-  this.open().set( this._key(sessionid), JSON.stringify(data), function(err, status){
+  this.open().set( this._key(sessionid), JSON.stringify(data), this._sm.lifetime, function(err, status){
     if ( err ) {
       callback(err, null);
       return;
