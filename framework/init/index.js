@@ -176,11 +176,7 @@ function Framework ( req, res, config, errorHandler )
   this.assignValues = {};
   
   //请求开始毫秒数
-  try {
-    this.startTime = req.socket.server._idleStart.getTime();  
-  } catch( e ) {
-    this.startTime = (new Date()).getTime();
-  }
+  this.startTime = (new Date()).getTime();
 
   // pub&sub
   new Message(true, 50, this);
@@ -454,6 +450,12 @@ Framework.prototype.end = function(str){
     // @todo content length and other headers
     if ( !app.SERVER('isAjax') ) {
       app.setHeader('Content-Type', 'text/html');
+    }
+
+    app.stopTime = (new Date).getTime();
+    
+    if ( app.debug ) {
+      app.write( 'request-time:'+(app.stopTime - app.startTime) );
     }
     app.res.end.apply(app.res, args);
   });
