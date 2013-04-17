@@ -12,7 +12,7 @@ var drivers = ['mysql'];
  */
 var DB = module.exports.DB = function(config)
 {  
-  var driver   = config.driver   || 'mysql';
+  var driver   = config.DB.driver   || 'mysql';
   
   // pub & sub
   new Message(false, 50, this);
@@ -23,7 +23,7 @@ var DB = module.exports.DB = function(config)
   }
 
   var Driver = require( './driver/' + driver )[driver];
-  this.driver     = new Driver(this, config);
+  this.driver     = new Driver(this, config.DB);
 };
 
 /**

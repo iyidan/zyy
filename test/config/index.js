@@ -7,22 +7,34 @@ var ROOT_PATH    = CONFIG_PATH.slice(0, -7);
 var FW_PATH      = '/data/www/zyy/framework';
 
 exports.config = {
+  
   // 项目名称
   'PROJECT_NAME': 'test',
+  
   // 是否是开发环境
   'ONDEV': true,
+  
+  // powerby
+  'POWERBY': 'test',
+
   // 监听ip
   'IP': '0.0.0.0',
+  
   // 监听端口
   'PORT': 3000,
+  
   // 静态文件路径
   'STATIC_PATH': ROOT_PATH + '/static',
+  
   // 项目根路径
   'ROOT_PATH': ROOT_PATH,
+  
   // 框架路径
   'FW_PATH': FW_PATH,
+  
   // 模块路径
   'MODULE_PATH': ROOT_PATH + '/' + 'module',
+  
   // 自定义路由规则
   // 1=> ../#siteControllerName/.../*
   // 2=> ../:paramName/../*
@@ -35,6 +47,7 @@ exports.config = {
     '/#company/:company_id[\\d+]/#admin/*',
     '/#company/*'
   ],
+  
   // COOKIE配置
   'COOKIE': {
     // 加密cookie所用的key
@@ -53,11 +66,12 @@ exports.config = {
     'remember_me_secret': 'thiskeyisforrememberdecode',
     'remember_me_expires': 3600*24*30
   },
+  
   // SESSION配置项
   'SESSION': {
     // SESSION保存的方式，默认为文件，可配置为：memcache、redis、mysql、memory、files
     // 建议最好配置为memcached或redis，让第三方管理session过期清理
-    'save_handler': 'memory',
+    'save_handler': 'redis',
     // 如果保存方式为文件，则需要配置保存路径
     'save_path': '/tmp/test_node_session',
     // session有效时间，单位秒(s)
@@ -72,6 +86,7 @@ exports.config = {
     // 请定义一个0~1之间的小数
     'gc_probability': 0.2
   },
+  
   // db连接信息
   'DB': {
     'driver': 'mysql',
@@ -81,12 +96,15 @@ exports.config = {
     'password': 'node',
     'database': 'node'
   },
+  
   // memcache 连接信息
   'MEMCACHE': {
 
   },
+  
   // redis 连接信息
   'REDIS': {
-
+    'port': 6379,
+    'host': '127.0.0.1'
   }
 };
