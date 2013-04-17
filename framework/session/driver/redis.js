@@ -118,8 +118,6 @@ pro.renew = function(sessionid, callback) {
   
   this.open().expire( this._key(sessionid), this._sm.lifetime, function(err, status){
 
-    console.log(that._key(sessionid), err, status);
-
     if ( err ) {
       callback(err, null);
       return;
@@ -152,8 +150,6 @@ pro.gc  = function() { };
 pro.read = function(sessionid, callback) {
 
   this.open().get( this._key(sessionid), function( err, val ){
-
-    console.log(this._key(sessionid), err, val);
 
     if ( err ) {
       callback( err, null );
