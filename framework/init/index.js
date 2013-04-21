@@ -339,7 +339,7 @@ Framework.prototype.SESSION = function ( key, val, isWriteNow, cb ) {
   }
 
   if ( 'string' != typeof val ) {
-    app.pub('error', 'session set val is not a string type.');
+    this.pub('error', 'session set val is not a string type.');
     return false;
   }
 
