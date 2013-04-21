@@ -40,6 +40,15 @@ actions.__construct = function(app, callback)
  */
 actions.__call = function(app, action, params)
 {
+
+  app.SESSION('TEST', 'test', true, function(err, data){
+    console.log(err, data);
+  });
+
+  app.SESSION('TEST2', 'test2');
+
+  console.log(app.SESSION('TEST2'), app.SESSION('TEST'));
+
   if ( app.user_info ) {
     app.assign('title', '个人信息');
     app.assign('user_info', app.user_info);

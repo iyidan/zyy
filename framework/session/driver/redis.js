@@ -20,7 +20,66 @@ module.exports.redis = function(sm) {
 
 };
 
+/**
+ * 原型
+ * @type {Object}
+ */
 var pro = module.exports.redis.prototype;
+
+/**
+ * 写session的lua脚本
+ * @type {String}
+ * @return {String} OK 如果成功
+ */
+pro.luaWrite = "\
+local expiresTime = table.remove(ARGV, 1);\n\
+local setR = redis.pcall('hmset', KEYS[1], unpack(ARGV));\n\
+redis.pcall('pexpire', KEYS[1], expiresTime);\n\
+return setR;";
+
+/**
+ * 创建session的脚本
+ */
+pro.luaCreate = "\
+if redis.pcall('exists', KEYS[1]) == 0 then\n\
+  local setR = redis.pcall('hset', KEYS[1], ARGV[2], ARGV[3]);\n\
+  redis.pcall('pexpire', KEYS[1], ARGV[1]);\n\
+  return setR;\n\
+else\n\
+  return nil;\n\
+end";
+
+/**
+ * 获取写入redis的参数数组，方便eval调用
+ * @param  {Object} data 要写入session的键值对，会过滤掉非字符串的值
+ * @param {Function} cb 执行hmset后的回调函数 function(err, result) ...
+ * @return {Array|null}      参数数组
+ */
+pro.getWriteArgs = function(sessionid, data, cb) {
+  
+  var args = [this.luaWrite, 1, this._key(sessionid), this._sm.lifetime];
+  
+  for ( var i in data ) {
+    var tpval = typeof data[i];
+    if ( data.hasOwnProperty(i) && ('string' == tpval || 'number' == tpval) ) {
+      args.push(i);
+      args.push(data[i]);
+    }
+  }
+
+  if ( args.length <= 4 ) { return null; }
+  if ( 'function' == typeof cb ) args.push(cb);
+
+  return args;
+};
+
+/**
+ * 获取创建session的参数数组，方便eval调用
+ */
+pro.getCreateArgs = function(sessionid, cb) {
+  return [this.luaCreate, 1, this._key(sessionid), this._sm.lifetime, '_sessiondefault', '_sessiondefault', cb];
+};
+
 
 /**
  * 以下方法
@@ -46,8 +105,6 @@ pro.open = function() {
   var host = this.redisConfig.host || '127.0.0.1';
 
   this.redisWr = redis.createClient(port, host);
-  // 选择数据库2
-  this.redisWr.select(2);
 
   var that = this;
   
@@ -75,7 +132,7 @@ pro.write = function( sessionid, data, callback ) {
     return;
   }
 
-  this.open().set( this._key(sessionid), JSON.stringify(data), 'PX', this._sm.lifetime, function(err, status){
+  var args = this.getWriteArgs(sessionid, data, function(err, result){
     if ( err ) {
       callback(err, null);
       return;
@@ -83,33 +140,36 @@ pro.write = function( sessionid, data, callback ) {
     callback(false, { 'sessionid':sessionid, 'data':data });
   });
 
+  if ( !args ) {
+    callback('session data is empty.', null);
+    return;
+  }
+
+  var redisWr = this.open();
+  // 执行
+  redisWr.eval.apply(redisWr, args);
+
 };
 
 pro.create  = function( callback ) {
 
   var sessionid = this._sm.uid();
-  var key = this._key(sessionid);
   var that = this;
-
-  this.open().setnx( key, JSON.stringify({}), function(err, status){
-    if ( err ) {
+  var args = this.getCreateArgs(sessionid, function(err, result){
+    if (err) {
       callback(err, null);
       return;
     }
-    // 已经存在
-    if ( status == 0 ) {
+    if ( result != 1 ) {
       that.create(callback);
       return;
-    } else {
-      that.open().pexpire( key, that._sm.lifetime, function(err, status){
-        if ( err ) {
-          callback(err, null);
-          return;
-        }
-        callback(false, { 'sessionid': sessionid, 'data': {} });
-      });
     }
+    callback(false, { sessionid: sessionid, data: { '_sessiondefault': '_sessiondefault' } });
+    return;
   });
+
+  var redisWr = this.open();
+  redisWr.eval.apply(redisWr, args);
 };
 
 pro.renew = function(sessionid, callback) {
@@ -149,7 +209,7 @@ pro.gc  = function() { };
  */
 pro.read = function(sessionid, callback) {
 
-  this.open().get( this._key(sessionid), function( err, val ){
+  this.open().hgetall( this._key(sessionid), function( err, val ){
 
     if ( err ) {
       callback( err, null );
@@ -159,7 +219,7 @@ pro.read = function(sessionid, callback) {
       callback( false, { 'sessionid': sessionid, 'data': false } );
       return;
     }
-    callback( false, { 'sessionid': sessionid, 'data': JSON.parse( val ) } );
+    callback( false, { 'sessionid': sessionid, 'data': val } );
   });
 };
 
