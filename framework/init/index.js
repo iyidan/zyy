@@ -482,7 +482,8 @@ Framework.prototype.end = function(str){
   };
 
   if ( session ) {
-    session.writeClose(this, function(err){
+    session.writeClose(app, function(err){
+      console.log(arguments);
       if ( err ) {
         app.pub('error', err);
         return;
@@ -755,7 +756,6 @@ function init_SESSION( app )
         app.pub('error', err);
         return false;
       }
-      console.log('sessionData:', sessionData);
       app._SESSION   = sessionData.data || {};
       app._sessionid = sessionData.sessionid;
       app.pub('init.session.ready');
