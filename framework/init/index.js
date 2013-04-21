@@ -755,6 +755,7 @@ function init_SESSION( app )
         app.pub('error', err);
         return false;
       }
+      console.log('sessionData:', sessionData);
       app._SESSION   = sessionData.data || {};
       app._sessionid = sessionData.sessionid;
       app.pub('init.session.ready');
