@@ -338,8 +338,9 @@ Framework.prototype.SESSION = function ( key, val, isWriteNow, cb ) {
     return this._SESSION[key];
   }
 
-  if ( 'string' != typeof val ) {
-    this.pub('error', 'session set val is not a string type.');
+  var tpval = typeof val;
+  if ( 'string' != tpval && 'number' != tpval ) {
+    this.pub('error', 'session set val is not a string or number type.');
     return false;
   }
 
@@ -757,8 +758,6 @@ function init_SESSION( app )
         app.pub('error', err);
         return false;
       }
-
-      console.log('sessionData ', sessionData);
 
       app._SESSION   = sessionData.data || {};
       app._sessionid = sessionData.sessionid;

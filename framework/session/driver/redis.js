@@ -60,7 +60,8 @@ pro.getWriteArgs = function(sessionid, data, cb) {
   var args = [this.luaWrite, 1, this._key(sessionid), this._sm.lifetime];
   
   for ( var i in data ) {
-    if ( data.hasOwnProperty(i) && 'string' == typeof data[i] ) {
+    var tpval = typeof data[i];
+    if ( data.hasOwnProperty(i) && ('string' == tpval || 'number' == tpval) ) {
       args.push(i);
       args.push(data[i]);
     }
