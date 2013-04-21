@@ -758,7 +758,7 @@ function init_SESSION( app )
         return false;
       }
 
-      console.trace(sessionData);
+      console.log('sessionData ', sessionData);
 
       app._SESSION   = sessionData.data || {};
       app._sessionid = sessionData.sessionid;
