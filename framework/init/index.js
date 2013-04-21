@@ -329,12 +329,32 @@ Framework.prototype.COOKIE = function( key, val, expires, needSign, path, domain
 
 /**
  * SESSION
+ * @param {Boolean} isWriteNow 是否立即写入session值
+ * @param {Function} cb 回调函数
  */
-Framework.prototype.SESSION = function ( key, val ) {
+Framework.prototype.SESSION = function ( key, val, isWriteNow, cb ) {
   if ( !key || typeof key != 'string' ) return undefined;
   if ( val === undefined ) {
     return this._SESSION[key];
   }
+
+  if ( 'string' != typeof val ) {
+    app.pub('error', 'session set val is not a string type.');
+    return false;
+  }
+
+  if ( isWriteNow ) {
+    var data = {};
+    data[key] = val;
+    session.write(this._sessionid, data, function(err, sessionData){
+      if ( 'function' == typeof cb ) {
+        cb(err, sessionData);
+      } else if (err) {
+        app.pub('error', err);
+      }
+    });
+  }
+
   this._SESSION[key] = val;
   return true;
 };
@@ -439,26 +459,40 @@ Framework.prototype.end = function(str){
   this.ended = true;
   // writeSession
   var app  = this, args = arguments;
-  session.writeClose(this, function(err){
-    // writeCookie
-    if ( app._setCookies && app._setCookies.length ) {
-      app.setHeader('Set-Cookie', app._setCookies);
-    }
-    if ( !app.res.statusCode ) {
-      app.setStatusCode(200);
-    }
-    // @todo content length and other headers
-    if ( !app.SERVER('isAjax') ) {
-      app.setHeader('Content-Type', 'text/html');
-    }
 
-    app.stopTime = (new Date).getTime();
-    
-    if ( app.debug ) {
-      app.write( 'request-time:'+(app.stopTime - app.startTime) );
-    }
-    app.res.end.apply(app.res, args);
-  });
+  var func = function() {
+    // writeCookie
+      if ( app._setCookies && app._setCookies.length ) {
+        app.setHeader('Set-Cookie', app._setCookies);
+      }
+      if ( !app.res.statusCode ) {
+        app.setStatusCode(200);
+      }
+      // @todo content length and other headers
+      if ( !app.SERVER('isAjax') ) {
+        app.setHeader('Content-Type', 'text/html');
+      }
+
+      app.stopTime = (new Date).getTime();
+      
+      if ( app.debug ) {
+        app.write( 'request-time:'+(app.stopTime - app.startTime) );
+      }
+      app.res.end.apply(app.res, args);
+  };
+
+  if ( session ) {
+    session.writeClose(this, function(err){
+      if ( err ) {
+        app.pub('error', err);
+        return;
+      }
+      func();
+    });
+    return;
+  }
+
+  func();
 };
 
 /**

@@ -140,7 +140,7 @@ pro.renew = function( sessionid, callback ) {
  * uid
  */
 pro.uid = function() {
-  return utils.md5( utils.uid(128) );
+  return utils.md5( utils.uid(1024) );
 }
 
 /**
