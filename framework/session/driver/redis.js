@@ -163,7 +163,7 @@ pro.create  = function( callback ) {
       that.create(callback);
       return;
     }
-    callback(false, { sessionid: sessionid, data: {} });
+    callback(false, { sessionid: sessionid, data: { '_sessiondefault': '_sessiondefault' } });
     return;
   });
 
