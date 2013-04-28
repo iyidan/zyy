@@ -176,6 +176,10 @@ exports.hardCode = function( modulePath )
 
   modules.forEach(function(m){
 
+    if (  m.indexOf('.') === 0 ) {
+      return true;
+    }
+
     var tmpModulePath = modulePath + '/' + m;
     if (!isDirSync(tmpModulePath)) return;
 
