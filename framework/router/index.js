@@ -414,7 +414,7 @@ function getDirFiles( dir )
 function isDirSync(dir)
 {
 
-  if (  dir.indexOf('.') === 0 ) {
+  if (  dir.indexOf('/.') !== -1 ) {
     return false;
   }
   var stats = fs.statSync(dir);
@@ -432,7 +432,7 @@ function isDirSync(dir)
 function isFileSync(file)
 {
 
-  if (  file.indexOf('.') === 0 ) {
+  if (  file.indexOf('/.') !== -1 ) {
     return false;
   }
   var stats = fs.statSync(file);
