@@ -176,10 +176,6 @@ exports.hardCode = function( modulePath )
 
   modules.forEach(function(m){
 
-    if (  m.indexOf('.') === 0 ) {
-      return true;
-    }
-
     var tmpModulePath = modulePath + '/' + m;
     if (!isDirSync(tmpModulePath)) return;
 
@@ -413,6 +409,10 @@ function getDirFiles( dir )
  */
 function isDirSync(dir)
 {
+
+  if (  dir.indexOf('.') === 0 ) {
+    return false;
+  }
   var stats = fs.statSync(dir);
   if (stats.isDirectory()) {
     return true;
@@ -427,6 +427,10 @@ function isDirSync(dir)
  */
 function isFileSync(file)
 {
+
+  if (  file.indexOf('.') === 0 ) {
+    return false;
+  }
   var stats = fs.statSync(file);
   if (stats.isFile()) {
     return true;
