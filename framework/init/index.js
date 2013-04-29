@@ -58,7 +58,7 @@ exports.createServer = function ( config, errorHandler )
   router.hardCode(config.MODULE_PATH);
 
   // db
-  if ( config.DB ) {
+  if ( config.DB && config.DB.driver ) {
     db = new DB(config);
     db.sub('error', function(message, err){
       errorHandler('db.error', err);

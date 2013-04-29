@@ -5,7 +5,7 @@
 var Message = require( '../message' ).Message;
 var util         = require( 'util' );
 
-var drivers = ['mysql'];
+var drivers = ['mysql', 'redis'];
 
 /**
  * DB构造器
@@ -24,13 +24,6 @@ var DB = module.exports.DB = function(config)
 
   var Driver = require( './driver/' + driver )[driver];
   this.driver     = new Driver(this, config.DB);
-};
 
-/**
- * query
- * @param  {String}   sql      [description]
- * @param  {Function} callback [description]
- */
-DB.prototype.query = function(sql, callback) {
-  this.driver.query(sql, callback);
+  return this.driver;
 };
