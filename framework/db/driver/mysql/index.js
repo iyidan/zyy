@@ -9,6 +9,8 @@ module.exports.mysql = function( db, config )
   this._db    = db;
   this.pool   = mysql.createPool(config); 
   this.config = config;
+  
+  this._name = 'mysql';
 };
 
 /* 原型 */

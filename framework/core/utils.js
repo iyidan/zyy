@@ -193,3 +193,8 @@ utils.BufferHelper.prototype.get = function( length ) {
 utils.BufferHelper.prototype.toString = function(encoding, length) {
   return this.get(length).toString(encoding);
 };
+
+/**
+ * 什么也不做的空函数
+ */
+utils.loop = function() {};
