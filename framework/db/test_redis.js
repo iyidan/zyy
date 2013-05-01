@@ -54,5 +54,15 @@ test.test('nstest eval', function(){
   });
 });
 
+test.test('nstest incr', function(){
+  db.NS('nstest').incr('counter', function(err, result){
+    console.log(err, result);
+    db.NS('nstest').incr('counter', function(err, result){
+      console.log(err, result);
+      test.next();
+    });
+  });
+});
+
 // 执行测试
 test.next();
