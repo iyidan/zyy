@@ -8,7 +8,7 @@ var config = {
   PROJECT_NAME: 'test_redis_driver'
 }
 
-var db = new DB(config);
+var db = new DB.DB(config);
 
 test.suite('db details');
 
