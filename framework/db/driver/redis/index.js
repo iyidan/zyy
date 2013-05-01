@@ -115,15 +115,15 @@ NSObject.prototype.execCmd = function(cmd, args) {
     if ( cmd == 'eval' || cmd == 'evalsha' ) {
       var keyNum = args[1] || 0;
       for ( var i = 2; i < (keyNum+2); i++ ) {
-        args[i] = this.buildKey(args[i]);
+        args[i] = this.solveKey(args[i]);
       }
     }
     // 有序集合 
     else if ( cmd == 'zunionstore' || cmd == 'zinterstore' ) {
-      args[0] = this.buildKey(args[0]);
+      args[0] = this.solveKey(args[0]);
       var keyNum = args[1] || 0;
       for ( var i = 2; i < (keyNum+2); i++ ) {
-        args[i] = this.buildKey(args[i]);
+        args[i] = this.solveKey(args[i]);
       }
     }
 
@@ -136,7 +136,7 @@ NSObject.prototype.execCmd = function(cmd, args) {
   
     // 仅1个key且居于第1位置
     if ( reqK == 1 ) {
-      args[0] = this.buildKey(args[0]);
+      args[0] = this.solveKey(args[0]);
     }
     // 其他情况
     else if ( reqK ) {

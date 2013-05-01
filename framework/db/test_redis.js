@@ -26,7 +26,7 @@ test.test('set:', function(){
   console.log(nsObj);
 
   db.NS('NSTEST').set('key1', 'val1', function(err, result){
-    console.log(util.inspect(err), util.inspect(result));
+    console.trace(util.inspect(err), util.inspect(result));
     //test.next();
   });
 });
