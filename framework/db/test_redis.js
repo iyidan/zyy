@@ -47,7 +47,7 @@ test.test('nstest del key1',function(){
 });
 
 test.test('nstest eval', function(){
-  var lua = "redis.pcall('hset', KEYS[1], ARGV[0], ARGV[1]);\nreturn redis.pcall('hgetall', KEYS[1]);";
+  var lua = "redis.pcall('hset', KEYS[1], ARGV[1], ARGV[2]);\nreturn redis.pcall('hgetall', KEYS[1]);";
   db.NS('nstest').eval(lua, 1, 'testhashkey', 'filed1', 'value1', function(err, result){
     console.log(err, result);
     test.next();
