@@ -98,13 +98,15 @@ NSObject.prototype.execCmd = function(cmd, args) {
   // 获取keymap
   var keyMap   = cmd_key_map[cmd];
   // 去掉最后一个回调函数
-  var callback = typeof args[args.length -1] == 'function' ? args.pop() : null;
+  var callback = typeof args[args.length -1] == 'function' ? Array.prototype.pop.call(args) : null;
   // 请求参数中的keymap
   var reqK = null;
   // 响应中的keymap
   var resK = null;
   // 生成的回调函数
   var cb = null;
+
+  if ( callback )
 
   // 需要动态判断的命令
   if ( keyMap == '?' ) {
