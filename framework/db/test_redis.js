@@ -27,3 +27,6 @@ test.test('nstest set and get', function(){
   });
 
 });
+
+// 执行测试
+test.next();
