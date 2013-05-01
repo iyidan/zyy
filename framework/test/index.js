@@ -18,9 +18,13 @@ Test.prototype.test = function(title, cb) {
 
 Test.prototype.next = function() {
   
-  if(this.jobStartTime)  this.jobEndTime = (new Date).getTime();
+  if(this.jobStartTime) {
+    this.jobEndTime = (new Date).getTime();
+    console.log('job costs time' + (this.jobEndTime - this.jobStartTime) + 'ms');
+  } 
 
   if ( this.tests.length == 0) {
+
     this.suite('test all over');
     this.endTime = (new Date).getTime();
     console.log('costs time '+ (this.endTime - this.startTime) + ' ms');
@@ -29,11 +33,9 @@ Test.prototype.next = function() {
 
   if (!this.startTime) this.startTime = (new Date).getTime();
 
-  console.log('job costs time' + (this.jobEndTime - this.jobStartTime) + 'ms');
-
   var job = this.tests.shift();
   
-  console.log( '\n[' + job[0] + ']\n' );
+  this.suite(job[0]);
   
   this.jobStartTime = (new Date).getTime();
 
