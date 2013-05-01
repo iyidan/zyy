@@ -21,6 +21,10 @@ test.test('console.log db', function(){
 test.suite('test NS');
 
 test.test('set:', function(){
+  var nsObj = db.NS('NSTEST');
+
+  console.log(nsObj);
+
   db.NS('NSTEST').set('key1', 'val1', function(err, result){
     console.log(util.inspect(err), util.inspect(result));
     //test.next();
