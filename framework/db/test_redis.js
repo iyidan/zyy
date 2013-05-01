@@ -31,6 +31,26 @@ test.test('nstest set and get', function(){
 test.test('nstest keys *', function(){
   db.NS('nstest').keys('*', function(err, result){
     console.log(err, result);
+    test.next();
+  });   
+});
+
+test.test('nstest del key1',function(){
+
+  db.NS('nstest').get('key1', function(err, result){
+    console.log('get', err, result);
+    db.NS('nstest').del('key1', function(err, result){
+      console.log('del', err, result);
+      test.next();
+    });
+  });
+});
+
+test.test('nstest eval', function(){
+  var lua = "redis.pcall('hset', KEYS[1], ARGV[0], ARGV[1]);\nreturn redis.pcall('hgetall', KEYS[1]);";
+  db.NS('nstest').eval(lua, 1, 'testhashkey', 'filed1', 'value1', function(err, result){
+    console.log(err, result);
+    test.next();
   });
 });
 
