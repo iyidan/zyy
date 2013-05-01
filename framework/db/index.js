@@ -12,10 +12,12 @@ var drivers = ['mysql', 'redis'];
  */
 var DB = module.exports.DB = function(config)
 {  
-  var driver   = config.DB.driver   || 'mysql';
-  
+
   // pub & sub
   new Message(false, 50, this);
+
+  var driver   = config.DB.driver || 'mysql';
+  config.DB.ps = config.PROJECT_NAME;
 
   // check driver
   if ( drivers.indexOf(driver) == -1 ) {

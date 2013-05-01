@@ -88,20 +88,25 @@ com.remember_me = function(app, cb) {
   // 检查user
   var user_id = cookieInfo.user_id;
   var that = this;
-  app.db.query('SELECT * FROM `user` WHERE `id`=' + user_id + ' LIMIT 1', function(err, user_info){
-    if (err) {
-      cb(err);
-      return;
-    }
-    user_info = user_info ? user_info[0] : user_info;
-    if (!user_info || !user_info.id || user_info.status != 1 ) {
-      that.remember_me_expires(app);
-      cb('user_info is not found in database.');
-      return;
-    }
-    app.user_info = user_info;
-    that.remember_me(app, cb);
-  });
+
+  if ( app.db._name == 'redis' ) {
+    
+  } else {
+    app.db.query('SELECT * FROM `user` WHERE `id`=' + user_id + ' LIMIT 1', function(err, user_info){
+      if (err) {
+        cb(err);
+        return;
+      }
+      user_info = user_info ? user_info[0] : user_info;
+      if (!user_info || !user_info.id || user_info.status != 1 ) {
+        that.remember_me_expires(app);
+        cb('user_info is not found in database.');
+        return;
+      }
+      app.user_info = user_info;
+      that.remember_me(app, cb);
+    });
+  }
 };
 
 /**

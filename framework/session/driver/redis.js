@@ -10,7 +10,7 @@ module.exports.redis = function(sm) {
   this._sm = sm;
 
   // redis配置
-  this.redisConfig = sm.config.REDIS;
+  this.redisConfig = sm.config.REDIS || (sm.config.DB.driver == 'redis' ? sm.config.DB : '');
   
   // redis 连接
   this.redisWr = null;
@@ -110,7 +110,7 @@ pro.open = function() {
   
   this.redisWr.on('error', function(err){
     
-    try { that.redisWr.end(); } catch(e) { }
+    try { that.redisWr.quit(); } catch(e) { }
     that.redisWr = null;
     that._sm.pub('error', err);
 
