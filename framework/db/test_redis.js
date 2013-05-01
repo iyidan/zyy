@@ -28,5 +28,11 @@ test.test('nstest set and get', function(){
 
 });
 
+test.test('nstest keys *', function(){
+  db.NS('nstest').keys('*', function(err, result){
+    console.log(err, result);
+  });
+});
+
 // 执行测试
 test.next();
