@@ -1,5 +1,6 @@
 var DB   = require('./index');
 var test = require('../test');
+var util = require('util');
 
 var config = {
   DB: {
@@ -21,7 +22,7 @@ test.suite('test NS');
 
 test.test('set:', function(){
   db.NS('NSTEST').set('key1', 'val1', function(err, result){
-    console.log(err, result);
+    console.log(util.inspect(err), util.inspect(result));
     //test.next();
   });
 });
