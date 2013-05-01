@@ -1,5 +1,5 @@
 var DB   = require('./index');
-var test = require('../test');
+var Test = require('../test').Test;
 var util = require('util');
 
 var config = {
@@ -10,23 +10,20 @@ var config = {
 }
 
 var db = new DB.DB(config);
-
-test.suite('db details');
+var test = new Test();
 
 test.test('console.log db', function(){
   console.log(db);
+  test.next();
 });
 
+test.test('nstest set and get', function(){
 
-test.suite('test NS');
-
-test.test('set:', function(){
-  var nsObj = db.NS('NSTEST');
-
-  console.log(nsObj);
-
-  db.NS('NSTEST').set('key1', 'val1', function(err, result){
-    console.log(util.inspect(err), util.inspect(result));
-    //test.next();
+  db.NS('nstest').set('key1', 'val1', function(err, result){
+    db.NS('nstest').get('key1', function(err, result){
+      console.log(err, result);
+      test.next();
+    });
   });
+
 });
