@@ -8,7 +8,7 @@ var Test = module.exports.Test = function() {
 };
 
 Test.prototype.suite = function( str ) {
-  str = ( '[' str + '] =======================================').slice(0, 80);
+  str = ( '[' + str + '] =======================================').slice(0, 80);
   console.log('\n' + str + '\n');
 };
 
