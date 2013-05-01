@@ -171,7 +171,7 @@ NSObject.prototype.execCmd = function(cmd, args) {
 
   // 组装函数
   if ( cb ) {
-    args.push(cb);
+    Array.prototype.push.call(args, cb);
   }
 
   // 执行命令
