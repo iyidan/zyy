@@ -20,7 +20,7 @@ Test.prototype.next = function() {
   
   if(this.jobStartTime) {
     this.jobEndTime = (new Date).getTime();
-    console.log('\njob costs time' + (this.jobEndTime - this.jobStartTime) + 'ms');
+    console.log('\njob costs time' + (this.jobEndTime - this.jobStartTime) + ' ms');
   } 
 
   if ( this.tests.length == 0) {
