@@ -3,7 +3,6 @@
  */
 
 var Message = require( '../message' ).Message;
-var util         = require( 'util' );
 
 var drivers = ['mysql', 'redis'];
 
@@ -17,7 +16,10 @@ var DB = module.exports.DB = function(config)
   new Message(false, 50, this);
 
   var driver   = config.DB.driver || 'mysql';
-  config.DB.ps = config.PROJECT_NAME;
+  
+  if ( !config.DB.ps ) {
+    config.DB.ps = config.PROJECT_NAME;
+  }
 
   // check driver
   if ( drivers.indexOf(driver) == -1 ) {
