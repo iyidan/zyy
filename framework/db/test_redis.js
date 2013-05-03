@@ -64,5 +64,29 @@ test.test('nstest incr', function(){
   });
 });
 
+// flushdb
+test.test('ns flush db', function(){
+  db.NS('nstest').flushdb(function(err, result){
+    console.log(err, result);
+    test.next();
+  });
+});
+
+// .K func
+test.test('ns.K func', function(){
+  db.NS('nstest').K('user').K(1).set('name', 'testusername', function(err, result){
+    console.log(err, result);
+    test.next();
+  });
+});
+
+// multi .K
+test.test('ns.K(user:1:pw func', function(){
+  db.NS('nstest').K('user:1').get('name', function(err, result){
+    console.log(err, result);
+    test.next();
+  });
+});
+
 // 执行测试
 test.next();
