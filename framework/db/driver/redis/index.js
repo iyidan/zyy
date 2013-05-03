@@ -8,8 +8,6 @@ var cmd_key_map = require('./cmd_key_map.js');
 
 var utils = require('../../../core/utils.js');
 
-var nsCache = {};
-
 module.exports.redis = function( db, config )
 {  
 
@@ -61,11 +59,6 @@ pro.init = function() {
  * 建立命名空间
  */
 pro.NS = function(ns) {
-
-  if ( nsCache[ns] !== undefined ) {
-    return nsCache[ns];
-  }
-
   return new NSObject(ns, this);
 };
 
@@ -74,11 +67,19 @@ pro.NS = function(ns) {
  */
 function NSObject(ns, driver)
 {
-  this.driver = driver;
-  this.ps  = driver.ps;
-  this.ns  = ns || 'redisDBNS';
+  this._driver = driver;
+  this._ps     = driver.ps;
+  this._ns     = ns || 'redisDBNS';
+  // this.K生成的列表
+  this._keys   = [];
 
-  this.keyPre = this.ps + '|' + this.ns + '|';
+  this._cmd    = '';
+  this._cmdMap = null;
+
+  // 存放查询数据的地方
+  this.data      = null;
+  this.isSolved  = false;
+  this.keyPre    = this.ps + ':' + this.ns;
 }
 
 /**
@@ -88,28 +89,28 @@ function NSObject(ns, driver)
  * @return {[type]}      [description]
  */
 NSObject.prototype.execCmd = function(cmd, args) {
-  
+  // 不需要返回值的查询
   if (args.length == 0) {
     // 执行命令
-    this.driver[cmd].apply(this.driver, args);
+    this._driver[cmd].apply(this._driver, args);
     return;
   }
 
-  // 获取keymap
-  var keyMap   = cmd_key_map[cmd];
+  this._cmd = cmd;
+  // 获取cmdMap
+  this._cmdMap   = cmd_key_map[cmd];
+
   // 去掉最后一个回调函数
   var callback = typeof args[args.length -1] == 'function' ? Array.prototype.pop.call(args) : null;
-  // 请求参数中的keymap
+  // 请求参数中的cmdMap
   var reqK = null;
-  // 响应中的keymap
+  // 响应中的cmdMap
   var resK = null;
   // 生成的回调函数
   var cb = null;
 
-  if ( callback )
-
   // 需要动态判断的命令
-  if ( keyMap == '?' ) {
+  if ( this._cmdMap == '?' ) {
 
     // lua脚本
     if ( cmd == 'eval' || cmd == 'evalsha' ) {
@@ -129,10 +130,10 @@ NSObject.prototype.execCmd = function(cmd, args) {
 
   }
   // [ [keystart, keylength], [keystart, keylength] ] 
-  else if ( keyMap ) {
+  else if ( this._cmdMap ) {
 
-    reqK = keyMap[0];
-    resK = keyMap[1];
+    reqK = this._cmdMap[0];
+    resK = this._cmdMap[1];
   
     // 仅1个key且居于第1位置
     if ( reqK == 1 ) {
@@ -151,21 +152,22 @@ NSObject.prototype.execCmd = function(cmd, args) {
     cb = function(err, result) {
     
       if ( err ) {
-        callback(err, null);
+        callback(err, that);
         return;
       }
 
-      var isSolved = false;
       if ( resK == 1 ) {
         result = that.solveKey(result, true);
-        isSolved = true;
+        that.isSolved = true;
       } else if ( resK && result instanceof Array ) {
         result = that.solveKeys(result, resK[0], resK[1], true);
-        isSolved = true;
+        that.isSolved = true;
       }
 
-      // 执行回调函数
-      callback(err, (new QueryResult(that, result, keyMap, isSolved)) );
+      that.data = result;
+
+      // 执行回调函数 
+      callback(err, that );
     };
   }
 
@@ -175,7 +177,7 @@ NSObject.prototype.execCmd = function(cmd, args) {
   }
 
   // 执行命令
-  this.driver[cmd].apply(this.driver, args);
+  this._driver[cmd].apply(this._driver, args);
 };
 
 /**
@@ -228,21 +230,18 @@ NSObject.prototype.solveKey = function( key, isUnBuild ) {
   }
 
   // 构造
-  return this.keyPre + key;
+  return this.keyPre + ':' + key;
 };
 
 /**
- * 返回的Ns对象执行命令的结果对象
+ * 重复调用ns
  */
-function QueryResult( nsObj, data, keyMap, isSolved ) {
-  this.nsObj = nsObj;
-  this.data = data;
-  this.isSolved = isSolved;
-  this.keyMap = keyMap;
-}
-
-QueryResult.prototype.solveKey = function(key) {
-  return this.nsObj.solveKey(key, true);
+NSObject.prototype.K = function(key) {
+  if ( key ) {
+    this._keys.push(key);
+    this.keyPre = this.keyPre + ':' + key;
+  }
+  return this;
 };
 
 /* 赋值方法 */
