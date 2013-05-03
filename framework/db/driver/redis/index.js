@@ -8,6 +8,9 @@ var cmd_key_map = require('./cmd_key_map.js');
 
 var utils = require('../../../core/utils.js');
 
+// redis实例
+var redis = null;
+
 module.exports.redis = function( db, config )
 {  
 
@@ -21,6 +24,9 @@ module.exports.redis = function( db, config )
   this.client = null;
   this._name = 'redis';
 
+  redis = this;
+
+  return redis;
 };
 
 /* 原型 */
@@ -59,7 +65,7 @@ pro.init = function() {
  * 建立命名空间
  */
 pro.NS = function(ns) {
-  return new NSObject(ns, this);
+  return new NSObject(ns);
 };
 
 /**
@@ -67,8 +73,7 @@ pro.NS = function(ns) {
  */
 function NSObject(ns, driver)
 {
-  this._driver = driver;
-  this._ps     = driver.ps;
+  this._ps     = redis.ps;
   this._ns     = ns || 'redisDBNS';
   // this.K生成的列表
   this._keys   = [];
@@ -92,7 +97,7 @@ NSObject.prototype.execCmd = function(cmd, args) {
   // 不需要返回值的查询
   if (args.length == 0) {
     // 执行命令
-    this._driver[cmd].apply(this._driver, args);
+    redis[cmd].apply(redis, args);
     return;
   }
 
@@ -177,7 +182,7 @@ NSObject.prototype.execCmd = function(cmd, args) {
   }
 
   // 执行命令
-  this._driver[cmd].apply(this._driver, args);
+  redis[cmd].apply(redis, args);
 };
 
 /**
