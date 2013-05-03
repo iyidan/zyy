@@ -79,7 +79,7 @@ function NSObject(ns, driver)
   // 存放查询数据的地方
   this.data      = null;
   this.isSolved  = false;
-  this.keyPre    = this.ps + ':' + this.ns;
+  this.keyPre    = this._ps + ':' + this._ns;
 }
 
 /**
