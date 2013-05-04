@@ -5,8 +5,9 @@
 var redis       = require('../../../3rd/redis');
 var commands    = require('./commands.js');
 var cmd_key_map = require('./cmd_key_map.js');
+var lua_scripts = require('./lua_scripts.js');
 
-var utils = require('../../../core/utils.js');
+var utils       = require('../../../core/utils.js');
 
 // redis实例
 var r = null;
@@ -75,8 +76,6 @@ function NSObject(ns, driver)
 {
   this._ps     = r.ps;
   this._ns     = ns || 'redisDBNS';
-  // this.K生成的列表
-  this._keys   = [];
 
   this._cmd    = '';
   this._cmdMap = null;
@@ -84,7 +83,7 @@ function NSObject(ns, driver)
   // 存放查询数据的地方
   this.data      = null;
   this.isSolved  = false;
-  this.keyPre    = this._ps + ':' + this._ns;
+  this.keyPre    = this._ps + '|' + this._ns;
 }
 
 /**
@@ -167,6 +166,8 @@ NSObject.prototype.execCmd = function(cmd, args) {
       } else if ( resK && result instanceof Array ) {
         result = that.solveKeys(result, resK[0], resK[1], true);
         that.isSolved = true;
+      } else if ( !resK ) {
+        that.isSolved = true;
       }
 
       that.data = result;
@@ -239,27 +240,134 @@ NSObject.prototype.solveKey = function( key, isUnBuild ) {
 };
 
 /**
- * 重复调用ns
+ * 重复调用key
  */
-NSObject.prototype.K = function(key) {
+NSObject.prototype.key = function(key) {
   if ( key ) {
-    this._keys.push(key);
     this.keyPre = this.keyPre + ':' + key;
   }
   return this;
 };
 
+/**
+ * 清除key的设置
+ * @return {[type]} [description]
+ */
+NSObject.prototype.clear = function() {
+  this.keyPre = this._ps + '|' + this._ns;
+};
+
+/**
+ * 删除一个对象
+ * @param  {[type]}   key [description]
+ * @param  {Function} cb  [description]
+ * @return {[type]}       [description]
+ */ 
+NSObject.prototype.del = function(key, cb) {
+  // 执行脚本
+  if ( cb ) {
+    this.execCmd('del', key, cb);
+  } else {
+    this.execCmd('del', key);
+  }
+};
+
+/**
+ * 重置某个（或多个）属性
+ */
+NSObject.prototype.update = function(info, cb) {
+  
+  if ( 'object' != typeof info ) {
+    if ( cb ) {
+      cb('info is not an object', null);  
+    }
+    return;
+  }
+
+  var keys   = Object.keys(info);
+  var length = keys.length;
+  
+  if ( length == 0 ) {
+    if ( cb ) {
+      cb('info is not an object', null);  
+    }
+    return;
+  }
+
+  for ( var i = 0; i < length; i++ ) {
+    // 对象转换为数组
+    var tmpType = typeof info[keys[i]];
+    if ( 'string' != tmpType && 'number' != tmpType ) {
+      // 只支持字符串、数字的更新
+      if ( cb ) {
+        cb('update info[keys[i]] is not a string or number type', null);  
+      }
+      return;
+    } else {
+      keys.push(info[keys[i]]);
+    }
+  }
+
+  // 组装lua脚本
+  keys.unshift(length);
+  keys.unshift(lua_scripts['updateKeys']);
+  if ( cb ) {
+    keys.push(cb);
+  }
+
+  // 执行脚本
+  this.execCmd('eval', keys);
+
+};
+
+/**
+ * 获取一个对象的字段值
+ * @param  {Array, string}   info  需要获取的字段类型
+ * @param  {Function} cb   回调函数
+ * @return {Object}        返回标准的NSObject实例
+ */
+NSObject.prototype.getKeys = function() {
+  
+  // 没有回调函数
+  if ( arguments.length < 2 ) {
+    return this;
+  }
+
+  var cb = Array.prototype.pop.call(arguments);
+  if ( 'function' != typeof cb ) {
+    return this;
+  }
+
+  var keys = [];
+  if ( arguments.length == 1 && arguments[0] instanceof Array) {
+    keys = arguments[0];
+  } else {
+    keys = Array.prototype.slice.call(arguments, 0, arguments.length);
+  }
+
+  // 组装lua脚本
+  keys.unshift(keys.length);
+  keys.unshift(lua_scripts['getKeys']);
+  keys.push(cb);
+
+  // 执行脚本
+  this.execCmd('eval', keys);
+
+};
+
+
+
 /* 赋值方法 */
 commands.forEach(function(cmd, k) {
 
   // 直接使用原始的redis命令
-  pro[cmd] = function() {
+  pro['_'+cmd] = function() {
     this.init();
     this.client[cmd].apply(this.client, arguments);
   };
 
   // 为Ns对象增加方法
-  NSObject.prototype[cmd] = function() {
+  NSObject.prototype['_'+cmd] = function() {
     this.execCmd(cmd, arguments);
   };
 
