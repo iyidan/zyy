@@ -182,7 +182,6 @@ NSObject.prototype.execCmd = function(cmd, args) {
     Array.prototype.push.call(args, cb);
   }
 
-  console.log(cmd, args);
   // 执行命令
   r[cmd].apply(r, args);
 };

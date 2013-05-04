@@ -42,4 +42,5 @@ var delKeys = 'return redis.pcall("del", table.unpack(redis.pcall("keys", KEYS[1
 module.exports = {
   'getKeys': getKeys,
   'updateKeys': updateKeys,
+  'delKeys': delKeys
 };
