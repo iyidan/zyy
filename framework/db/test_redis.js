@@ -90,11 +90,20 @@ test.test('ns.K(user:1:pw func', function(){
 
 // update
 test.test('ns user 1 update', function(err, result){
-  db.NS('user').key('1').update({
+  db.NS('user').key(1).update({
     'user_name':'xlw',
     'password': 'fawefddfawenfiag`'
   }, function(err, result){
     console.log(err, result);
+    test.next();
+  });
+});
+
+// getKeys
+test.test('ns user 1 getKeys', function(err, result){
+  db.NS('user').key(1).getKeys('user_name', 'password', function(err, data){
+    console.log(err, data);
+    test.next();
   });
 });
 
