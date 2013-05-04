@@ -9,9 +9,9 @@ var getKeys = '\
 local getMap={ hash="hgetall", string="get", none="none", list="lrange", set="smembers", zset="zrange" }; \
 local results={}; \
 local tmpType; \
-local tmpCmd; \
+local tmpCmd=""; \
 for i=1,table.getn(KEYS) do \
-  tmpType=redis.pcall("type", KEYS[i]); \
+  tmpType=redis.pcall("type", KEYS[i])["ok"]; \
   tmpCmd=getMap[tmpType]; \
   if tmpCmd=="none" then \
     results[i]=nil; \
