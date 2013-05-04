@@ -113,7 +113,7 @@ test.test('ns user 1 _set getKeys', function(){
     'qq': '33232',
     'email': 'fawefa@faf.com',
   }, function(err, data){
-    console(err, data);
+    console.log(err, data);
     db.NS('user').key(1).getKeys('user_name', 'password', 'profile', function(err, data){
       console.log(err, data);
       test.next();
