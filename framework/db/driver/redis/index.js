@@ -361,7 +361,7 @@ NSObject.prototype.getKeys = function() {
 commands.forEach(function(cmd, k) {
 
   // 直接使用原始的redis命令
-  pro['_'+cmd] = function() {
+  pro[cmd] = function() {
     this.init();
     this.client[cmd].apply(this.client, arguments);
   };
