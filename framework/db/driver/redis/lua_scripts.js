@@ -10,7 +10,7 @@ local getMap={ hash="hgetall", string="get", none="none", list="lrange", set="sm
 local results={};\
 local tmpType;\
 local tmpCmd;\
-for i=1,i<=table.getn(KEYS) do\
+for i=1,table.getn(KEYS) do\
   tmpType=redis.pcall("type", KEYS[i]);\
   tmpCmd=getMap[tmpType];\
   if tmpCmd=="none" then\
@@ -28,7 +28,7 @@ return results;';
  */
 var updateKeys = '\
 local results={};\
-for i=1,i<=table.getn(KEYS) do\
+for i=1,table.getn(KEYS) do\
   results[i]=redis.pcall("set", KEYS[i], ARGV[i]);\
 end\
 return results;';
