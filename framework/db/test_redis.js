@@ -107,5 +107,20 @@ test.test('ns user 1 getKeys', function(err, result){
   });
 });
 
+// get multi type
+test.test('ns user 1 _set getKeys', function(){
+  db.NS('user').key(1)._hmset('profile', {
+    'qq': '33232',
+    'email': 'fawefa@faf.com',
+  }, function(err, data){
+    console(err, data);
+    db.NS('user').key(1).getKeys('user_name', 'password', 'profile', function(err, data){
+      console.log(err, data);
+      test.next();
+    });
+  });
+});
+
+
 // 执行测试
 test.next();
