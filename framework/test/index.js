@@ -8,7 +8,7 @@ var Test = module.exports.Test = function() {
 };
 
 Test.prototype.suite = function( str ) {
-  str = ( '[' + str + '] =======================================').slice(0, 80);
+  str = ( '[' + str + '] =====================================================').slice(0, 50);
   console.log('\n' + str + '\n');
 };
 
@@ -20,7 +20,7 @@ Test.prototype.next = function() {
   
   if(this.jobStartTime) {
     this.jobEndTime = (new Date).getTime();
-    console.log('\njob costs time ' + (this.jobEndTime - this.jobStartTime) + ' ms');
+    console.log('\n[job end][costs time ' + (this.jobEndTime - this.jobStartTime) + ' ms]');
   } 
 
   if ( this.tests.length == 0) {
