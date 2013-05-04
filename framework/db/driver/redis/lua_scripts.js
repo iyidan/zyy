@@ -37,7 +37,7 @@ return results;';
 /**
  * 删除某个前缀开头的所有key
  */
-var delKeys = 'return redis.pcall("del", table.unpack(redis.pcall("keys", KEYS[1] .. "*")));';
+var delKeys = 'return redis.pcall("del", unpack(redis.pcall("keys", KEYS[1] .. "*")));';
 
 module.exports = {
   'getKeys': getKeys,
