@@ -26,8 +26,7 @@ return results;';
 /**
  * 设置/更新多个key的值
  */
-var updateKeys = '\
-local results={};\
+var updateKeys = 'local results={};\
 for i=1,table.getn(KEYS) do\
   results[i]=redis.pcall("set", KEYS[i], ARGV[i]);\
 end\
