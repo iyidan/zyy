@@ -88,5 +88,15 @@ test.test('ns.K(user:1:pw func', function(){
   });
 });
 
+// update
+test.test('ns user 1 update', function(err, result){
+  db.NS('user').key('1').update({
+    'user_name':'xlw',
+    'password': 'fawefddfawenfiag`'
+  }, function(err, result){
+    console.log(err, result);
+  });
+});
+
 // 执行测试
 test.next();

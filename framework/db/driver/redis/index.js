@@ -266,10 +266,11 @@ NSObject.prototype.clear = function() {
 NSObject.prototype.del = function(key, cb) {
   // 执行脚本
   if ( cb ) {
-    this.execCmd('del', key, cb);
+    keys = [lua_scripts['delKeys'], 1, key, cb];
   } else {
-    this.execCmd('del', key);
+    keys = [lua_scripts['delKeys'], 1, key];
   }
+  this.execCmd('eval', keys);
 };
 
 /**
