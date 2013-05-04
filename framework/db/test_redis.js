@@ -121,6 +121,12 @@ test.test('ns user 1 _set getKeys', function(){
   });
 });
 
+// del
+test.test('ns user 1 del', function(){
+  db.NS('user').del(1, function(err, data){
+    console.log(err, data);
+  });
+});
 
 // 执行测试
 test.next();
