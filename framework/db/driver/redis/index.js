@@ -317,6 +317,7 @@ NSObject.prototype.update = function(info, cb) {
   }
 
   // 执行脚本
+  console.log(keys); 
   this.execCmd('eval', keys);
 
 };
