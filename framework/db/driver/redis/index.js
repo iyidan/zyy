@@ -377,9 +377,6 @@ NSObject.prototype.getKeys = function() {
     }
     // array to object
     var info   = {};
-
-    console.log(err, data);
-
     for ( var i = 0; i < fields.length; i++ ) {
       info[fields[i]] = data[i];
     }
