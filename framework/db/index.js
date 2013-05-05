@@ -12,9 +12,6 @@ var drivers = ['mysql', 'redis'];
 var DB = module.exports.DB = function(config)
 {  
 
-  // pub & sub
-  new Message(false, 50, this);
-
   var driver   = config.DB.driver || 'mysql';
   
   if ( !config.DB.ps ) {
@@ -28,6 +25,9 @@ var DB = module.exports.DB = function(config)
 
   var Driver = require( './driver/' + driver )[driver];
   this.driver     = new Driver(this, config.DB);
+
+  // pub & sub
+  new Message(false, 50, this.driver);  
 
   return this.driver;
 };
