@@ -369,7 +369,23 @@ NSObject.prototype.getKeys = function() {
   // 组装lua脚本
   keys.unshift(keys.length);
   keys.unshift(lua_scripts['getKeys']);
-  keys.push(cb);
+
+  // callback
+  var callback = function(err, data) {
+    if ( err ) {
+      cb(err, null);
+      return;
+    }
+    // array to object
+    var info   = {};
+    var fields = Array.prototype.slice.call(keys, 2, -1);
+    for ( var i = 0; i < fields.length; i++ ) {
+      info[fields[i]] = data[i];
+    }
+    cb(null, info);
+  };
+
+  keys.push(callback);
 
   // 执行脚本
   this.execCmd('eval', keys);
