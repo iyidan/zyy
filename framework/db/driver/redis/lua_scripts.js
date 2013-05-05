@@ -50,8 +50,7 @@ local id=redis.pcall("incr",  keyPre .. ":__counter__"); \
 for i=1,table.getn(KEYS) do \
   results[i]=redis.pcall("set",  keyPre .. ":" .. id .. ":" .. KEYS[i], ARGV[i]); \
 end \
-return {id, results};
-';
+return {id, results};';
 
 
 module.exports = {
