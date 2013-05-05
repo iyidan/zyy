@@ -125,6 +125,23 @@ test.test('ns user 1 _set getKeys', function(){
 test.test('ns user 1 del', function(){
   db.NS('user').del(1, function(err, data){
     console.log(err, data);
+    test.next();
+  });
+});
+
+// create
+test.test('ns create 1 user', function(){
+  db.flushdb(function(err, result){
+    console.log(err, result);
+    db.NS('user').create({
+      'user_name': 'liwei',
+      'password': 'ddfafaf',
+      'email': 'test@test.com',
+      'add_time': (new Date).getTime()
+    }, function(err, result){ 
+      console.log(err, result);
+      test.next();
+    });
   });
 });
 

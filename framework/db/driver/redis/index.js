@@ -80,8 +80,7 @@ function NSObject(ns, driver)
   this._cmd    = '';
   this._cmdMap = null;
 
-  // 存放查询数据的地方
-  this.data      = null;
+  // 是否解决了返回值的键名
   this.isSolved  = false;
   this.keyPre    = this._ps + '|' + this._ns;
 }
@@ -170,10 +169,8 @@ NSObject.prototype.execCmd = function(cmd, args) {
         that.isSolved = true;
       }
 
-      that.data = result;
-
       // 执行回调函数 
-      callback(err, that );
+      callback(err, result );
     };
   }
 
@@ -253,8 +250,45 @@ NSObject.prototype.key = function(key) {
  * 清除key的设置
  * @return {[type]} [description]
  */
-NSObject.prototype.clear = function() {
+NSObject.prototype.clearKey = function() {
   this.keyPre = this._ps + '|' + this._ns;
+};
+
+/**
+ * 创建
+ */
+NSObject.prototype.create = function(info, cb) {
+  
+  this.clearKey();
+
+  var typeCb = typeof cb;
+  var keys   = this.generateInfo(info);
+
+  if ( 'string' == typeof keys ) {
+    if ( 'function' == typeCb ) {
+      cb(keys, null);
+    }
+    return;
+  }
+
+  if ( keys.length == 0 ) {
+    if ( 'function' == typeCb ) {
+      cb('create info is empty', null);
+    }
+    return; 
+  }
+
+  // 
+  keys.unshift( keys.length / 2 );
+  keys.unshift(lua_scripts['createKeys']);
+  keys.push(this.keyPre);
+
+  if ( 'function' == typeCb ) {
+    keys.push(cb);
+  }
+
+  r['eval'].apply(r, keys);
+
 };
 
 /**
@@ -278,41 +312,27 @@ NSObject.prototype.del = function(key, cb) {
  */
 NSObject.prototype.update = function(info, cb) {
   
-  if ( 'object' != typeof info ) {
-    if ( cb ) {
-      cb('info is not an object', null);  
+  var typeCb = typeof cb;
+  var keys   = this.generateInfo(info);
+
+  if ( 'string' == typeof keys ) {
+    if ( 'function' == typeCb ) {
+      cb(keys, null);
     }
     return;
   }
 
-  var keys   = Object.keys(info);
-  var length = keys.length;
-  
-  if ( length == 0 ) {
-    if ( cb ) {
-      cb('info is not an object', null);  
+  if ( keys.length == 0 ) {
+    if ( 'function' == typeCb ) {
+      cb('update info is empty', null);
     }
-    return;
-  }
-
-  for ( var i = 0; i < length; i++ ) {
-    // 对象转换为数组
-    var tmpType = typeof info[keys[i]];
-    if ( 'string' != tmpType && 'number' != tmpType ) {
-      // 只支持字符串、数字的更新
-      if ( cb ) {
-        cb('update info[keys[i]] is not a string or number type', null);  
-      }
-      return;
-    } else {
-      keys.push(info[keys[i]]);
-    }
+    return; 
   }
 
   // 组装lua脚本
-  keys.unshift(length);
+  keys.unshift( keys.length / 2 );
   keys.unshift(lua_scripts['updateKeys']);
-  if ( cb ) {
+  if ( 'function' == typeCb ) {
     keys.push(cb);
   }
 
@@ -346,17 +366,62 @@ NSObject.prototype.getKeys = function() {
     keys = Array.prototype.slice.call(arguments, 0, arguments.length);
   }
 
+  // 原始的字段名
+  var fields = Array.prototype.slice.call(keys, 0);
+  
+  // callback
+  var callback = function(err, data) {
+    if ( err ) {
+      cb(err, null);
+      return;
+    }
+    // array to object
+    var info   = {};
+    for ( var i = 0; i < fields.length; i++ ) {
+      info[fields[i]] = data[i];
+    }
+    cb(null, info);
+  };
+
   // 组装lua脚本
   keys.unshift(keys.length);
   keys.unshift(lua_scripts['getKeys']);
-  keys.push(cb);
+  keys.push(callback);
 
   // 执行脚本
   this.execCmd('eval', keys);
 
 };
 
+/**
+ * 组装data为eval所需的参数
+ */
+NSObject.prototype.generateInfo = function(info) {
 
+  if ( 'object' != typeof info ) {
+    return 'info is not an object';
+  }
+
+  if ( info instanceof Array ) {
+    return info;
+  }
+
+  var keys   = Object.keys(info);
+  var length = keys.length;
+
+  for ( var i = 0; i < length; i++ ) {
+    // 对象转换为数组
+    var tmpType = typeof info[keys[i]];
+    if ( 'string' != tmpType && 'number' != tmpType ) {
+      // 只支持字符串、数字的更新
+      return 'info[keys[i]] is not a string or number type';
+    } else {
+      keys.push(info[keys[i]]);
+    }
+  }
+
+  return keys;
+};
 
 /* 赋值方法 */
 commands.forEach(function(cmd, k) {
