@@ -43,7 +43,7 @@ var delKeys = 'return redis.pcall("del", unpack(redis.pcall("keys", KEYS[1] .. "
 /**
  * 创建keys
  */
-var createKeys = '
+var createKeys = '\
 local results={}; \
 local keyPre=ARGV[table.getn(ARGV)]; \
 local id=redis.pcall("incr",  keyPre .. ":__counter__"); \
