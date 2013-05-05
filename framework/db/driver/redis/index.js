@@ -366,10 +366,9 @@ NSObject.prototype.getKeys = function() {
     keys = Array.prototype.slice.call(arguments, 0, arguments.length);
   }
 
-  // 组装lua脚本
-  keys.unshift(keys.length);
-  keys.unshift(lua_scripts['getKeys']);
-
+  // 原始的字段名
+  var fields = Array.prototype.slice.call(keys, 0);
+  
   // callback
   var callback = function(err, data) {
     if ( err ) {
@@ -378,13 +377,15 @@ NSObject.prototype.getKeys = function() {
     }
     // array to object
     var info   = {};
-    var fields = Array.prototype.slice.call(keys, 2, -1);
     for ( var i = 0; i < fields.length; i++ ) {
       info[fields[i]] = data[i];
     }
     cb(null, info);
   };
 
+  // 组装lua脚本
+  keys.unshift(keys.length);
+  keys.unshift(lua_scripts['getKeys']);
   keys.push(callback);
 
   // 执行脚本
