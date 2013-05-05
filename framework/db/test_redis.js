@@ -149,7 +149,7 @@ test.test('ns create 1 user', function(){
 
 // get
 test.test('ns get 1 user', function(){
-  db.NS('user').key(1).getKeys('user_name', 'password', 'email', 'add_time', 'is_admin', 'status', function(err, result){
+  db.NS('user').key(1).getKeys('user_name', 'password', 'email', 'add_time', 'fffff', 'is_admin', 'status', function(err, result){
     console.log(err, result);
     test.next();
   });
