@@ -14,7 +14,7 @@ for i=1,table.getn(KEYS) do \
   tmpType=redis.pcall("type", KEYS[i])["ok"]; \
   tmpCmd=getMap[tmpType]; \
   if tmpCmd=="none" then \
-    results[i]=nil; \
+    results[i]=false; \
   elseif tmpCmd=="lrange" or tmpCmd=="zrange" then \
     results[i]=redis.pcall(tmpCmd, KEYS[i], 0, -1); \
   else \
