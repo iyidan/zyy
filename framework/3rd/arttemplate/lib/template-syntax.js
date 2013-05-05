@@ -17,8 +17,8 @@ var _isArray = Array.isArray || function (obj) {
 };
 
 
-exports.openTag = '{';
-exports.closeTag = '}';
+exports.openTag = '{{';
+exports.closeTag = '}}';
 
 exports.parser = function (code) {
     code = code.replace(/^\s/, '');
