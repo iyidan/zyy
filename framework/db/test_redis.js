@@ -134,7 +134,7 @@ test.test('ns create 1 user', function(){
   db.flushdb(function(err, result){
     console.log(err, result);
     db.NS('user').create({
-      'user_name': 'liwei',
+      'user_name': '31楼347',
       'password': 'ddfafaf',
       'email': 'test@test.com',
       'add_time': (new Date).getTime(),
