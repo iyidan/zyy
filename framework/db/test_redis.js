@@ -137,11 +137,21 @@ test.test('ns create 1 user', function(){
       'user_name': 'liwei',
       'password': 'ddfafaf',
       'email': 'test@test.com',
-      'add_time': (new Date).getTime()
+      'add_time': (new Date).getTime(),
+      'status':1,
+      'is_admin':1
     }, function(err, result){ 
       console.log(err, result);
       test.next();
     });
+  });
+});
+
+// get
+test.test('ns get 1 user', function(){
+  db.NS('user').key(1).getKeys('user_name', 'password', 'email', 'add_time', 'is_admin', 'status', function(err, result){
+    console.log(err, result);
+    test.next();
   });
 });
 
