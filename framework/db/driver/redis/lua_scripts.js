@@ -39,8 +39,24 @@ return results;';
  */
 var delKeys = 'return redis.pcall("del", unpack(redis.pcall("keys", KEYS[1] .. "*")));';
 
+
+/**
+ * 创建keys
+ */
+var createKeys = '
+local results={}; \
+local keyPre=ARGV[table.getn(ARGV)]; \
+local id=redis.pcall("incr",  keyPre .. ":__counter__"); \
+for i=1,table.getn(KEYS) do \
+  results[i]=redis.pcall("set",  keyPre .. ":" .. id .. ":" .. KEYS[i], ARGV[i]); \
+end \
+return {id, results};
+';
+
+
 module.exports = {
   'getKeys': getKeys,
   'updateKeys': updateKeys,
-  'delKeys': delKeys
+  'delKeys': delKeys,
+  'createKeys': createKeys
 };
