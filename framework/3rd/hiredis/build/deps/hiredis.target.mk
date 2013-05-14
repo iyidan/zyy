@@ -10,9 +10,12 @@ DEFS_Debug := \
 
 # Flags passed to all source files.
 CFLAGS_Debug := \
+	-fPIC \
 	-Wall \
+	-Wextra \
+	-Wno-unused-parameter \
 	-pthread \
-	-m32 \
+	-m64 \
 	-g \
 	-O0
 
@@ -25,9 +28,9 @@ CFLAGS_CC_Debug := \
 	-fno-exceptions
 
 INCS_Debug := \
-	-I/home/www/.node-gyp/0.8.18/src \
-	-I/home/www/.node-gyp/0.8.18/deps/uv/include \
-	-I/home/www/.node-gyp/0.8.18/deps/v8/include
+	-I/data/zyy/framework/3rd/node_modules/hiredis/.node-gyp/0.10.4/src \
+	-I/data/zyy/framework/3rd/node_modules/hiredis/.node-gyp/0.10.4/deps/uv/include \
+	-I/data/zyy/framework/3rd/node_modules/hiredis/.node-gyp/0.10.4/deps/v8/include
 
 DEFS_Release := \
 	'-D_LARGEFILE_SOURCE' \
@@ -35,9 +38,12 @@ DEFS_Release := \
 
 # Flags passed to all source files.
 CFLAGS_Release := \
+	-fPIC \
 	-Wall \
+	-Wextra \
+	-Wno-unused-parameter \
 	-pthread \
-	-m32 \
+	-m64 \
 	-O2 \
 	-fno-strict-aliasing \
 	-fno-tree-vrp \
@@ -52,9 +58,9 @@ CFLAGS_CC_Release := \
 	-fno-exceptions
 
 INCS_Release := \
-	-I/home/www/.node-gyp/0.8.18/src \
-	-I/home/www/.node-gyp/0.8.18/deps/uv/include \
-	-I/home/www/.node-gyp/0.8.18/deps/v8/include
+	-I/data/zyy/framework/3rd/node_modules/hiredis/.node-gyp/0.10.4/src \
+	-I/data/zyy/framework/3rd/node_modules/hiredis/.node-gyp/0.10.4/deps/uv/include \
+	-I/data/zyy/framework/3rd/node_modules/hiredis/.node-gyp/0.10.4/deps/v8/include
 
 OBJS := \
 	$(obj).target/$(TARGET)/deps/hiredis/hiredis.o \
@@ -89,12 +95,12 @@ $(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.c FORCE_DO_CMD
 LDFLAGS_Debug := \
 	-pthread \
 	-rdynamic \
-	-m32
+	-m64
 
 LDFLAGS_Release := \
 	-pthread \
 	-rdynamic \
-	-m32
+	-m64
 
 LIBS :=
 
@@ -102,7 +108,7 @@ $(obj).target/deps/hiredis.a: GYP_LDFLAGS := $(LDFLAGS_$(BUILDTYPE))
 $(obj).target/deps/hiredis.a: LIBS := $(LIBS)
 $(obj).target/deps/hiredis.a: TOOLSET := $(TOOLSET)
 $(obj).target/deps/hiredis.a: $(OBJS) FORCE_DO_CMD
-	$(call do_cmd,alink_thin)
+	$(call do_cmd,alink)
 
 all_deps += $(obj).target/deps/hiredis.a
 # Add target alias
@@ -112,4 +118,22 @@ hiredis: $(obj).target/deps/hiredis.a
 # Add target alias to "all" target.
 .PHONY: all
 all: hiredis
+
+# Add target alias
+.PHONY: hiredis
+hiredis: $(builddir)/hiredis.a
+
+# Copy this to the static library output path.
+$(builddir)/hiredis.a: TOOLSET := $(TOOLSET)
+$(builddir)/hiredis.a: $(obj).target/deps/hiredis.a FORCE_DO_CMD
+	$(call do_cmd,copy)
+
+all_deps += $(builddir)/hiredis.a
+# Short alias for building this static library.
+.PHONY: hiredis.a
+hiredis.a: $(obj).target/deps/hiredis.a $(builddir)/hiredis.a
+
+# Add static library to "all" target.
+.PHONY: all
+all: $(builddir)/hiredis.a
 

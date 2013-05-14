@@ -110,7 +110,7 @@ exports.compile = function (id, source) {
             if (!isDebug) {
                 return exports.compile(id, source, true)(data);
             }
-			
+      
             e.id = id || source;
             e.name = 'Render Error';
             e.source = source;

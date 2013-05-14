@@ -23,8 +23,8 @@
   "readmeFilename": "README.md",
   "_id": "hiredis@0.1.15",
   "dist": {
-    "shasum": "d88b6c7e45b7be783adddb74f5b3e43ce296a69c"
+    "shasum": "41bc0670e2ed5139f2af5a40d5c29f669accd33a"
   },
-  "_from": "hiredis@",
+  "_from": "hiredis",
   "_resolved": "https://registry.npmjs.org/hiredis/-/hiredis-0.1.15.tgz"
 }
