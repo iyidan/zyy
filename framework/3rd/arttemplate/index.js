@@ -1,39 +1,40 @@
 /**
- * ·â×°ÌÇ±ıµÄatrTemplate
+ * å°è£…ç³–é¥¼çš„atrTemplate
  */
 
 var fs = require('fs');
 
-// ÀàËÆÓÚsmartyµÄÓï·¨·ç¸ñ
+// ç±»ä¼¼äºsmartyçš„è¯­æ³•é£æ ¼
 var arttemplate = require('./lib/template-syntax');
-// È¥µôÄ¬ÈÏµÄ
+// å»æ‰é»˜è®¤çš„
 arttemplate.isEscape = false;
 
-// ¹¤¾ß°ü
+// å·¥å…·åŒ…
 var utils   = require('../../core/utils');
 var Message = require('../../message').Message;
 
 
 var template = exports;
-// pub/sub ²»´¢´æ´¥·¢¹ıµÄÊÂ¼ş
+// pub/sub ä¸å‚¨å­˜è§¦å‘è¿‡çš„äº‹ä»¶
 new Message(false, 50, template);
 
-// ÊÇ·ñ³õÊ¼»¯¹ı
+// æ˜¯å¦åˆå§‹åŒ–è¿‡
 template.initialized = false;
 
-var fileCache = {};
+var fileCache   = {};
+var renderCache = {};
 
 var includeReg = /\{include(.*?)\}/gm;
 
 /**
- * ³õÊ¼»¯
+ * åˆå§‹åŒ–
  */
 template.init = function(config) {
-  // ÊÇ·ñdebug
+  // æ˜¯å¦debug
   this.isDebug  = config.isDebug  || true;
-  // ÊÇ·ñÎÄ¼ş»º´æ
+  // æ˜¯å¦æ–‡ä»¶ç¼“å­˜
   this.cache    = config.cache || true;
-  // Ä£°å£¨ÏîÄ¿£©¸ùÂ·¾¶
+  // æ¨¡æ¿ï¼ˆé¡¹ç›®ï¼‰æ ¹è·¯å¾„
   this.rootPath = config.rootPath || '';
   if ( !this.rootPath ) {
     this.pub('error', 'template.init error: config.rootPath is not defined.');
@@ -41,7 +42,7 @@ template.init = function(config) {
   }
   this.rootPath = utils.rtrim(this.rootPath, '/');
 
-  // Ä£°åÖ÷Ìâ
+  // æ¨¡æ¿ä¸»é¢˜
   this.theme = config.theme || 'default';
 
   this.config      = config;
@@ -49,36 +50,38 @@ template.init = function(config) {
 }
 
 /**
- * ÓÉdataäÖÈ¾Ä£°åcontent
- * @param  {String} content Ä£°å
- * @param  {Object} data    Ä£°åÊı¾İ
- * @return {String}         äÖÈ¾ºÃµÄhtml×Ö·û´®
+ * ç”±dataæ¸²æŸ“æ¨¡æ¿content
+ * @param  {String} content æ¨¡æ¿
+ * @param  {Object} data    æ¨¡æ¿æ•°æ®
+ * @return {String}         æ¸²æŸ“å¥½çš„htmlå­—ç¬¦ä¸²
  */
 template.render = function(content, data) {
 
   var renderMd5 = utils.md5(content);
-  // äÖÈ¾
+
+  // æ¸²æŸ“
   try {
-
-    return arttemplate.compile(content)(data); 
-
+    if ( !renderCache[renderMd5] ) {
+      renderCache[renderMd5] = arttemplate.compile(content, this.isDebug);
+    }
   } catch(e) {
-
+    delete renderCache[renderMd5];
     this.pub('error', e);    
     return '';
-
   }
+  
+  return renderCache[renderMd5](data);
 
 };
 
 /**
- * ½âÎöinclude
- * @param {String} file ĞèÒª½âÎöÎÄ¼şÈ«Â·¾¶
- * @param {Function} cb callback »á½«err, content´«µİ¸øcb
- * @return {String} ·µ»Ø½âÎöÍê±ÏµÄ×Ö·û´®£¬¿ÉÓÃÓÚartTemplate
+ * è§£æinclude
+ * @param {String} file éœ€è¦è§£ææ–‡ä»¶å…¨è·¯å¾„
+ * @param {Function} cb callback ä¼šå°†err, contentä¼ é€’ç»™cb
+ * @return {String} è¿”å›è§£æå®Œæ¯•çš„å­—ç¬¦ä¸²ï¼Œå¯ç”¨äºartTemplate
  */
 template.parseInclude = function(file, cb) {
-
+  
   if (typeof cb != 'function') {
     this.pub('error', 'template.parseInclude error: parsing '+file+' cb is not a function obj.');
     return;
@@ -91,10 +94,11 @@ template.parseInclude = function(file, cb) {
 
   var fileMd5 = utils.md5(file);
 
-  // ÎÄ¼ş»º´æ
+  // æ–‡ä»¶ç¼“å­˜
   if (fileCache[fileMd5]) {
     //console.log('fileCache: ', Object.keys(fileCache));
     cb(null, fileCache[fileMd5]);
+    return;
   }
 
   var that = this;
@@ -112,7 +116,7 @@ template.parseInclude = function(file, cb) {
       return;
     }
 
-    // ¶©ÔÄ¶à¸öÊÂ¼ş
+    // è®¢é˜…å¤šä¸ªäº‹ä»¶
     var subMsgs = matches.map(function(v){
       return fileMd5 +  '.' + v;
     });
@@ -120,7 +124,7 @@ template.parseInclude = function(file, cb) {
       //console.log(message, dataList);
       var ids = message.id.split(',');
       for (var i = 0; i < ids.length; i++) {
-        // µ¥¸ö°üº¬ ¶à¸ö°üº¬
+        // å•ä¸ªåŒ…å« å¤šä¸ªåŒ…å«
         var includeInfo = ids.length == 1 ? dataList : dataList[ids[i]];
         if (!includeInfo) {
           cb('in template subMsgs dataList '+ids[i]+' parse error.');
@@ -135,17 +139,17 @@ template.parseInclude = function(file, cb) {
         var include    = ids[i].substring(33);
         content = content.replace(include, tmpContent);
       }
-      // ´æÈë»º´æ
+      // å­˜å…¥ç¼“å­˜
       if(that.cache) fileCache[fileMd5] = content;
       cb(null, content);
     });
 
-    // ¼àÌıÊÂ¼ş
+    // ç›‘å¬äº‹ä»¶
     that.sub.apply(that, subMsgs);
 
     try {
 
-      // ±éÀú£¬²¢ĞĞ¶ÁÈ¡ÎÄ¼ş
+      // éå†ï¼Œå¹¶è¡Œè¯»å–æ–‡ä»¶
       matches.forEach(function(include, k){
         
         var messageId = fileMd5 +  '.' + include; 
@@ -174,13 +178,13 @@ template.parseInclude = function(file, cb) {
           return;
         }
 
-        // µİ¹é¶ÁÈ¡
+        // é€’å½’è¯»å–
         return that.parseInclude(tmpFile, function(err, tmpContent){
           if (err) {
             that.pub(messageId, { err: err, content: '' });
             return;
           }
-          // ´æÈëcache
+          // å­˜å…¥cache
           if ( that.cache ) fileCache[tmpFileMd5] = tmpContent;
           //console.log('cache file: ', Object.keys(fileCache));
           that.pub(messageId, { err: null, content: tmpContent });
@@ -197,11 +201,10 @@ template.parseInclude = function(file, cb) {
 };
 
 /**
- * Çå³ıÄ£°å»º´æ
+ * æ¸…é™¤æ¨¡æ¿ç¼“å­˜
  * @return {[type]} [description]
  */
 template.clearCache = function() {
-  renderCache = {};
   fileCache   = {};
+  renderCache = {};
 };
-

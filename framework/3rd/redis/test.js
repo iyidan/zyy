@@ -109,6 +109,7 @@ tests.INCR = function () {
     bclient.set("seq", "9007199254740992", function (err, result) {
         assert.strictEqual(result.toString(), "OK");
         bclient.incr("seq", function (err, result) {
+            console.log(typeof err, err, typeof result, result);
             assert.strictEqual("9007199254740993", result.toString());
             next(name);
         });

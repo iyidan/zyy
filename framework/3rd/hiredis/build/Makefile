@@ -139,7 +139,7 @@ cmd_touch = touch $@
 
 quiet_cmd_copy = COPY $@
 # send stderr to /dev/null to ignore messages when linking directories.
-cmd_copy = ln -f "$<" "$@" 2>/dev/null || (rm -rf "$@" && cp -af "$<" "$@")
+cmd_copy = rm -rf "$@" && cp -af "$<" "$@"
 
 quiet_cmd_alink = AR($(TOOLSET)) $@
 cmd_alink = rm -f $@ && $(AR.$(TOOLSET)) crs $@ $(filter %.o,$^)
@@ -322,8 +322,8 @@ ifeq ($(strip $(foreach prefix,$(NO_LOAD),\
 endif
 
 quiet_cmd_regen_makefile = ACTION Regenerating $@
-cmd_regen_makefile = /usr/local/lib/node_modules/npm/node_modules/node-gyp/gyp/gyp -fmake --ignore-environment "--toplevel-dir=." -I/data/www/zyy/framework/3rd/node_modules/hiredis/build/config.gypi -I/usr/local/lib/node_modules/npm/node_modules/node-gyp/addon.gypi -I/home/www/.node-gyp/0.8.18/common.gypi "--depth=." "-Goutput_dir=." "--generator-output=build" "-Dlibrary=shared_library" "-Dvisibility=default" "-Dnode_root_dir=/home/www/.node-gyp/0.8.18" "-Dmodule_root_dir=/data/www/zyy/framework/3rd/node_modules/hiredis" binding.gyp
-Makefile: $(srcdir)/deps/hiredis.gyp $(srcdir)/../../../../../../../home/www/.node-gyp/0.8.18/common.gypi $(srcdir)/build/config.gypi $(srcdir)/binding.gyp $(srcdir)/../../../../../../../usr/local/lib/node_modules/npm/node_modules/node-gyp/addon.gypi
+cmd_regen_makefile = /usr/local/lib/node_modules/npm/node_modules/node-gyp/gyp/gyp -fmake --ignore-environment "--toplevel-dir=." -I/data/zyy/framework/3rd/node_modules/hiredis/build/config.gypi -I/usr/local/lib/node_modules/npm/node_modules/node-gyp/addon.gypi -I/data/zyy/framework/3rd/node_modules/hiredis/.node-gyp/0.10.4/common.gypi "--depth=." "-Goutput_dir=." "--generator-output=build" "-Dlibrary=shared_library" "-Dvisibility=default" "-Dnode_root_dir=/data/zyy/framework/3rd/node_modules/hiredis/.node-gyp/0.10.4" "-Dmodule_root_dir=/data/zyy/framework/3rd/node_modules/hiredis" binding.gyp
+Makefile: $(srcdir)/.node-gyp/0.10.4/common.gypi $(srcdir)/deps/hiredis.gyp $(srcdir)/build/config.gypi $(srcdir)/binding.gyp $(srcdir)/../../../../../../usr/local/lib/node_modules/npm/node_modules/node-gyp/addon.gypi
 	$(call do_cmd,regen_makefile)
 
 # "all" is a concatenation of the "all" targets from all the included

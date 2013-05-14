@@ -25,8 +25,8 @@
   "readmeFilename": "README.md",
   "_id": "redis@0.8.2",
   "dist": {
-    "shasum": "4afdac316750667a37698f9c691884bcf051bcef"
+    "shasum": "ab7903b5712230dc4238cfc827cdd6d52491f7d3"
   },
-  "_from": "redis@",
+  "_from": "redis",
   "_resolved": "https://registry.npmjs.org/redis/-/redis-0.8.2.tgz"
 }

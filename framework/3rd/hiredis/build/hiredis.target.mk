@@ -12,9 +12,12 @@ DEFS_Debug := \
 
 # Flags passed to all source files.
 CFLAGS_Debug := \
+	-fPIC \
 	-Wall \
+	-Wextra \
+	-Wno-unused-parameter \
 	-pthread \
-	-m32 \
+	-m64 \
 	-Wall \
 	-O3 \
 	-g \
@@ -29,9 +32,9 @@ CFLAGS_CC_Debug := \
 	-fno-exceptions
 
 INCS_Debug := \
-	-I/home/www/.node-gyp/0.8.18/src \
-	-I/home/www/.node-gyp/0.8.18/deps/uv/include \
-	-I/home/www/.node-gyp/0.8.18/deps/v8/include \
+	-I/data/zyy/framework/3rd/node_modules/hiredis/.node-gyp/0.10.4/src \
+	-I/data/zyy/framework/3rd/node_modules/hiredis/.node-gyp/0.10.4/deps/uv/include \
+	-I/data/zyy/framework/3rd/node_modules/hiredis/.node-gyp/0.10.4/deps/v8/include \
 	-I$(srcdir)/deps
 
 DEFS_Release := \
@@ -42,9 +45,12 @@ DEFS_Release := \
 
 # Flags passed to all source files.
 CFLAGS_Release := \
+	-fPIC \
 	-Wall \
+	-Wextra \
+	-Wno-unused-parameter \
 	-pthread \
-	-m32 \
+	-m64 \
 	-Wall \
 	-O2 \
 	-fno-strict-aliasing \
@@ -60,9 +66,9 @@ CFLAGS_CC_Release := \
 	-fno-exceptions
 
 INCS_Release := \
-	-I/home/www/.node-gyp/0.8.18/src \
-	-I/home/www/.node-gyp/0.8.18/deps/uv/include \
-	-I/home/www/.node-gyp/0.8.18/deps/v8/include \
+	-I/data/zyy/framework/3rd/node_modules/hiredis/.node-gyp/0.10.4/src \
+	-I/data/zyy/framework/3rd/node_modules/hiredis/.node-gyp/0.10.4/deps/uv/include \
+	-I/data/zyy/framework/3rd/node_modules/hiredis/.node-gyp/0.10.4/deps/v8/include \
 	-I$(srcdir)/deps
 
 OBJS := \
@@ -73,7 +79,7 @@ OBJS := \
 all_deps += $(OBJS)
 
 # Make sure our dependencies are built before any of us.
-$(OBJS): | $(obj).target/deps/hiredis.a
+$(OBJS): | $(builddir)/hiredis.a $(obj).target/deps/hiredis.a
 
 # CFLAGS et al overrides must be target-local.
 # See "Target-specific Variable Values" in the GNU Make manual.
@@ -99,12 +105,12 @@ $(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.cc FORCE_DO_CMD
 LDFLAGS_Debug := \
 	-pthread \
 	-rdynamic \
-	-m32
+	-m64
 
 LDFLAGS_Release := \
 	-pthread \
 	-rdynamic \
-	-m32
+	-m64
 
 LIBS :=
 
