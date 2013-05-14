@@ -2,8 +2,9 @@
  * 路由控制
  */
 
-var utils = require('../core/utils');
-var fs    = require('fs');
+var utils   = require('../core/utils');
+var fs      = require('fs');
+var Message = require('../message').Message;
 
 // 路由硬编码缓存
 var hardCodeCaches = [];

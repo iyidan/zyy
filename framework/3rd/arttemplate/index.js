@@ -45,9 +45,6 @@ template.init = function(config) {
 
   this.config      = config;
   this.initialized = true;
-
-  // test
-  this.cache = true;
 }
 
 /**
@@ -67,8 +64,8 @@ template.render = function(content, data) {
 
     if ( !renderCache[renderMd5] ) {
       renderCache[renderMd5] = arttemplate.compile(content, this.isDebug); 
-    } else {
-      //console.log('render cache');
+    } else if (this.isDebug) {
+      console.log('render func cached', renderCache[renderMd5]);
     }
 
     return renderCache[renderMd5](data);
