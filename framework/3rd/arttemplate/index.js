@@ -6,6 +6,8 @@ var fs = require('fs');
 
 // 类似于smarty的语法风格
 var arttemplate = require('./lib/template-syntax');
+// 去掉默认的
+arttemplate.isEscape = false;
 
 // 工具包
 var utils   = require('../../core/utils');
@@ -19,7 +21,6 @@ new Message(false, 50, template);
 // 是否初始化过
 template.initialized = false;
 
-var renderCache = {};
 var fileCache = {};
 
 var includeReg = /\{include(.*?)\}/gm;
@@ -55,32 +56,18 @@ template.init = function(config) {
  */
 template.render = function(content, data) {
 
-  content = content + '';
-
-  var renderMd5 = utils.md5(content);
-
-  console.log(renderCache, fileCache);
-
   // 渲染
   try {
 
-    if ( !renderCache[renderMd5] ) {
-      renderCache[renderMd5] = arttemplate.compile(content, this.isDebug); 
-    } else if (this.isDebug) {
-      console.log('render func cached', renderCache[renderMd5]);
-    }
-
-    return renderCache[renderMd5](data);
+    return arttemplate.compile(content, this.isDebug)(data); 
 
   } catch(e) {
 
-    delete renderCache[renderMd5];
-
-    this.pub('error', e);
-    
+    this.pub('error', e);    
     return '';
 
   }
+
 };
 
 /**
