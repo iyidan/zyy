@@ -59,6 +59,8 @@ template.render = function(content, data) {
 
   var renderMd5 = utils.md5(content);
 
+  console.log(renderCache, fileCache);
+
   // ‰÷»æ
   try {
 
