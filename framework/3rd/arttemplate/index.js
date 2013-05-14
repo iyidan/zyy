@@ -56,10 +56,11 @@ template.init = function(config) {
  */
 template.render = function(content, data) {
 
+  var renderMd5 = utils.md5(content);
   // äÖÈ¾
   try {
 
-    return arttemplate.compile(content, this.isDebug)(data); 
+    return arttemplate.compile(renderMd5, content)(data); 
 
   } catch(e) {
 
