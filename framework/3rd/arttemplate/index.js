@@ -60,7 +60,7 @@ template.render = function(content, data) {
   // äÖÈ¾
   try {
 
-    return arttemplate.compile(renderMd5, content)(data); 
+    return arttemplate.compile(content)(data); 
 
   } catch(e) {
 
