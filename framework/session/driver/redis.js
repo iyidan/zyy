@@ -5,13 +5,13 @@
 var redis = require('../../3rd/redis');
 
 module.exports.redis = function(sm) {
-  
+
   // 引用sessionManager
   this._sm = sm;
 
   // redis配置
   this.redisConfig = sm.config.REDIS || (sm.config.DB.driver == 'redis' ? sm.config.DB : '');
-  
+
   // redis 连接
   this.redisWr = null;
 
@@ -56,9 +56,9 @@ end";
  * @return {Array|null}      参数数组
  */
 pro.getWriteArgs = function(sessionid, data, cb) {
-  
+
   var args = [this.luaWrite, 1, this._key(sessionid), this._sm.lifetime];
-  
+
   for ( var i in data ) {
     var tpval = typeof data[i];
     if ( data.hasOwnProperty(i) && ('string' == tpval || 'number' == tpval) ) {
@@ -86,7 +86,7 @@ pro.getCreateArgs = function(sessionid, cb) {
  * this._sm SessionManager 的实例对象
  */
 pro.check = function() {
-  
+
   if ( !this.redisConfig ) {
     this._sm.pub('error', 'redisConfig is empty in redis SESSION driver');
     return false;
@@ -96,7 +96,7 @@ pro.check = function() {
 };
 
 pro.open = function() {
-  
+
   if ( this.redisWr !== null ) {
     return this.redisWr;
   }
@@ -107,9 +107,9 @@ pro.open = function() {
   this.redisWr = redis.createClient(port, host);
 
   var that = this;
-  
+
   this.redisWr.on('error', function(err){
-    
+
     try { that.redisWr.quit(); } catch(e) { }
     that.redisWr = null;
     that._sm.pub('error', err);
@@ -126,7 +126,7 @@ pro.close = function( callback ) {
 };
 
 pro.write = function( sessionid, data, callback ) {
-  
+
   if ( typeof data != 'object' ) {
     callback('redis.write error: data is not a object type.', null);
     return;
@@ -175,7 +175,7 @@ pro.create  = function( callback ) {
 pro.renew = function(sessionid, callback) {
 
   var that = this;
-  
+
   this.open().pexpire( this._key(sessionid), this._sm.lifetime, function(err, status){
 
     if ( err ) {
@@ -194,7 +194,7 @@ pro.renew = function(sessionid, callback) {
 };
 
 pro.destory = function( sessionid, callback ){
-  
+
   this.open().del( this._key(sessionid), function( err, status ){
     callback(err, true);
   });
