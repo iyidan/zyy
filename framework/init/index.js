@@ -535,6 +535,9 @@ Framework.prototype.display = function(filename, controllerModule) {
   
   // 解析包含
   template.parseInclude(filename, function(err, content){
+    if ( app.config.ONDEV ) {
+      console.log('display file:', filename);
+    }
     if (err) {
       app.pub('error', err);
       return;
