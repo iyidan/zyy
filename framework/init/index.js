@@ -41,18 +41,18 @@ var setup   = null;
  *   errorHandler('app.error', err, app);
  * @return {Object} 返回一个http服务器
  */
-exports.createServer = function ( config, errorHandler ) 
-{    
+exports.createServer = function ( config, errorHandler )
+{
 
   var port = config.PORT || 3000;
   var ip   = config.IP || '127.0.0.1';
-  
-  // 错误处理  
+
+  // 错误处理
   if ( typeof errorHandler != 'function' ) {
     errorHandler = function(type, err){
       console.log(type+': ', err);
     };
-  } 
+  }
 
   // 编码路由
   router.hardCode(config.MODULE_PATH);
@@ -98,9 +98,9 @@ exports.createServer = function ( config, errorHandler )
 function createServer(ip, port, config, errorHandler)
 {
   var server = http.createServer(function(req, res) {
-    
+
     var app = new Framework( req, res, config, errorHandler );
-    
+
     init_SERVER( app );
     init_ROUTE( app );
     init_GET( app );
@@ -111,7 +111,7 @@ function createServer(ip, port, config, errorHandler)
     init_DB( app );
     init_CACHE( app );
     init_SESSION( app );
-    
+
     // 分派路由
     app.sub('setup.ok', function(){
       router.dispatch(app);
@@ -128,9 +128,9 @@ function createServer(ip, port, config, errorHandler)
       app.pub('setup.ok');
     });
   });
-  
+
   server.listen(port, ip);
-  
+
   server.on('error', function(err){
     errorHandler('server.error', err);
   });
@@ -174,7 +174,7 @@ function Framework ( req, res, config, errorHandler )
   this.routes   = {};
   // 渲染模板所用的数据
   this.assignValues = {};
-  
+
   //请求开始毫秒数
   this.startTime = (new Date()).getTime();
 
@@ -182,7 +182,7 @@ function Framework ( req, res, config, errorHandler )
   new Message(true, 50, this);
 
   var app = this;
-  
+
   // 注册app error
   this.sub( 'error', function( message, err ){
     errorHandler('app.error', err, app);
@@ -234,7 +234,7 @@ Framework.prototype.SERVER = function ( key ) {
  * @param {Mixed} def 默认值
  */
 Framework.prototype.GET = function ( key, def ) {
-  if ( !key || typeof key != 'string' ) return undefined;
+  if ( !key || typeof key != 'string' ) return;
   // 默认
   if ( def === undefined ) {
     return this._GET[key];
@@ -261,7 +261,7 @@ Framework.prototype.GET = function ( key, def ) {
  * @param {Mixed} def 默认值
  */
 Framework.prototype.POST = function ( key, def ) {
-  if ( !key || typeof key != 'string' ) return undefined;
+  if ( !key || typeof key != 'string' ) return;
   // 默认
   if ( def === undefined ) {
     return this._POST[key];
@@ -286,7 +286,7 @@ Framework.prototype.POST = function ( key, def ) {
  * REQUEST
  */
 Framework.prototype.REQUEST = function( key, def ) {
-  if ( !key || typeof key != 'string' ) return undefined;
+  if ( !key || typeof key != 'string' ) return;
   var getVal = this._GET[key];
   if ( getVal !== undefined ) {
     return this.GET( key, def );
@@ -307,7 +307,7 @@ Framework.prototype.REQUEST = function( key, def ) {
  * @param {Boolean} httpOnly 是否仅在http下有效 默认false
  */
 Framework.prototype.COOKIE = function( key, val, expires, needSign, path, domain, secure, httpOnly) {
-  if ( !key || typeof key != 'string' ) return undefined;
+  if ( !key || typeof key != 'string' ) return;
   if ( val === undefined ) {
     return this._COOKIE[key];
   }
@@ -333,7 +333,7 @@ Framework.prototype.COOKIE = function( key, val, expires, needSign, path, domain
  * @param {Function} cb 回调函数
  */
 Framework.prototype.SESSION = function ( key, val, isWriteNow, cb ) {
-  if ( !key || typeof key != 'string' ) return undefined;
+  if ( !key || typeof key != 'string' ) return;
   if ( val === undefined ) {
     return this._SESSION[key];
   }
@@ -364,7 +364,7 @@ Framework.prototype.SESSION = function ( key, val, isWriteNow, cb ) {
  * FILES
  */
 Framework.prototype.FILES = function( name ) {
-  if ( !key ) return undefined;
+  if ( !name ) return;
   return this._FILES[name];
 };
 
@@ -395,7 +395,7 @@ Framework.prototype.setStatusCode = function( code ){
       'err': 'statusCode is not a number.'
     });
   } else {
-    this.res.statusCode = code;  
+    this.res.statusCode = code;
   }
 };
 
@@ -475,7 +475,7 @@ Framework.prototype.end = function(str){
       }
 
       app.stopTime = (new Date).getTime();
-      
+
       if ( app.debug ) {
         app.write( 'request-time:'+(app.stopTime - app.startTime) );
       }
@@ -515,7 +515,7 @@ Framework.prototype.assign  = function(name, value) {
  * @param {String} controllerModule 模板所在module，默认当前路由的module，如果传递root，则渲染/template/下的模板
  */
 Framework.prototype.display = function(filename, controllerModule) {
-  
+
   var app  = this;
   // 404  ...
   if(parseInt(filename) == filename) {
@@ -532,7 +532,7 @@ Framework.prototype.display = function(filename, controllerModule) {
   } else {
     filename = app.config.MODULE_PATH + '/' + controllerModule + '/template/' + template.config.theme + '/' + filename;
   }
-  
+
   // 解析包含
   template.parseInclude(filename, function(err, content){
     if ( app.config.ONDEV ) {
@@ -580,7 +580,7 @@ Framework.prototype.redirect = function(url, status) {
  *   非ajax，返回提示信息
  */
 Framework.prototype.showMsg = function(msg) {
-  
+
   if (this.SERVER('isAjax')) {
     if ( typeof msg == 'string' ) {
       this.end(JSON.stringify({ 'info': msg }));
@@ -765,9 +765,9 @@ function init_SESSION( app )
       app._SESSION   = sessionData.data || {};
       app._sessionid = sessionData.sessionid;
       app.pub('init.session.ready');
-    });  
+    });
   });
-  
+
 }
 
 /**
